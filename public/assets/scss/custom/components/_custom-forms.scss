@@ -1,0 +1,14 @@
+//
+// custom-forms.scss
+//
+
+@each $state in map-keys($theme-colors) {
+    .form-checkbox-#{$state}, .form-radio-#{$state} {
+        .form-check-input {
+            &:checked {
+                background-color: var(--#{$prefix}#{$state});
+                border-color: var(--#{$prefix}#{$state});
+            }
+        }
+    }
+}

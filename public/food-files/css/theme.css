@@ -1,0 +1,314 @@
+.text-center{display:block;text-align:center}.colored{color:#ff5400}
+
+
+.colored,
+.shop-bag i,
+.naver .navbar a i,
+.header .naver .navbar .social a:hover i,
+.naver .navbar a:hover,
+.user-menu i,
+.search-bar-mobile button i,
+.categoria .vertudo i,
+.categoria .counter,
+.bread i,
+.produto-detalhes .categoria a,
+.campo-numero i,
+.sacola-table .sacola-remover i,
+.sacola-table .sacola-change i,
+.adicionado .checkicon,
+.title-line i,
+.back-button i,
+.sidebar-info i,
+.filter-select .outside,
+.filter-select .fake-select i,
+.pagination i,
+.funcionamento-mobile i,
+.fake-select i,
+.search-bar button i,
+.holder-shop-bag i
+{
+	color: var(--main) !important;
+}
+
+.is-invalid{
+	border: 1px solid red !important;
+}
+
+.box-sabor{
+	margin: 3px;
+}
+.box-sabor:hover{
+	cursor: pointer;
+}
+
+button[disabled=disabled], button:disabled {
+	background-color: #cccccc !important;
+	color: #666666 !important;
+}
+
+.btn-main{
+	color:white;
+	background: var(--main) !important;
+}
+
+.bg_sistema{
+	color:white;
+	background: var(--main) !important;
+}
+
+.top {
+	border-color: var(--main) !important;
+}
+
+.footer-info,
+.categoria .produto .detalhes,
+.cover,
+.carousel-indicators .active,
+.botao-acao,
+.sidebar .sidebar-header,
+.minitop,
+.opcoes .opcao.active .check,
+.floatbar {
+	background: var(--main) !important;
+}
+
+.pagination > li > a:hover, .pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover, .pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
+	background: var(--main) !important;
+	color: #fff !important;
+}
+
+.is-sticky .avatar {
+	height: 70px !important;
+	width: 70px !important;
+}
+
+.tv-infinite-menu a.active,
+.tv-infinite-menu a:hover,
+.fancybox-thumbs__list a::before {
+	border-color: var(--main) !important;
+}
+
+.social2 {
+	margin: 10px 0 0 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.social2 a {
+	display: block;
+	padding: 0 !important;
+	margin: 7px;
+	text-align:center
+}
+
+.social2 i {
+	color: #black !important;
+	font-size: 20px !important;
+}
+
+/* ALL MOBILE */
+
+@media (max-width: 991px) {
+
+	.user-menu i {
+		color: #fff !important;
+	}
+
+	.shop-bag i {
+		color: #fff !important;
+	}
+
+	.shop-bag .counter {
+		border: 0;
+		padding-top: 2px;
+	}
+
+	.top {
+		border-top: 0;
+		background: var(--main) !important;
+	}
+
+}
+
+
+.fa-star{
+	width:40px;
+	font-size:30px;
+	color:#e9ebe4;
+}
+.estrelaativa {
+	color: #e0e30e;
+}
+
+
+/* ALL DESK */
+
+@media (min-width: 991px) {
+
+}
+
+.d-none{
+	display: none;
+}
+
+.modal-loading {
+	display: block;
+}
+
+.modal-loading {
+	display: none;
+	position: fixed;
+	z-index: 10000;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba(255, 255, 255, 0.8)
+	url("/loading.gif") 50% 50% no-repeat;
+}
+
+.card {
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	transition: 0.3s;
+	padding: 2px 16px;
+}
+
+.card:hover {
+	box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+	cursor: pointer;
+}
+
+.mt-1{
+	margin-top: 3px;
+}
+
+.botao-agendamento{
+	width: 100%;
+	height: 40px;
+	padding: 8px 8px 3px 10px;
+}
+
+button.active{
+	background: var(--main) !important;
+	color: #fff !important;
+}
+button.active i{
+	color: #fff !important;
+}
+.d-none{
+	display: none !important;
+}
+
+
+
+@media (max-width: 991px) {
+	.slideshow-container img{
+		margin-top: 10px;
+	}
+}
+
+/* Slideshow container */
+.slideshow-container {
+	width: 100%;
+	position: relative;
+	margin: auto;
+}
+
+/* Hide the images by default */
+.mySlides {
+	display: none;
+}
+
+/* Next & previous buttons */
+.prev, .next {
+	cursor: pointer;
+	position: absolute;
+	top: 50%;
+	width: auto;
+	margin-top: -22px;
+	padding: 16px;
+	color: white;
+	font-weight: bold;
+	font-size: 18px;
+	transition: 0.6s ease;
+	border-radius: 0 3px 3px 0;
+	user-select: none;
+}
+
+/* Position the "next button" to the right */
+.next {
+	right: 0;
+	border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+	background-color: rgba(0,0,0,0.8);
+}
+
+/* Caption text */
+.text {
+	color: #f2f2f2;
+	font-size: 15px;
+	padding: 8px 12px;
+	position: absolute;
+	bottom: 8px;
+	width: 100%;
+	text-align: right;
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+	color: #f2f2f2;
+	font-size: 12px;
+	padding: 8px 12px;
+	position: absolute;
+	top: 0;
+}
+
+/* The dots/bullets/indicators */
+.dot {
+	cursor: pointer;
+	height: 15px;
+	width: 15px;
+	margin: 0 2px;
+	background-color: #bbb;
+	border-radius: 50%;
+	display: inline-block;
+	transition: background-color 0.6s ease;
+}
+
+.active-dot, .dot:hover {
+	background-color: var(--main);
+}
+
+/* Fading animation */
+.fade {
+	animation-name: fade;
+	animation-duration: 1.5s;
+}
+
+@keyframes fade {
+	from {opacity: .4}
+	to {opacity: 1}
+}
+
+.btn-comprar-agora{
+	background: var(--main);
+	position:absolute;
+	top:80%;
+	left:0.1%;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+	color: #fff;
+	padding: 6px;
+}
+
+@media (min-width: 991px) {
+	.btn-comprar-agora{
+		padding: 14px;
+	}
+}
+
+

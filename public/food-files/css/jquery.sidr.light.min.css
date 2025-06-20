@@ -1,0 +1,1 @@
+.sidr{display:block;position:fixed;top:0;height:100%;z-index:999999;width:260px;overflow-x:hidden;overflow-y:auto;font-family:"lucida grande",tahoma,verdana,arial,sans-serif;font-size:15px;background:#f8f8f8;color:#333;box-shadow:0 0 5px 5px #ebebeb inset}.sidr .sidr-inner{padding:0 0 15px}.sidr.right{left:auto;right:-260px}.sidr.left{left:-260px;right:auto}

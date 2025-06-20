@@ -1,0 +1,32 @@
+/*
+Template Name: Jidox - Responsive Bootstrap 5 Admin Dashboard
+Version: 1.0.0
+Author: CoderThemes
+Email: support@coderthemes.com
+File: Icons Css File
+*/
+
+// Icons
+@import "custom/icons/remixicon";
+@import "custom/icons/bootstrap-icons";
+
+
+// Google Font Icon ( https://fonts.google.com/icons )
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 500,
+        'GRAD' 200,
+        'opsz' 48
+}
+
+.material-symbols-outlined.fill-1 {
+
+    font-variation-settings:
+        'FILL' 1,
+        'wght' 500,
+        'GRAD' 200,
+        'opsz' 48
+}

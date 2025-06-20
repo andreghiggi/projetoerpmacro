@@ -1,0 +1,442 @@
+{
+	"info": {
+		"_postman_id": "a633403b-6529-4947-bc54-ef9034906b9c",
+		"name": "rest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2339971"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8000/api/nfe/xml-temporario",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"documento\":\n\t{\n\t\t\"numero_nfe\":\"2583\",\n\t\t\"natureza_operacao\":\"Venda\",\n\t\t\"numero_serie\":2,\n\t\t\"info_complementar\":\"\",\n\t\t\"consumidor_final\":\"0\",\n\t\t\"operacao_interestadual\":\"1\",\n\t\t\"aut_xml\": \"\"\n\t},\n\n\t\"destinatario\":\n\t{\n\t\t\"nome\":\"JOAO CARLOS DE CARVALHO & CIA. LTDA\",\n\t\t\"cpf_cnpj\":\"03.154.446/0001-69\",\n\t\t\"ie\":\"1030232910046\",\n\t\t\"contribuinte\":\"1\",\n        \"consumidor_final\":\"1\",\n\t\t\"rua\":\"PC MELO VIANA\",\n\t\t\"numero\":\"205\",\n\t\t\"complemento\":\"\",\n\t\t\"bairro\":\"CENTRO\",\n\t\t\"nome_municipio\":\"CALDAS\",\n\t\t\"cod_municipio_ibge\":\"3110301\",\n\t\t\"uf\":\"MG\",\n\t\t\"cep\":\"37780000\",\n\t\t\"nome_pais\":\"Brasil\",\n\t\t\"cod_pais\":1058\n\t},\n\n\t\"itens\":[\n\t\t{\n\t\t\t\"cod_barras\":\"SEM GTIN\",\n\t\t\t\"codigo_produto\":\"RINX5uni\",\n\t\t\t\"nome_produto\":\"Recarga Inox 5 uni\",\n\t\t\t\"ncm\":\"82121020\",\n\t\t\t\"unidade\":\"UNID\",\n\t\t\t\"cfop\":\"6101\",\n\t\t\t\"quantidade\":3,\n\t\t\t\"valor_unitario\":20.00,\n\t\t\t\"cst_csosn\":\"102\",\n\t\t\t\"cst_pis\":\"49\",\n\t\t\t\"cst_cofins\":\"49\",\n\t\t\t\"cst_ipi\":\"99\",\n\t\t\t\"vBCSTRet\":0,\n\t\t\t\"pST\":0,\n\t\t\t\"compoe_valor_total\":1,\n\t\t\t\"perc_icms\":0,\n\t\t\t\"perc_pis\":0,\n\t\t\t\"perc_cofins\":0,\n\t\t\t\"perc_ipi\":0,\n            \"cEnq\": \"999\",\n            \"cest\": \"\",\n            \"origem\": 0\n\t\t}\n\t],\n    \"frete\":{\n        \"quantidade_volumes\": 1,\n        \"numero_volumes\": 1,\n        \"especie\": \"cx\",\n        \"peso_liquido\": 0.200,\n        \"peso_bruto\": 0.200,\n        \"tipo\": 1,\n        \"valor\": 10.00,\n        \"placa\": \"aze1757\",\n        \"uf\": \"PR\"\n    },\n\t\"fatura\":\n\t{\n\t\t\"desconto\":0,\n\t\t\"total_nf\": 70.00,\n        \"acrescimo\": 0\n\t},\n\t\"duplicatas\":\n\t[\n\t\t{\n\t\t\t\"data_vencimento\":\"2023-08-07\",\n\t\t\t\"valor\": 70.00,\n            \"tipo\": \"01\"\n\t\t}\n\t]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/xml-temporario",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"xml-temporario"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfe/corrigir",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chave\": \"52230703630111000170550020000025851000670625\",\n    \"motivo\": \"teste de correcao nfe\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/corrigir",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"corrigir"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfe/inutilizar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"numero_inicial\": \"105\",\n    \"numero_final\": \"105\",\n    \"numero_serie\": \"2\",\n    \"justificativa\": \"teste de inutilizacao nfe\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/inutilizar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"inutilizar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfe/emitir",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"documento\":\n\t{\n\t\t\"numero_nfe\":\"2585\",\n\t\t\"natureza_operacao\":\"Venda\",\n\t\t\"numero_serie\":2,\n\t\t\"info_complementar\":\"\",\n\t\t\"consumidor_final\":\"0\",\n\t\t\"operacao_interestadual\":\"1\",\n\t\t\"aut_xml\": \"\"\n\t},\n\n\t\"destinatario\":\n\t{\n\t\t\"nome\":\"JOAO CARLOS DE CARVALHO & CIA. LTDA\",\n\t\t\"cpf_cnpj\":\"03.154.446/0001-69\",\n\t\t\"ie\":\"1030232910046\",\n\t\t\"contribuinte\":\"1\",\n        \"consumidor_final\":\"1\",\n\t\t\"rua\":\"PC MELO VIANA\",\n\t\t\"numero\":\"205\",\n\t\t\"complemento\":\"\",\n\t\t\"bairro\":\"CENTRO\",\n\t\t\"nome_municipio\":\"CALDAS\",\n\t\t\"cod_municipio_ibge\":\"3110301\",\n\t\t\"uf\":\"MG\",\n\t\t\"cep\":\"37780000\",\n\t\t\"nome_pais\":\"Brasil\",\n\t\t\"cod_pais\":1058\n\t},\n\n\t\"itens\":[\n\t\t{\n\t\t\t\"cod_barras\":\"SEM GTIN\",\n\t\t\t\"codigo_produto\":\"RINX5uni\",\n\t\t\t\"nome_produto\":\"Recarga Inox 5 uni\",\n\t\t\t\"ncm\":\"82121020\",\n\t\t\t\"unidade\":\"UNID\",\n\t\t\t\"cfop\":\"6101\",\n\t\t\t\"quantidade\":3,\n\t\t\t\"valor_unitario\":20.00,\n\t\t\t\"cst_csosn\":\"102\",\n\t\t\t\"cst_pis\":\"49\",\n\t\t\t\"cst_cofins\":\"49\",\n\t\t\t\"cst_ipi\":\"99\",\n\t\t\t\"vBCSTRet\":0,\n\t\t\t\"pST\":0,\n\t\t\t\"compoe_valor_total\":1,\n\t\t\t\"perc_icms\":0,\n\t\t\t\"perc_pis\":0,\n\t\t\t\"perc_cofins\":0,\n\t\t\t\"perc_ipi\":0,\n            \"cEnq\": \"999\",\n            \"cest\": \"\",\n            \"origem\": 0\n\t\t}\n\t],\n    \"frete\":{\n        \"quantidade_volumes\": 1,\n        \"numero_volumes\": 1,\n        \"especie\": \"cx\",\n        \"peso_liquido\": 0.200,\n        \"peso_bruto\": 0.200,\n        \"tipo\": 1,\n        \"valor\": 10.00,\n        \"placa\": \"aze1757\",\n        \"uf\": \"PR\"\n    },\n\t\"fatura\":\n\t{\n\t\t\"desconto\":0,\n\t\t\"total_nf\": 70.00,\n        \"acrescimo\": 0\n\t},\n\t\"duplicatas\":\n\t[\n\t\t{\n\t\t\t\"data_vencimento\":\"2023-08-07\",\n\t\t\t\"valor\": 70.00,\n            \"tipo\": \"01\"\n\t\t}\n\t]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/emitir",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"emitir"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfe/danfe-temporario",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"documento\":\n\t{\n\t\t\"numero_nfe\":\"2585\",\n\t\t\"natureza_operacao\":\"Venda\",\n\t\t\"numero_serie\":2,\n\t\t\"info_complementar\":\"\",\n\t\t\"consumidor_final\":\"0\",\n\t\t\"operacao_interestadual\":\"1\",\n\t\t\"aut_xml\": \"\"\n\t},\n\n\t\"destinatario\":\n\t{\n\t\t\"nome\":\"JOAO CARLOS DE CARVALHO & CIA. LTDA\",\n\t\t\"cpf_cnpj\":\"03.154.446/0001-69\",\n\t\t\"ie\":\"1030232910046\",\n\t\t\"contribuinte\":\"1\",\n        \"consumidor_final\":\"1\",\n\t\t\"rua\":\"PC MELO VIANA\",\n\t\t\"numero\":\"205\",\n\t\t\"complemento\":\"\",\n\t\t\"bairro\":\"CENTRO\",\n\t\t\"nome_municipio\":\"CALDAS\",\n\t\t\"cod_municipio_ibge\":\"3110301\",\n\t\t\"uf\":\"MG\",\n\t\t\"cep\":\"37780000\",\n\t\t\"nome_pais\":\"Brasil\",\n\t\t\"cod_pais\":1058\n\t},\n\n\t\"itens\":[\n\t\t{\n\t\t\t\"cod_barras\":\"SEM GTIN\",\n\t\t\t\"codigo_produto\":\"RINX5uni\",\n\t\t\t\"nome_produto\":\"Recarga Inox 5 uni\",\n\t\t\t\"ncm\":\"82121020\",\n\t\t\t\"unidade\":\"UNID\",\n\t\t\t\"cfop\":\"6101\",\n\t\t\t\"quantidade\":3,\n\t\t\t\"valor_unitario\":20.00,\n\t\t\t\"cst_csosn\":\"102\",\n\t\t\t\"cst_pis\":\"49\",\n\t\t\t\"cst_cofins\":\"49\",\n\t\t\t\"cst_ipi\":\"99\",\n\t\t\t\"vBCSTRet\":0,\n\t\t\t\"pST\":0,\n\t\t\t\"compoe_valor_total\":1,\n\t\t\t\"perc_icms\":0,\n\t\t\t\"perc_pis\":0,\n\t\t\t\"perc_cofins\":0,\n\t\t\t\"perc_ipi\":0,\n            \"cEnq\": \"999\",\n            \"cest\": \"\",\n            \"origem\": 0\n\t\t}\n\t],\n    \"frete\":{\n        \"quantidade_volumes\": 1,\n        \"numero_volumes\": 1,\n        \"especie\": \"cx\",\n        \"peso_liquido\": 0.200,\n        \"peso_bruto\": 0.200,\n        \"tipo\": 1,\n        \"valor\": 10.00,\n        \"placa\": \"aze1757\",\n        \"uf\": \"PR\"\n    },\n\t\"fatura\":\n\t{\n\t\t\"desconto\":0,\n\t\t\"total_nf\": 70.00,\n        \"acrescimo\": 0\n\t},\n\t\"duplicatas\":\n\t[\n\t\t{\n\t\t\t\"data_vencimento\":\"2023-08-07\",\n\t\t\t\"valor\": 70.00,\n            \"tipo\": \"01\"\n\t\t}\n\t]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/danfe-temporario",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"danfe-temporario"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfe/consultar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chave\": \"52230703630111000170550020000025851000670625\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/consultar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"consultar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfe/cancelar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chave\": \"52230703630111000170550020000026041000393483\",\n    \"motivo\": \"teste de cancelamento nfe\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfe/cancelar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfe",
+						"cancelar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfce/emitir",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\n\t\"documento\":\n\t{\n\t\t\"numero_nfce\":\"102\",\n\t\t\"natureza_operacao\":\"Venda\",\n\t\t\"numero_serie\":2,\n\t\t\"info_complementar\":\"\",\n\t\t\"operacao_interestadual\":\"1\",\n\t\t\"aut_xml\": \"\"\n        // \"csc\": \"e5b5eb480168c1bc\",\n        // \"csc_id\": \"000001\"\n\t},\n\n\n\t// \"destinatario\":\n\t// {\n\t// \t\"nome\":\"JOAO CARLOS DE CARVALHO & CIA. LTDA\",\n\t// \t\"cpf_cnpj\":\"03.154.446/0001-69\"\n\t// \t// \"ie\":\"1030232910046\",\n\t// \t// \"contribuinte\":\"1\",\n\t// \t// \"logradouro\":\"PC MELO VIANA\",\n\t// \t// \"numero\":\"205\",\n\t// \t// \"complemento\":\"\",\n\t// \t// \"bairro\":\"CENTRO\",\n\t// \t// \"nome_municipio\":\"CALDAS\",\n\t// \t// \"cod_municipio_ibge\":\"3110301\",\n\t// \t// \"uf\":\"MG\",\n\t// \t// \"cep\":\"37780000\",\n\t// \t// \"nome_pais\":\"Brasil\",\n\t// \t// \"cod_pais\":1058\n\t// },\n\n\t\"itens\":[\n\t\t{\n\t\t\t\"cod_barras\":\"SEM GTIN\",\n\t\t\t\"codigo_produto\":\"RINX5uni\",\n\t\t\t\"nome_produto\":\"Recarga Inox 5 uni\",\n\t\t\t\"ncm\":\"82121020\",\n\t\t\t\"unidade\":\"UNID\",\n\t\t\t\"cfop\":\"5101\",\n\t\t\t\"quantidade\":3,\n\t\t\t\"valor_unitario\":20.00,\n\t\t\t\"cst_csosn\":\"102\",\n\t\t\t\"cst_pis\":\"49\",\n\t\t\t\"cst_cofins\":\"49\",\n\t\t\t\"cst_ipi\":\"99\",\n\t\t\t\"vBCSTRet\":0,\n\t\t\t\"pST\":0,\n\t\t\t\"compoe_valor_total\":1,\n\t\t\t\"perc_icms\":0,\n\t\t\t\"perc_pis\":0,\n\t\t\t\"perc_cofins\":0,\n\t\t\t\"perc_ipi\":0,\n            \"cEnq\": \"999\",\n            \"cest\": \"\",\n            \"origem\": 0\n\t\t}\n\t],\n\t\"fatura\":\n\t{\n\t\t\"desconto\":0,\n\t\t\"total_nfce\": 60.00,\n        \"acrescimo\": 0\n\t},\n    \"duplicatas\":\n\t[\n\t\t{\n\t\t\t\"data_vencimento\":\"2023-08-07\",\n\t\t\t\"valor\": 60.00,\n            \"tipo\": \"01\"\n\t\t}\n\t]\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfce/emitir",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfce",
+						"emitir"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfce/inutilizar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"numero_inicial\": \"105\",\n    \"numero_final\": \"105\",\n    \"numero_serie\": \"2\",\n    \"justificativa\": \"teste de inutilizacao nfe\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfce/inutilizar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfce",
+						"inutilizar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfce/consultar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ybkiXA7h8ACQ4JhrNVrgNP8wz",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chave\": \"52230703630111000170650010000001001000578000\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfce/consultar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfce",
+						"consultar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfce/cancelar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chave\": \"52230703630111000170650020000001151000263652\",\n    \"motivo\": \"teste de cancelamento nfce\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfce/cancelar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfce",
+						"cancelar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/nfce/xml-temporario",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "ZTg58i1t1qrLjWZ7yirlz7i8C",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\n\t\"documento\":\n\t{\n\t\t\"numero_nfce\":\"100\",\n\t\t\"natureza_operacao\":\"Venda\",\n\t\t\"numero_serie\":2,\n\t\t\"info_complementar\":\"\",\n\t\t\"operacao_interestadual\":\"1\",\n\t\t\"aut_xml\": \"\"\n        // \"csc\": \"e5b5eb480168c1bc\",\n        // \"csc_id\": \"000001\"\n\t},\n\n\n\t// \"destinatario\":\n\t// {\n\t// \t\"nome\":\"JOAO CARLOS DE CARVALHO & CIA. LTDA\",\n\t// \t\"cpf_cnpj\":\"03.154.446/0001-69\"\n\t// \t// \"ie\":\"1030232910046\",\n\t// \t// \"contribuinte\":\"1\",\n\t// \t// \"logradouro\":\"PC MELO VIANA\",\n\t// \t// \"numero\":\"205\",\n\t// \t// \"complemento\":\"\",\n\t// \t// \"bairro\":\"CENTRO\",\n\t// \t// \"nome_municipio\":\"CALDAS\",\n\t// \t// \"cod_municipio_ibge\":\"3110301\",\n\t// \t// \"uf\":\"MG\",\n\t// \t// \"cep\":\"37780000\",\n\t// \t// \"nome_pais\":\"Brasil\",\n\t// \t// \"cod_pais\":1058\n\t// },\n\n\t\"itens\":[\n\t\t{\n\t\t\t\"cod_barras\":\"SEM GTIN\",\n\t\t\t\"codigo_produto\":\"RINX5uni\",\n\t\t\t\"nome_produto\":\"Recarga Inox 5 uni\",\n\t\t\t\"ncm\":\"82121020\",\n\t\t\t\"unidade\":\"UNID\",\n\t\t\t\"cfop\":\"6101\",\n\t\t\t\"quantidade\":3,\n\t\t\t\"valor_unitario\":20.00,\n\t\t\t\"cst_csosn\":\"102\",\n\t\t\t\"cst_pis\":\"49\",\n\t\t\t\"cst_cofins\":\"49\",\n\t\t\t\"cst_ipi\":\"99\",\n\t\t\t\"vBCSTRet\":0,\n\t\t\t\"pST\":0,\n\t\t\t\"compoe_valor_total\":1,\n\t\t\t\"perc_icms\":0,\n\t\t\t\"perc_pis\":0,\n\t\t\t\"perc_cofins\":0,\n\t\t\t\"perc_ipi\":0,\n            \"cEnq\": \"999\",\n            \"cest\": \"\",\n            \"origem\": 0\n\t\t}\n\t],\n\t\"fatura\":\n\t{\n\t\t\"desconto\":0,\n\t\t\"total_nfce\": 60.00,\n        \"acrescimo\": 0\n\t},\n    \"duplicatas\":\n\t[\n\t\t{\n\t\t\t\"data_vencimento\":\"2023-08-07\",\n\t\t\t\"valor\": 70.00,\n            \"tipo\": \"01\"\n\t\t}\n\t]\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/nfce/xml-temporario",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"nfce",
+						"xml-temporario"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

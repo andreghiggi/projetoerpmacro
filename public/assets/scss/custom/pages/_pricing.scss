@@ -1,0 +1,58 @@
+// 
+// pricing.scss
+//
+
+.pricing-column {
+    position: relative;
+}
+
+.ribbon {
+    position: absolute;
+    left: 0;
+    top: -5px;
+    z-index: 1;
+    overflow: hidden;
+    width: 75px;
+    height: 75px;
+    text-align: right;
+
+    span {
+        font-size: 10px;
+        color: $white;
+        text-transform: uppercase;
+        text-align: center;
+        line-height: 20px;
+        transform: rotate(-45deg);
+        width: 100px;
+        display: block;
+        box-shadow: $box-shadow-lg;
+        background: $primary;
+        position: absolute;
+        top: 19px;
+        left: -21px;
+
+        &:before {
+            content: "";
+            position: absolute;
+            left: 0px;
+            top: 100%;
+            z-index: -1;
+            border-left: 3px solid $primary;
+            border-right: 3px solid transparent;
+            border-bottom: 3px solid transparent;
+            border-top: 3px solid $primary;
+        }
+
+        &:after {
+            content: "";
+            position: absolute;
+            right: 0px;
+            top: 100%;
+            z-index: -1;
+            border-left: 3px solid transparent;
+            border-right: 3px solid $primary;
+            border-bottom: 3px solid transparent;
+            border-top: 3px solid $primary;
+        }
+    }
+}
