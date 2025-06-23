@@ -200,7 +200,7 @@ class AlertaCron extends Command
                 'referencia' => $referencia,
                 'status' => 1,
                 'por_sistema' => 1,
-                'prioridade' => $prioridade, 
+                'prioridade' => $prioridade,
                 'visualizada' => 0,
                 'titulo' => $titulo
             ]);

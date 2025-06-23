@@ -27,8 +27,6 @@ class ConectaVendaPedidoController extends Controller
             return redirect()->route('conecta-venda-config.index');
         }
 
-        $this->util->listOrders($request);
-
         $start_date = $request->get('start_date');
 
         $id_publico = $request->get('id_publico');

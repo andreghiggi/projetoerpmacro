@@ -150,36 +150,6 @@ class ConectaVendaUtil
         return  json_decode($response, true);
 
     }
-
-    public function listOrders(Request $request)
-    {
-
-        $config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
-        $payload = [
-            'chave' => $config->client_secret,
-            'data' => (string) $request->start_date,
-            'id_publico' => $request->id_publico
-        ];
-
-
-        $response = Http::asJson()->post('https://api.conectavenda.com.br/pedidos/listar', $payload);
-//        dd(json_decode($response));
-        if($response->status() == 200){
-            $orders = json_decode($response);
-//            dd($orders);
-            foreach($orders->dados as $order){
-                $pedido = $this->createOrder($order, $config);
-
-                if($pedido && isset($order->produtos)){
-                    foreach ($order->produtos as $item){
-                        $this->createItemOrder($item, $pedido->id);
-                    }
-                }
-            }
-        }
-
-    }
-
     public function createOrder($dadosPedido, $config, ?int $clienteId = null)
     {
         return ConectaVendaPedido::updateOrCreate(
