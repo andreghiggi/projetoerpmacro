@@ -108,7 +108,6 @@ class ConectaVendaPedidoController extends Controller
             DB::commit();
             return redirect()->back()->with('success', 'Pedido finalizado e estoque atualizado com sucesso!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->with('error', 'Erro ao finalizar pedido: ' . $e->getMessage());
         }
