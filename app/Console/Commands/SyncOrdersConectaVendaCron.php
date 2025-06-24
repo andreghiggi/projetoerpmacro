@@ -48,11 +48,11 @@ class SyncOrdersConectaVendaCron extends Command
             $data = DB::table('conecta_venda_pedidos')
                 ->select('data_atualizacao_status')
                 ->where('empresa_id', $empresa->id)
-                ->orderBy('data_atualizacao_status')->first();
+                ->orderBy('data_atualizacao_status', 'desc')->first();
 
             $payload = [
                 'chave' => $config->client_secret,
-                'data' => (string) ($data ?? today()),
+                'data' => (string) ($data->data_atualizacao_status ?? today()),
             ];
 
             $response = Http::withOptions(['verify' => false])->asJson()->post('https://api.conectavenda.com.br/pedidos/listar', $payload);
