@@ -67,7 +67,7 @@ class SyncEstoque extends Command
                     $this->util->atualizarEstoque($config, $produto);
                     $this->line("Produto {$produto->id} sincronizado com sucesso.");
                 } catch (\Exception $e) {
-                    $this->error("❌ Erro no produto {$produto->id}: {$e->getMessage()}");
+                    $this->error("Erro no produto {$produto->id}: {$e->getMessage()}");
                 }
             }
         }
