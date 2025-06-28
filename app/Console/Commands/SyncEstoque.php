@@ -40,7 +40,6 @@ class SyncEstoque extends Command
     public function handle()
     {
         $empresas = Empresa::where('status', 1)->get();
-
         foreach ($empresas as $empresa) {
 
             $config = ConectaVendaConfig::where('empresa_id', $empresa->id)->first();
@@ -57,7 +56,6 @@ class SyncEstoque extends Command
                 ->whereNotNull('conecta_venda_id')
                 ->where('empresa_id', $empresa->id)
                 ->get();
-
             if ($produtos->isEmpty()) {
                 $this->line("Nenhum produto com movimentação recente na empresa {$empresa->id}.");
             }
