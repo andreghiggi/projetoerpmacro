@@ -16,7 +16,6 @@ class ConectaVendaUtil
 {
     public function create(ConectaVendaConfig $empresa, Produto $produto)
     {
-
         $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
 
         if (!$config || !$config->client_secret) {
@@ -25,7 +24,7 @@ class ConectaVendaUtil
 
         $produtoConecta = [
             'id' => (string) $produto->id,
-            'referencia' => (string) $produto->referencia ?? $produto->id,
+            'referencia' => (string) $produto->observacao ?? $produto->id,
             'nome' => $produto->nome,
             'descricao' => $produto->descricao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
@@ -90,7 +89,7 @@ class ConectaVendaUtil
 
         $produtoConecta = [
             'id' => (string) $produto->conecta_venda_id,
-            'referencia' => (string) $produto->referencia ?? $produto->id,
+            'referencia' => (string) $produto->observacao ?? $produto->id,
             'nome' => $produto->nome,
             'descricao' => $produto->descricao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
@@ -283,7 +282,7 @@ class ConectaVendaUtil
 
         $produtoConecta = [
             'id' => (string) $produto->conecta_venda_id,
-            'referencia' => (string) $produto->referencia ?? $produto->id,
+            'referencia' => (string) $produto->observacao ?? $produto->id,
             'nome' => $produto->nome,
             'descricao' => $produto->descricao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
