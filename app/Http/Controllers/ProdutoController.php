@@ -507,7 +507,6 @@ class ProdutoController extends Controller
                         return $produto;
                     }
                     try {
-                        dd($produto);
                         $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
                         if (isset($retornoConecta['produtos_ids'])) {
                             $produto->conecta_venda_id = $produto->id;
