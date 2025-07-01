@@ -273,19 +273,19 @@
                 </div>
 
                 <div class="col-md-3">
-                    {!!Form::tel('observacao', 'Observação')
+                    {!!Form::tel('observacao', 'Descrição do Produto')
                     !!}
                 </div>
                 <div class="col-md-3">
-                    {!!Form::tel('observacao2', 'Observação 2')
+                    {!!Form::tel('observacao2', 'Observação')
                     !!}
                 </div>
                 <div class="col-md-3">
-                    {!!Form::tel('observacao3', 'Observação 3')
+                    {!!Form::tel('observacao3', 'Observação 2')
                     !!}
                 </div>
                 <div class="col-md-3">
-                    {!!Form::tel('observacao4', 'Observação 4')
+                    {!!Form::tel('observacao4', 'Observação 3')
                     !!}
                 </div>
 

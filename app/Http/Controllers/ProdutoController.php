@@ -507,6 +507,7 @@ class ProdutoController extends Controller
                         return $produto;
                     }
                     try {
+                        dd($produto);
                         $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
                         if (isset($retornoConecta['produtos_ids'])) {
                             $produto->conecta_venda_id = $produto->id;
@@ -1013,7 +1014,7 @@ public function destroySelecet(Request $request)
 private function __validate(Request $request)
 {
     $rules = [
-        'nome' => 'required',
+        'nome' => 'required|max:64',
             // 'codigo_barras' => 'required',
             // 'ncm' => 'required',
         'descricao' => 'max:255',
@@ -1044,6 +1045,7 @@ private function __validate(Request $request)
         'cst_cofins.required' => 'Campo Obrigatório',
         'cst_ipi.required' => 'Campo Obrigatório',
         'valor_unitario.required' => 'Campo Obrigatório',
+        'nome.max' => 'Máximo de 64 caracteres',
         'descricao.max' => 'Máximo de 255 caracteres',
         'descricao_es.max' => 'Máximo de 255 caracteres',
         'descricao_en.max' => 'Máximo de 255 caracteres',
