@@ -24,9 +24,9 @@ class ConectaVendaUtil
 
         $produtoConecta = [
             'id' => (string) $produto->id,
-            'referencia' => (string) $produto->observacao ?? $produto->id,
+            'referencia' => (string) $produto->referencia ?? $produto->id,
             'nome' => $produto->nome,
-            'descricao' => $produto->descricao ?? 'Descrição do Produto',
+            'descricao' => $produto->observacao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) $produto->peso ?? 0,
             'solicitar_observacao' => 1,
@@ -89,9 +89,9 @@ class ConectaVendaUtil
 
         $produtoConecta = [
             'id' => (string) $produto->conecta_venda_id,
-            'referencia' => (string) $produto->observacao ?? $produto->id,
+            'referencia' => (string) $produto->referencia ?? $produto->id,
             'nome' => $produto->nome,
-            'descricao' => $produto->descricao ?? 'Descrição do Produto',
+            'descricao' => $produto->observacao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) $produto->peso ?? 0,
             'solicitar_observacao' => 1,
@@ -282,9 +282,9 @@ class ConectaVendaUtil
 
         $produtoConecta = [
             'id' => (string) $produto->conecta_venda_id,
-            'referencia' => (string) $produto->observacao ?? $produto->id,
+            'referencia' => (string) $produto->referencia ?? $produto->id,
             'nome' => $produto->nome,
-            'descricao' => $produto->descricao ?? 'Descrição do Produto',
+            'descricao' => $produto->observacao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) ($produto->peso ?? 0),
             'solicitar_observacao' => 1,
