@@ -44,10 +44,9 @@ class ConectaVendaUtil
         ];
 
         foreach ($produto->variacoes as $i => $v) {
-            $produtoConecta["variacoes"][] = [
+            $variacao = [
                 "id" => (string) $v->id,
                 "descricao" => $v->descricao,
-                "estoque" => (int) ($v->estoque()->sum('quantidade')),
                 "ordem" => $i + 1,
                 "ativo" => 1,
                 "precos" => [
@@ -57,6 +56,14 @@ class ConectaVendaUtil
                     ]
                 ]
             ];
+
+            $quantidade = (int) ($v->estoque()->sum('quantidade'));
+
+            if ($quantidade > 0) {
+                $variacao["estoque"] = $quantidade;
+            }
+
+            $produtoConecta["variacoes"][] = $variacao;
         }
 
         $payload = [
@@ -102,10 +109,9 @@ class ConectaVendaUtil
         ];
 
         foreach ($produto->variacoes as $i => $v) {
-            $produtoConecta["variacoes"][] = [
+            $variacao = [
                 "id" => (string) $v->id,
                 "descricao" => $v->descricao,
-                "estoque" => (int) ($v->estoque()->sum('quantidade') ?? 0),
                 "ordem" => $i + 1,
                 "ativo" => 1,
                 "precos" => [
@@ -115,6 +121,14 @@ class ConectaVendaUtil
                     ]
                 ]
             ];
+
+            $quantidade = (int) ($v->estoque()->sum('quantidade'));
+
+            if ($quantidade > 0) {
+                $variacao["estoque"] = $quantidade;
+            }
+
+            $produtoConecta["variacoes"][] = $variacao;
         }
 
         $payload = [
