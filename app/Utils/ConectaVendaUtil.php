@@ -29,41 +29,44 @@ class ConectaVendaUtil
             'descricao' => $produto->observacao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) $produto->peso ?? 0,
-            'solicitar_observacao' => 1,
+            'solicitar_observacao' => (int) $produto->solicita_observacao ?? 0,
             'ean' => $produto->codigo_barras ?? '',
-            'multiplicador' => 1,
-            'qtde_minima' => 1,
+            'multiplicador' => (int) $produto->conecta_venda_multiplicador ?? 1,
+            'qtde_minima' => (int) $produto->conecta_venda_qtd_minima ?? 1,
             'data_publicacao' => $produto->created_at->format('Y-m-d H:i:s'),
             'ativo' => 1,
             'fotos' => [
                 $produto->img_app
 //                $this->getBase64Image($produto->imagem) ?? []
             ],
-            'variacoes' => []
+
         ];
-
-        foreach ($produto->variacoes as $i => $v) {
-            $variacao = [
-                "id" => (string) $v->id,
-                "descricao" => $v->descricao,
-                "ordem" => $i + 1,
-                "ativo" => 1,
-                "precos" => [
-                    [
-                        "tabela" => "Padrão",
-                        "valor" => (float) $v->valor
+        if($produto->variacoes->isNotEmpty()){
+            $variacoes = [];
+            foreach ($produto->variacoes as $i => $v) {
+                $variacao = [
+                    "id" => (string) $v->id,
+                    "descricao" => $v->descricao,
+                    "ordem" => $i + 1,
+                    "ativo" => 1,
+                    "precos" => [
+                        [
+                            "tabela" => "Padrão",
+                            "valor" => (float) $v->valor
+                        ]
                     ]
-                ]
-            ];
+                ];
 
-            $quantidade = (int) ($v->estoque()->sum('quantidade'));
+                $quantidade = (int) ($v->estoque()->sum('quantidade'));
 
-            if ($quantidade > 0) {
-                $variacao["estoque"] = $quantidade;
+                if ($quantidade > 0) {
+                    $variacao["estoque"] = $quantidade;
+                }
+
+                $produtoConecta["variacoes"][] = $variacao;
             }
-
-            $produtoConecta["variacoes"][] = $variacao;
         }
+
 
         $payload = [
             'chave' => $config->client_secret,
@@ -94,10 +97,10 @@ class ConectaVendaUtil
             'descricao' => $produto->observacao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) $produto->peso ?? 0,
-            'solicitar_observacao' => 1,
+            'solicitar_observacao' => (int) $produto->solicita_observacao ?? 0,
             'ean' => $produto->codigo_barras ?? '',
-            'multiplicador' => 1,
-            'qtde_minima' => 1,
+            'multiplicador' => (int) $produto->conecta_venda_multiplicador ?? 1,
+            'qtde_minima' => (int) $produto->conecta_venda_qtd_minima ?? 1,
             'data_publicacao' => $produto->created_at->format('Y-m-d H:i:s'),
             'ativo' => 1,
             'fotos' => [

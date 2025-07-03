@@ -975,6 +975,29 @@
                                     </div>
                                 </h4>
                             </div>
+
+                            <div class="card-body div-conectavenda d-none m-card" style="margin-top: -40px">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {!!Form::select('solicita_observacao', 'Pode Inserir Observação',['0' => 'Não', '1' => 'Sim'])
+                                        ->attrs(['class' => 'select2'])
+                                        !!}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        {!!Form::tel('conecta_venda_multiplicador', 'Multiplicador')
+                                        ->attrs(['class' => 'multiplicador inp-coenctavenda'])
+                                        !!}
+                                    </div>
+                                    <div class="col-md-2">
+                                        {!!Form::tel('conecta_venda_qtd_minima', 'Quantidade Mínima de compra')
+                                        ->attrs(['class' => 'qtdMinima inp-coenctavenda'])
+                                        !!}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

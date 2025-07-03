@@ -501,6 +501,9 @@ class ProdutoController extends Controller
                 }
 
                 if($request->conectavenda){
+                    $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+                    $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+                    $produto->solicita_observacao = $request->solicita_observacao;
                     $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
                     if(!$emp){
                         session()->flash('flash_error', 'Conecta Venda não configurado!');
@@ -846,6 +849,9 @@ public function update(Request $request, $id)
 
             if(!$item->conceta_venda_id){
                 try {
+                    $item->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+                    $item->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+                    $item->solicita_observacao = $request->solicita_observacao;
                     $retornoConecta = $this->utilConectaVenda->create($emp, $item);
                     if (isset($retornoConecta['produtos_ids'])) {
                         $item->conecta_venda_id = $retornoConecta['produtos_ids'][0]['id'];
@@ -863,6 +869,9 @@ public function update(Request $request, $id)
                 }
             } else{
                 try {
+                    $item->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+                    $item->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+                    $item->solicita_observacao = $request->solicita_observacao;
                     $retornoConecta = $this->utilConectaVenda->update($emp, $item);
                     if (isset($retornoConecta['produtos_ids'])) {
                         $item->conecta_venda_id = $retornoConecta['produtos_ids'][0]['id'];
