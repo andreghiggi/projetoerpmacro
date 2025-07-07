@@ -375,8 +375,8 @@
                                                 </thead>
                                                 <tbody>
                                                     @isset($item)
-                                                    @foreach($item->variacoes as $v)
-                                                    <tr class="dynamic-form">
+                                                        @foreach($item->variacoes as $v)
+                                                            <tr class="dynamic-form">
                                                         <input type="hidden" name="variacao_id[]]]" value="{{ $v->id }}">
                                                         <td>
                                                             <input type="text" class="form-control" name="descricao_variacao[]" value="{{ $v->descricao }}" required readonly>

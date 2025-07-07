@@ -67,7 +67,6 @@
                                 </thead>
                                 <tbody>
                                 @forelse($data as $item)
-{{--                                    @dd($item)--}}
                                     <tr>
                                         <td>
                                             <div class="form-check form-checkbox-danger mb-2">

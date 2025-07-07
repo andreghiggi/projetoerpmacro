@@ -26,7 +26,7 @@ class ConectaVendaUtil
             'id' => (string) $produto->id,
             'referencia' => (string) $produto->referencia ?? $produto->id,
             'nome' => $produto->nome,
-            'descricao' => $produto->observacao ?? 'Descrição do Produto',
+            'descricao' => $produto->observacao ?? '',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) $produto->peso ?? 0,
             'solicitar_observacao' => (int) $produto->solicita_observacao ?? 0,
@@ -44,6 +44,7 @@ class ConectaVendaUtil
         if($produto->variacoes->isNotEmpty()){
             $variacoes = [];
             foreach ($produto->variacoes as $i => $v) {
+
                 $variacao = [
                     "id" => (string) $v->id,
                     "descricao" => $v->descricao,
@@ -64,6 +65,10 @@ class ConectaVendaUtil
                 }
 
                 $produtoConecta["variacoes"][] = $variacao;
+
+                if(!empty($v->imagem)){
+                    $produtoConecta["fotos"][] = $v->img_app;
+                }
             }
         }
 
@@ -72,7 +77,6 @@ class ConectaVendaUtil
             'chave' => $config->client_secret,
             'dados' => [$produtoConecta]
         ];
-
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
         if (!$response->successful()) {
@@ -131,6 +135,11 @@ class ConectaVendaUtil
             }
 
             $produtoConecta["variacoes"][] = $variacao;
+
+            if(!empty($v->imagem)){
+                $produtoConecta["fotos"][] = $v->img_app;
+            }
+
         }
 
         $payload = [
