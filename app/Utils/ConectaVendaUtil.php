@@ -41,6 +41,11 @@ class ConectaVendaUtil
             ],
 
         ];
+
+         if($produto->subcategoria){
+             $produtoConecta['grupo'] = $produtoConecta['grupo'].' - '.$produto->subcategoria->nome;
+         }
+
         if($produto->variacoes->isNotEmpty()){
             $variacoes = [];
             foreach ($produto->variacoes as $i => $v) {
@@ -70,6 +75,23 @@ class ConectaVendaUtil
                     $produtoConecta["fotos"][] = $v->img_app;
                 }
             }
+        }else {
+            $variacao = [
+                "id" =>  "1",
+                "descricao" => '',
+                "ordem" => 1,
+                "ativo" => 1,
+                "precos" => [
+                    [
+                        "tabela" => "Padrão",
+                        "valor" => (float) $produto->valor_unitario,
+                        "moeda" => "R$"
+                    ]
+                ]
+            ];
+
+            $produtoConecta["variacoes"][] = $variacao;
+
         }
 
 
@@ -77,6 +99,7 @@ class ConectaVendaUtil
             'chave' => $config->client_secret,
             'dados' => [$produtoConecta]
         ];
+
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
         if (!$response->successful()) {
@@ -114,31 +137,55 @@ class ConectaVendaUtil
             'variacoes' => []
         ];
 
-        foreach ($produto->variacoes as $i => $v) {
+        if($produto->subcategoria){
+            $produtoConecta['grupo'] = $produtoConecta['grupo'].' - '.$produto->subcategoria->nome;
+        }
+
+        if($produto->variacoes->isNotEmpty()){
+            $variacoes = [];
+            foreach ($produto->variacoes as $i => $v) {
+
+                $variacao = [
+                    "id" => (string) $v->id,
+                    "descricao" => $v->descricao,
+                    "ordem" => $i + 1,
+                    "ativo" => 1,
+                    "precos" => [
+                        [
+                            "tabela" => "Padrão",
+                            "valor" => (float) $v->valor
+                        ]
+                    ]
+                ];
+
+                $quantidade = (int) ($v->estoque()->sum('quantidade'));
+
+                if ($quantidade > 0) {
+                    $variacao["estoque"] = $quantidade;
+                }
+
+                $produtoConecta["variacoes"][] = $variacao;
+
+                if(!empty($v->imagem)){
+                    $produtoConecta["fotos"][] = $v->img_app;
+                }
+            }
+        }else {
             $variacao = [
-                "id" => (string) $v->id,
-                "descricao" => $v->descricao,
-                "ordem" => $i + 1,
+                "id" =>  "1",
+                "descricao" => '',
+                "ordem" => 1,
                 "ativo" => 1,
                 "precos" => [
                     [
                         "tabela" => "Padrão",
-                        "valor" => (float) $v->valor
+                        "valor" => (float) $produto->valor_unitario,
+                        "moeda" => "R$"
                     ]
                 ]
             ];
 
-            $quantidade = (int) ($v->estoque()->sum('quantidade'));
-
-            if ($quantidade > 0) {
-                $variacao["estoque"] = $quantidade;
-            }
-
             $produtoConecta["variacoes"][] = $variacao;
-
-            if(!empty($v->imagem)){
-                $produtoConecta["fotos"][] = $v->img_app;
-            }
 
         }
 
