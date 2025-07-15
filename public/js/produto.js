@@ -600,3 +600,31 @@ $('.btn-add-tr-variacao').on("click", function () {
     }, 100);
 
 })
+document.addEventListener('DOMContentLoaded', function () {
+    const pesoInputs = document.querySelectorAll('.peso');
+
+    pesoInputs.forEach(input => {
+        input.addEventListener('input', function () {
+            let raw = this.value.replace(/\D/g, ''); // remove tudo que não for dígito
+
+            // limita a 6 dígitos (ex: 999999 => 999.999 kg)
+            if (raw.length > 6) raw = raw.slice(0, 6);
+
+            // se estiver vazio, assume 0
+            let valor = (parseInt(raw || 0) / 1000).toFixed(3);
+
+            this.value = valor;
+        });
+
+        input.addEventListener('focus', function () {
+            // remove qualquer texto não numérico ao focar
+            this.value = this.value.replace(/[^\d]/g, '');
+        });
+
+        input.addEventListener('blur', function () {
+            let raw = this.value.replace(/\D/g, '');
+            let valor = (parseInt(raw || 0) / 1000).toFixed(3);
+            this.value = valor;
+        });
+    });
+});
