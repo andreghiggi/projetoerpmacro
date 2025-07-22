@@ -122,6 +122,7 @@
 
                 <div class="col-md-2">
                     {!!Form::tel('referencia', 'Referência')
+                      ->required()
                     !!}
                 </div>
 
@@ -392,7 +393,7 @@
                                                             <input type="text" class="form-control ignore" name="referencia_variacao[]" value="{{ $v->referencia }}">
                                                         </td>
                                                         <td>
-                                                            <input readonly type="text" class="form-control ignore" name="estoque_variacao[]" value="">
+                                                            <input type="number" class="form-control ignore" name="estoque_variacao[]" value="">
                                                         </td>
                                                         <td>
                                                             <input class="ignore" accept="image/*" type="file" class="form-control" name="imagem_variacao[]" value="">

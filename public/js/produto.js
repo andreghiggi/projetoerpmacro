@@ -598,7 +598,6 @@ $('.btn-add-tr-variacao').on("click", function () {
             theme: "bootstrap4"
         });
     }, 100);
-
 })
 document.addEventListener('DOMContentLoaded', function () {
     const pesoInputs = document.querySelectorAll('.peso');

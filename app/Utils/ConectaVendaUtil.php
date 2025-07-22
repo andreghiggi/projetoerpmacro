@@ -64,7 +64,6 @@ class ConectaVendaUtil
                 ];
 
                 $quantidade = (int) ($v->estoque()->sum('quantidade'));
-
                 if ($quantidade > 0) {
                     $variacao["estoque"] = $quantidade;
                 }
@@ -99,7 +98,6 @@ class ConectaVendaUtil
             'chave' => $config->client_secret,
             'dados' => [$produtoConecta]
         ];
-
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
         if (!$response->successful()) {
@@ -193,7 +191,6 @@ class ConectaVendaUtil
             'chave' => $config->client_secret,
             'dados' => [$produtoConecta]
         ];
-
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
         if (!$response->successful()) {
