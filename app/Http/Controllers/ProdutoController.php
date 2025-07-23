@@ -501,6 +501,7 @@ class ProdutoController extends Controller
                 }
 
                 if($request->conectavenda){
+//                    dd($produto->estoque);
                     $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
                     $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
                     $produto->solicita_observacao = $request->solicita_observacao;
@@ -1026,6 +1027,7 @@ private function __validate(Request $request)
             // 'codigo_barras' => 'required',
             // 'ncm' => 'required',
         'descricao' => 'max:255',
+        'referencia' => 'max:50|required',
         'descricao_en' => 'max:255',
         'descricao_es' => 'max:255',
         'unidade' => 'required',
@@ -1052,6 +1054,8 @@ private function __validate(Request $request)
         'cst_pis.required' => 'Campo Obrigatório',
         'cst_cofins.required' => 'Campo Obrigatório',
         'cst_ipi.required' => 'Campo Obrigatório',
+        'referencia.required' => 'Campo Obrigatório',
+        'referencia.max' => 'Máximo de 50 caracteres',
         'valor_unitario.required' => 'Campo Obrigatório',
         'nome.max' => 'Máximo de 64 caracteres',
         'descricao.max' => 'Máximo de 255 caracteres',

@@ -89,6 +89,11 @@ class ConectaVendaUtil
                 ]
             ];
 
+            $quantidade = (int) $produto->estoque->quantidade;
+            if ($quantidade > 0) {
+                $variacao["estoque"] = $quantidade;
+            }
+
             $produtoConecta["variacoes"][] = $variacao;
 
         }
@@ -182,6 +187,11 @@ class ConectaVendaUtil
                     ]
                 ]
             ];
+
+            $quantidade = (int) $produto->estoque->quantidade;
+            if ($quantidade > 0) {
+                $variacao["estoque"] = $quantidade;
+            }
 
             $produtoConecta["variacoes"][] = $variacao;
 

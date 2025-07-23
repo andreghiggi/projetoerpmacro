@@ -136,7 +136,7 @@
                 @if(!isset($item))
                 <div class="col-md-2">
                     {!!Form::tel('estoque_inicial', 'Estoque inicial')
-                    ->attrs(['class' => 'quantidade'])
+                    ->attrs(['data-mask' => '000000000'])
                     !!}
                 </div>
                 @endif
