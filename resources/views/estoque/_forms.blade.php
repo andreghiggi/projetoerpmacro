@@ -52,14 +52,51 @@
         </div>
     </div>
     @else
-    <div class="col-md-2">
-        {!!Form::text('quantidade', 'Quantidade')
-        ->attrs(['class' => 'quantidade'])
-        ->attrs((isset($item) && (!$item->produto->unidadeDecimal())) ? ['data-mask' => '000000'] : ['class' => 'quantidade'])
-        ->required()
-        ->value(isset($item) ? ((!$item->produto->unidadeDecimal()) ? number_format($item->quantidade, 0) : number_format($item->quantidade, 3, '.', '')) : '')
-        !!}
-    </div>
+{{--    <div class="col-md-2">--}}
+{{--        {!!Form::text('quantidade', 'Quantidade')--}}
+{{--        ->attrs(['class' => 'quantidade'])--}}
+{{--        ->attrs((isset($item) && (!$item->produto->unidadeDecimal())) ? ['data-mask' => '000000'] : ['class' => 'quantidade'])--}}
+{{--        ->required()--}}
+{{--        ->value(isset($item) ? ((!$item->produto->unidadeDecimal()) ? number_format($item->quantidade, 0) : number_format($item->quantidade, 3, '.', '')) : '')--}}
+{{--        !!}--}}
+{{--    </div>--}}
+
+        @if($item->produto->variacoes && $item->produto->variacoes->count() > 0)
+            <div class="col-md-12">
+                <label for="">Variações</label>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($item->produto->variacoes as $variacao)
+{{--                            {{dd($item)}}--}}
+                            <tr>
+                                <td>{{ $variacao->descricao }}</td>
+                                <td>
+                                    <input type="hidden" name="variacao_id[]" value="{{ $variacao->id }}">
+                                    <input class="form-control quantidade" name="quantidade_variacao[]" value="{{ number_format($variacao->estoque()->sum('quantidade'), 0, '', '') }}">
+
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @else
+            <div class="col-md-2">
+                {!!Form::text('quantidade', 'Quantidade')
+                ->attrs(['class' => 'quantidade'])
+                ->required()
+                ->value(isset($item) ? ((!$item->produto->unidadeDecimal()) ? number_format($item->quantidade, 0) : number_format($item->quantidade, 3, '.', '')) : '')
+                !!}
+            </div>
+        @endif
 
     @if(__countLocalAtivo() > 1)
 
@@ -94,8 +131,8 @@
         $('#produto_variacao_id').val('')
 
         let product_id = $(this).val()
-        $.get(path_url + "api/produtos/find", 
-        { 
+        $.get(path_url + "api/produtos/find",
+        {
             produto_id: product_id,
             usuario_id: $('#usuario_id').val()
         })

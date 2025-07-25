@@ -393,7 +393,7 @@
                                                             <input type="text" class="form-control ignore" name="referencia_variacao[]" value="{{ $v->referencia }}">
                                                         </td>
                                                         <td>
-                                                            <input type="number" class="form-control ignore" name="estoque_variacao[]" value="">
+                                                            <input type="number" class="form-control ignore" readonly name="estoque_variacao[]" value="{{ $v->estoque_total ?? 0 }}">
                                                         </td>
                                                         <td>
                                                             <input class="ignore" accept="image/*" type="file" class="form-control" name="imagem_variacao[]" value="">

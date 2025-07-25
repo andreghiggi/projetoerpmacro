@@ -241,7 +241,14 @@ class ProdutoController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $item = Produto::findOrFail($id);
+        $item = Produto::with('variacoes')->findOrFail($id);
+        $variacoesIds = $item->variacoes->pluck('id')->toArray();
+        $estoques = Estoque::whereIn('produto_variacao_id', $variacoesIds)->get()->groupBy('produto_variacao_id');
+        foreach ($item->variacoes as $variacao) {
+            $estoqueVariacao = $estoques[$variacao->id] ?? collect();
+            $variacao->estoque_total = $estoqueVariacao->sum('quantidade');
+        }
+
         __validaObjetoEmpresa($item);
         $empresa = Empresa::findOrFail(request()->empresa_id);
 
