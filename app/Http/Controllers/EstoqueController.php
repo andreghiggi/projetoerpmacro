@@ -234,7 +234,10 @@ class EstoqueController extends Controller
                 session()->flash("flash_success", "Estoque alterado com sucesso!");
                 return redirect()->route('estoque.index');
             }else
-                $ids = $request->variacao_id;
+                $estoqueAnterior = Estoque::findOrFail($id);
+                $produto_id = $estoqueAnterior->produto_id;
+
+            $ids = $request->variacao_id;
                 $quantidades = $request->quantidade_variacao;
 
             for ($i = 0; $i < count($ids); $i++) {
@@ -243,8 +246,14 @@ class EstoqueController extends Controller
 
                 $item = Estoque::where('produto_variacao_id', $produto_variacao_id)->first();
 
-                if (!$item) {
-                    continue;
+                if(!$item){
+                    $item = new Estoque();
+                    $item->produto_id = $produto_id;
+                    $item->produto_variacao_id = $produto_variacao_id;
+                    $item->local_id = $request->local_id[0] ?? 2;
+                    $item->quantidade = 0;
+                    $item->save();
+                    $item->loadMissing('produto');
                 }
 
                 $diferenca = 0;
@@ -259,7 +268,6 @@ class EstoqueController extends Controller
 
                 $item->quantidade = $quantidade;
                 $item->save();
-
                 $codigo_transacao = $item->id;
                 $tipo_transacao = 'alteracao_estoque';
 

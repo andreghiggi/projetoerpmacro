@@ -89,8 +89,9 @@ class ConectaVendaUtil
                 ]
             ];
 
-            $quantidade = (int) $produto->estoque->quantidade;
-            if ($quantidade > 0) {
+            if (!$produto->estoque == null) {
+
+                $quantidade = (int) $produto->estoque->quantidade;
                 $variacao["estoque"] = $quantidade;
             }
 
@@ -161,9 +162,8 @@ class ConectaVendaUtil
                     ]
                 ];
 
-                $quantidade = (int) ($v->estoque()->sum('quantidade'));
-
-                if ($quantidade > 0) {
+                if (!$v->estoque == null) {
+                    $quantidade = (int) ($v->estoque()->sum('quantidade'));
                     $variacao["estoque"] = $quantidade;
                 }
 
@@ -187,7 +187,6 @@ class ConectaVendaUtil
                     ]
                 ]
             ];
-
             $quantidade = (int) $produto->estoque->quantidade;
             if ($quantidade > 0) {
                 $variacao["estoque"] = $quantidade;

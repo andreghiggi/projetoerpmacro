@@ -61,7 +61,7 @@
 {{--        !!}--}}
 {{--    </div>--}}
 
-        @if($item->produto->variacoes && $item->produto->variacoes->count() > 0)
+        @if(isset($item) && $item->produto->variacoes && $item->produto->variacoes->count() > 0)
             <div class="col-md-12">
                 <label for="">Variações</label>
                 <div class="table-responsive">

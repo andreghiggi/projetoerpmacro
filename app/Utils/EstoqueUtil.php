@@ -145,7 +145,6 @@ class EstoqueUtil
     public function movimentacaoProduto($produto_id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, $user_id,
         $produto_variacao_id = null){
         $estoque = Estoque::where('produto_id', $produto_id)->first();
-
         MovimentacaoProduto::create([
             'produto_id' => $produto_id,
             'quantidade' => $quantidade,
