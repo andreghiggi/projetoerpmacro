@@ -103,7 +103,6 @@ class ConectaVendaUtil
             'chave' => $config->client_secret,
             'dados' => [$produtoConecta]
         ];
-        dd($payload);
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
         if (!$response->successful()) {
@@ -128,10 +127,10 @@ class ConectaVendaUtil
             'descricao' => $produto->observacao ?? 'Descrição do Produto',
             'grupo' => $produto->categoria->nome ?? 'Grupo de produtos',
             'peso' => (float) $produto->peso * 1000 ?? 0,
-            'solicitar_observacao' => (int) $produto->solicita_observacao ?? 0,
+            'solicitar_observacao' => (int) ($produto->solicita_observacao ?? 0),
             'ean' => $produto->codigo_barras ?? '',
-            'multiplicador' => (int) $produto->conecta_venda_multiplicador ?? 1,
-            'qtde_minima' => (int) $produto->conecta_venda_qtd_minima ?? 1,
+            'multiplicador' => (int) ($produto->conecta_venda_multiplicador ?? 1),
+            'qtde_minima' => (int) ($produto->conecta_venda_qtd_minima ?? 1),
             'data_publicacao' => $produto->created_at->format('Y-m-d H:i:s'),
             'ativo' => 1,
             'fotos' => [
