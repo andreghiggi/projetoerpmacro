@@ -39,17 +39,14 @@ class ConectaVendaPedidoController extends Controller
                 return $query->where('id', 'LIKE', "%$id_publico%");
             })
             ->paginate(30);
-
         return view('conecta_venda_pedidos.index', compact('data'));
     }
 
     public function show($id)
     {
+        $pedido = ConectaVendaPedido::with('produtos.variacoes')->findOrFail($id);
 
-        $produtos = Produto::whereNotNull('conecta_venda_id')
-            ->pluck('nome', 'id');
-        $pedido = ConectaVendaPedido::findOrFail($id);
-        return view('conecta_venda_pedidos.show', compact('pedido', 'produtos'));
+        return view('conecta_venda_pedidos.show', compact('pedido'));
     }
 
     public function finishOrder($id, Request $request)

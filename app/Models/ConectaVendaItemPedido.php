@@ -14,6 +14,12 @@ class ConectaVendaItemPedido extends Model
         'valor_unitario', 'observacao', 'sub_total'
     ];
 
+
+    public function variacoes()
+    {
+        return $this->belongsTo(ProdutoVariacao::class, 'variacao_id');
+    }
+
     public function produto(){
         return $this->belongsTo(Produto::class, 'produto_id', 'conecta_venda_id');
     }

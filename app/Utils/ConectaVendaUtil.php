@@ -277,10 +277,10 @@ class ConectaVendaUtil
         return ConectaVendaItemPedido::updateOrCreate(
             [
                 'pedido_id' => $pedidoId,
+                'produto_id'  => $item->produto_id,
+                'variacao_id' => $item->variacao_id,
             ],
             [
-                'produto_id'      => $item->produto_id,
-                'variacao_id'     => $item->variacao_id,
                 'nome'            => $item->produto_nome,
                 'referencia'      => $item->referencia,
                 'descricao'       => $item->descricao,

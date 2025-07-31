@@ -15,58 +15,100 @@
                 <div class="card">
                     <div class="card-body">
 
-                        <div class="col-12 mb-3">
+                        <div class="col-12 mb-4">
                             <h3>Pedido #{{ $pedido->id }}</h3>
                             <a href="{{ route('conecta-venda-pedidos.index') }}" class="btn btn-sm btn-danger float-end">
                                 <i class="ri-arrow-left-double-fill"></i> Voltar
                             </a>
                         </div>
-
-                        {{-- Dados do Comprador --}}
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Nome do Comprador</label>
-                                <div class="form-control-plaintext">{{ $pedido->comprador ?? '--' }}</div>
+                        {{-- Dados do Cliente --}}
+                        <h5 class="col my-3 bold">
+                            Dados Do Cliente
+                        </h5>
+                        <div class="col-12 mb-6">
+                            <div class="row mb-6">
+                                <div class="col-sm-lg-2">
+                                    <label class="form-label fw-bold">Cliente</label>
+                                    <div class="form-control-plaintext">{{ $pedido->comprador ?? '--' }}</div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <label class="form-label fw-bold">Telefone</label>
+                                    <div class="form-control-plaintext">{{ $pedido->telefone ?? '--' }}</div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <div class="form-control-plaintext">{{ $pedido->email ?? '--' }}</div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <label class="form-label fw-bold">CPF/CNPJ</label>
+                                    <div class="form-control-plaintext">{{ $pedido->cpf ?? $pedido->cnpj ?? '--' }}</div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Email</label>
-                                <div class="form-control-plaintext">{{ $pedido->email ?? '--' }}</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Telefone</label>
-                                <div class="form-control-plaintext">{{ $pedido->telefone ?? '--' }}</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">CPF/CNPJ</label>
-                                @if($pedido->cpf)
-                                    <div class="form-control-plaintext">{{ $pedido->cpf ?? '--' }}</div>
-                                @endif
-                                @if($pedido->cnpj)
-                                    <div class="form-control-plaintext">{{ $pedido->cnpj ?? '--' }}</div>
-                                @endif
+                        </div>
+                        <div class="col-12 mb-6">
+                            <h5 class="col my-3 bold">
+                                Endereco
+                            </h5>
+                            <div class="row mb-6">
+                                <div class="col-sm-3">
+                                    <label class="form-label fw-bold">Cidade</label>
+                                    <div class="form-control-plaintext">{{ $pedido->cidade ?? '--' }} / {{ $pedido->uf ?? '--' }}</div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <label class="form-label fw-bold">Bairro</label>
+                                    <div class="form-control-plaintext">{{ $pedido->bairro ?? '--' }}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Endereço</label>
+                                    <div class="form-control-plaintext">{{ $pedido->endereco ?? '--' }}</div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold">CEP</label>
+                                    <div class="form-control-plaintext">{{ $pedido->cep ?? '--' }}</div>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Tabela de itens do pedido --}}
+                        <h5 class="col my-3 bold">
+                            Catalogo
+                        </h5>
+                        <div class="col-12 mt-4">
+                            <div class="row mb-lg-2">
+                                <div class="col-sm-4">
+                                    <label class="form-label fw-bold">Catálogo</label>
+                                    <div class="form-control-plaintext">{{ $pedido->catalogo ?? '--' }}</div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="form-label fw-bold">Vendedor</label>
+                                    <div class="form-control-plaintext">{{ $pedido->vendedor ?? '--' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="col my-3 bold">
+                            Produtos
+                        </h5>
                         <div class="table-responsive col-12" style="min-height: 300px;">
                             <table class="table">
                                 <thead>
                                 <tr>
                                     <th>Produto</th>
-                                    <th>Referencia</th>
+                                    <th>Variação</th>
+                                    <th>Referência</th>
                                     <th>Qtd</th>
                                     <th>Valor unitário</th>
                                     <th>Subtotal</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach($pedido->itens as $item)
+                                @foreach($pedido->produtos as $produto)
                                     <tr>
-                                        <td>{{ $item->nome ?? 'Produto não encontrado' }}</td>
-                                        <td>{{ $item->referencia ?? '--' }}</td>
-                                        <td>{{ $item->quantidade }}</td>
-                                        <td>{{ __moeda($item->valor_unitario) }}</td>
-                                        <td>{{ __moeda($item->sub_total) }}</td>
+                                        <td>{{ $produto->nome ?? 'Produto não encontrado' }}</td>
+                                        <td>{{ $produto->variacoes->descricao ?? '--' }}</td>
+                                        <td>{{ $produto->referencia ?? '--' }}</td>
+                                        <td>{{ $produto->quantidade }}</td>
+                                        <td>{{ __moeda($produto->valor_unitario) }}</td>
+                                        <td>{{ __moeda($produto->sub_total) }}</td>
                                     </tr>
                                 @endforeach
                                 </tbody>

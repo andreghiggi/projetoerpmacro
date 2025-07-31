@@ -59,7 +59,6 @@ class SyncOrdersConectaVendaCron extends Command
 
             if($response->status() == 200){
                 $orders = json_decode($response);
-
                 foreach($orders->dados as $order){
                     $pedido = $this->util->createOrder($order, $config);
 

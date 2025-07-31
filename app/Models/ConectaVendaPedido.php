@@ -25,7 +25,7 @@ class ConectaVendaPedido extends Model
 
     public function produtos()
     {
-        return $this->hasMany(ConectaVendaPedidoProduto::class, 'pedido_id', 'id');
+        return $this->hasMany(ConectaVendaItemPedido::class, 'pedido_id', 'id');
     }
 
     public function itens(){
