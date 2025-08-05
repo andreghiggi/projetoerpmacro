@@ -31,11 +31,11 @@
                                     <label class="form-label fw-bold">Cliente</label>
                                     <div class="form-control-plaintext">{{ $pedido->comprador ?? '--' }}</div>
                                 </div>
-                                <div class="col-sm-5">
+                                <div class="col-sm-4">
                                     <label class="form-label fw-bold">Telefone</label>
                                     <div class="form-control-plaintext">{{ $pedido->telefone ?? '--' }}</div>
                                 </div>
-                                <div class="col-sm-5">
+                                <div class="col-sm-4">
                                     <label class="form-label fw-bold">Email</label>
                                     <div class="form-control-plaintext">{{ $pedido->email ?? '--' }}</div>
                                 </div>
@@ -54,7 +54,7 @@
                                     <label class="form-label fw-bold">Cidade</label>
                                     <div class="form-control-plaintext">{{ $pedido->cidade ?? '--' }} / {{ $pedido->uf ?? '--' }}</div>
                                 </div>
-                                <div class="col-sm-5">
+                                <div class="col-sm-2">
                                     <label class="form-label fw-bold">Bairro</label>
                                     <div class="form-control-plaintext">{{ $pedido->bairro ?? '--' }}</div>
                                 </div>
@@ -86,6 +86,28 @@
                         </div>
 
                         <h5 class="col my-3 bold">
+                            Cupom
+                        </h5>
+                        <div class="col-12 mt-4">
+                            <div class="row mb-lg-2">
+                                <div class="col-sm-4">
+                                    <label class="form-label fw-bold">Desconto</label>
+                                    <div class="form-control-plaintext">{{ $pedido->desconto ?? '' }}</div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="form-label fw-bold">Valor Desconto</label>
+                                    <div class="form-control-plaintext">R$ {{ $pedido->valor_desconto ?? '0.0' }}</div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="form-label fw-bold">Total Pedido</label>
+                                    <div class="form-control-plaintext">R$ {{ $pedido->valor_pagamento ?? '' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <h5 class="col my-3 bold">
                             Produtos
                         </h5>
                         <div class="table-responsive col-12" style="min-height: 300px;">
@@ -96,6 +118,7 @@
                                     <th>Variação</th>
                                     <th>Referência</th>
                                     <th>Qtd</th>
+                                    <th>Observação</th>
                                     <th>Valor unitário</th>
                                     <th>Subtotal</th>
                                 </tr>
@@ -107,6 +130,7 @@
                                         <td>{{ $produto->variacoes->descricao ?? '--' }}</td>
                                         <td>{{ $produto->referencia ?? '--' }}</td>
                                         <td>{{ $produto->quantidade }}</td>
+                                        <td>{{ $produto->observacao ?? '--' }}</td>
                                         <td>{{ __moeda($produto->valor_unitario) }}</td>
                                         <td>{{ __moeda($produto->sub_total) }}</td>
                                     </tr>
