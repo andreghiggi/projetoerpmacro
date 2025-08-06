@@ -17,7 +17,7 @@ class ConectaVendaPedido extends Model
     protected $fillable = [
         'empresa_id', 'id', 'situacao', 'comprador', 'vendedor', 'vendedor_id','nfe_id', 'catalogo', 'tabela', 'email', 'telefone', 'observacao',
         'razao_social', 'inscricao_estadual', 'cpf', 'cnpj', 'cep', 'estado', 'cidade', 'endereco', 'numero', 'complemento',
-        'bairro', 'data_criacao', 'indice_catalogo', 'valor_pedido', 'valor_frete', 'frete_tipo', 'desconto', 'valor_desconto',
+        'bairro', 'data_criacao', 'indice_catalogo', 'valor_pedido', 'valor_frete', 'frete_tipo', 'cupom', 'desconto', 'valor_desconto',
         'valor_pagamento', 'pagamento_intermediador', 'pagamento_tipo', 'parcelas', 'data_atualizacao_status','cliente_id'
     ];
 
