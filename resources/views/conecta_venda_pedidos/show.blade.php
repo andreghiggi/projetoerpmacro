@@ -121,7 +121,7 @@
                                     <div class="form-control-plaintext">R$ {{ $pedido->valor_desconto ?? '0.0' }}</div>
                                 </div>
                                 <div class="col-sm-3">
-                                    <label class="form-label fw-bold">Total Sem Desconto</label>
+                                    <label class="form-label fw-bold">Total Pedido</label>
                                     <div class="form-control-plaintext">R$ {{ $pedido->valor_pedido }}</div>
                                 </div>
                                 <div class="col-sm-4">
