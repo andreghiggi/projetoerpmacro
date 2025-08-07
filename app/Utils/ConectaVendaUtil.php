@@ -260,6 +260,7 @@ class ConectaVendaUtil
                 'valor_pedido' => $dadosPedido->valor_pedido ?? 0,
                 'valor_frete' => $dadosPedido->valor_frete ?? 0,
                 'frete_tipo' => $dadosPedido->frete_tipo ?? null,
+                'cupom' => $dadosPedido->cupom ?? null,
                 'desconto' => $dadosPedido->desconto ?? 0,
                 'valor_desconto' => $dadosPedido->valor_desconto ?? 0,
                 'valor_pagamento' => $dadosPedido->valor_pagamento ?? 0,

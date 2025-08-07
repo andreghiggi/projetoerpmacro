@@ -103,9 +103,15 @@
                             Pagamento
                         </h5>
                         <div class="col-12 mt-4">
-                            <div class="col-sm-3">
-                                <label class="form-label fw-bold">Intermediador</label>
-                                <div class="form-control-plaintext">{{ $pedido->pagamento_intermediador ?? '--' }}</div>
+                            <div class="row mb-lg-2">
+                                <div class="col-sm-3">
+                                    <label class="form-label fw-bold">Intermediador</label>
+                                    <div class="form-control-plaintext">{{ $pedido->pagamento_intermediador ?? '--' }}</div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <label class="form-label fw-bold">Tipo de pagamento</label>
+                                    <div class="form-control-plaintext">{{ $pedido->pagamento_tipo ?? '--' }}</div>
+                                </div>
                             </div>
                             <div class="row mb-lg-2">
                                 <div class="col-sm-3">
