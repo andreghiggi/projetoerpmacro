@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProdutoVariacao;
+use App\Models\VariacaoModelo;
 use Illuminate\Http\Request;
 use App\Models\Estoque;
 use App\Utils\EstoqueUtil;
@@ -50,9 +52,12 @@ class EstoqueController extends Controller
         return view('estoque.index', compact('data'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('estoque.create');
+        $variacoes = VariacaoModelo::where('empresa_id', $request->empresa_id)
+            ->where('status', 1)->get();
+
+        return view('estoque.create', compact('variacoes'));
     }
 
     public function edit(Request $request, $id)
@@ -94,9 +99,37 @@ class EstoqueController extends Controller
                     'localizacao_id' => $request->local_id
                 ]);
             }
+            $locais = isset($request->locais) ? $request->locais : [];
+            if($request->variavel){
+                for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
+                    $file_name = '';
+                    if(isset($request->imagem_variacao[$i])){
+                        // requisição com imagem
+                        $imagem = $request->imagem_variacao[$i];
+                        $file_name = $this->util->uploadImageArray($imagem, '/produtos');
+                    }
 
-            $this->util->incrementaEstoque($request->produto_id, $request->quantidade, $request->produto_variacao_id, $request->local_id);
+                    $dataVariacao = [
+                        'produto_id' => $request->produto_id,
+                        'descricao' => $request->descricao_variacao[$i],
+                        'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
+                        'codigo_barras' => $request->codigo_barras_variacao[$i],
+                        'referencia' => $request->referencia_variacao[$i],
+                        'imagem' => $file_name
+                    ];
+                    $variacao = ProdutoVariacao::create($dataVariacao);
 
+                    if($request->estoque_variacao[$i] && sizeof($locais) <= 1){
+                        $qtd = __convert_value_bd($request->estoque_variacao[$i]);
+                        $this->util->incrementaEstoque($request->produto_id, $qtd, $variacao->id);
+                        $transacao = Estoque::where('produto_id', $request->produto_id)->first();
+                        $tipo = 'incremento';
+                        $codigo_transacao = $transacao->id;
+                        $tipo_transacao = 'alteracao_estoque';
+                        $this->util->movimentacaoProduto($request->produto_id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
+                    }
+                }
+            }
             $transacao = Estoque::where('produto_id', $request->produto_id)->first();
             $tipo = 'incremento';
             $codigo_transacao = $transacao->id;

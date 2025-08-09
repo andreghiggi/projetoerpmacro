@@ -96,6 +96,100 @@
                 ->value(isset($item) ? ((!$item->produto->unidadeDecimal()) ? number_format($item->quantidade, 0) : number_format($item->quantidade, 3, '.', '')) : '')
                 !!}
             </div>
+            <div class="col-md-2">
+                {!!Form::select('variavel', 'Com variações', ['0' => 'Não', '1' => 'Sim'])->attrs(['class' => 'form-select'])
+                ->value((isset($item) && $item->variacao_modelo_id != null) ? 1 : 0)
+                !!}
+            </div>
+            <div class="row g-2 m-2">
+                <div class="col-12 div-variavel d-none">
+                    <div class="table-responsive">
+                        <table class="table table-dynamic">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>Variação</th>
+                                <th>Valores da variação</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td width="250px">
+                                    <div class="mt-1">
+                                        {!!Form::select('variacao_modelo_id', 'Variação principal', ['' => 'Selecione'] + $variacoes->pluck('descricao', 'id')->all())
+                                        ->attrs(['class' => 'form-select'])
+                                        ->value(isset($item) ? $item->variacao_modelo_id : null)
+                                        !!}
+                                    </div>
+
+                                    <div class="mt-2">
+                                        {!!Form::select('sub_variacao_modelo_id', 'Sub variação', ['' => 'Selecione'] + $variacoes->pluck('descricao', 'id')->all())
+                                        ->attrs(['class' => 'form-select'])
+                                        ->value(isset($item) ? $item->variacao_modelo_id : null)
+                                        !!}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="row">
+                                        <table class="table table-dynamic table-variacao">
+                                            <thead class="table-success">
+                                            <tr>
+                                                <th>Descrição</th>
+                                                <th>Valor</th>
+                                                <th>Código de barras</th>
+                                                <th>Referência</th>
+                                                <th>Estoque</th>
+                                                <th>Imagem</th>
+                                                <th>
+
+                                                </th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                    <tr class="dynamic-form">
+                                                        <input type="hidden" name="variacao_id[]]]">
+                                                        <td>
+                                                            <input type="text" class="form-control" name="descricao_variacao[]" required readonly>
+                                                        </td>
+                                                        <td>
+                                                            <input type="tel" class="form-control moeda" name="valor_venda_variacao[]" required>
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="tel" class="form-control ignore" name="codigo_barras_variacao[]">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control ignore" name="referencia_variacao[]" required>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control ignore" name="estoque_variacao[]">
+                                                        </td>
+                                                        <td>
+                                                            <input class="ignore" accept="image/*" type="file" class="form-control" name="imagem_variacao[]" value="">
+                                                            <img class="image-variation"><br>
+                                                            <span>imagem atual</span>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-sm btn-danger btn-remove-tr-variacao">
+                                                                <i class="ri-subtract-line"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="row col-12 col-lg-3 mt-3">
+                                        <button type="button" class="btn btn-dark btn-add-tr-variacao">
+                                            <i class="ri-add-fill"></i>
+                                            Adicionar linha
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         @endif
 
     @if(__countLocalAtivo() > 1)
@@ -169,5 +263,161 @@
         $('#produto_variacao_id').val(id)
         $('#modal_variacao').modal('hide')
     }
+
+    function changeVariavel() {
+        let variavel = $('#inp-variavel').val()
+        if (variavel == 1) {
+            $('.div-variavel').removeClass('d-none')
+            $('#inp-valor_unitario').val('0')
+            //$('#inp-valor_compra').val('0')
+        } else {
+            $('.div-variavel').addClass('d-none')
+        }
+    }
+
+    $('#inp-variavel').change(() => {
+        changeVariavel()
+    })
+
+    $(document).on("change", "#inp-sub_variacao_modelo_id", function () {
+
+        let sub_variacao_modelo_id = $(this).val()
+        let variacao_modelo_id = $('#inp-variacao_modelo_id').val()
+        if(!sub_variacao_modelo_id) return;
+        if(variacao_modelo_id){
+            $.get(path_url + "api/variacoes/modelo-subvariacoes", {
+                variacao_modelo_id: variacao_modelo_id,
+                sub_variacao_modelo_id: sub_variacao_modelo_id
+            })
+                .done((res) => {
+                    $('.table-variacao tbody').html(res)
+                })
+                .fail((err) => {
+                    console.log(err)
+                    swal("Erro", "Algo deu errado", "error")
+                })
+        }else{
+            swal("Erro", "Selecione a variação principal primeiro!", "error")
+        }
+    })
+
+    $(document).on("change", "#inp-variacao_modelo_id", function () {
+
+        let variacao_modelo_id = $(this).val()
+        if(variacao_modelo_id){
+            $.get(path_url + "api/variacoes/modelo", {
+                variacao_modelo_id: variacao_modelo_id
+            })
+                .done((res) => {
+                    $('.table-variacao tbody').html(res)
+                    $('#inp-sub_variacao_modelo_id').val('').change()
+                })
+                .fail((err) => {
+                    console.log(err)
+                    swal("Erro", "Algo deu errado", "error")
+                })
+        }
+    })
+
+    if($('.table-variacao tbody tr').length == 0){
+        $('#inp-variacao_modelo_id').val('').change()
+        $('#inp-sub_variacao_modelo_id').val('').change()
+    }
+
+    $(document).delegate(".btn-remove-tr-variacao", "click", function (e) {
+        e.preventDefault();
+        swal({
+            title: "Você esta certo?",
+            text: "Deseja remover esse item mesmo?",
+            icon: "warning",
+            buttons: true
+        }).then(willDelete => {
+            if (willDelete) {
+                var trLength = $(this)
+                    .closest("tr")
+                    .closest("tbody")
+                    .find("tr")
+                    .not(".dynamic-form-document").length;
+                if (!trLength || trLength > 1) {
+                    $(this)
+                        .closest("tr")
+                        .remove();
+                } else {
+                    swal("Atenção", "Você deve ter ao menos um item na lista", "warning");
+                }
+            }
+        });
+    });
+
+    $('.btn-add-tr-variacao').on("click", function () {
+        console.clear()
+        var $table = $(this)
+            .closest(".row")
+            .prev()
+            .find(".table-variacao");
+
+        console.log($table)
+
+        var hasEmpty = false;
+
+        $table.find("input, select").each(function () {
+            if (($(this).val() == "" || $(this).val() == null) && $(this).attr("type") != "hidden" && $(this).attr("type") != "file" && !$(this).hasClass("ignore")) {
+                hasEmpty = true;
+            }
+        });
+
+        if (hasEmpty) {
+            swal(
+                "Atenção",
+                "Preencha todos os campos antes de adicionar novos.",
+                "warning"
+            );
+            return;
+        }
+        // $table.find("select.select2").select2("destroy");
+        var $tr = $table.find(".dynamic-form").first();
+        $tr.find("select.select2").select2("destroy");
+        var $clone = $tr.clone();
+        $clone.show();
+
+        $clone.find("input,select").val("");
+        $clone.find("input,select").removeAttr('readonly');
+        $table.append($clone);
+        setTimeout(function () {
+            $("tbody select.select2").select2({
+                language: "pt-BR",
+                width: "100%",
+                theme: "bootstrap4"
+            });
+        }, 100);
+    })
+    document.addEventListener('DOMContentLoaded', function () {
+        const pesoInputs = document.querySelectorAll('.peso');
+
+        pesoInputs.forEach(input => {
+            input.addEventListener('input', function () {
+                let raw = this.value.replace(/\D/g, ''); // remove tudo que não for dígito
+
+                // limita a 6 dígitos (ex: 999999 => 999.999 kg)
+                if (raw.length > 6) raw = raw.slice(0, 6);
+
+                // se estiver vazio, assume 0
+                let valor = (parseInt(raw || 0) / 1000).toFixed(3);
+
+                this.value = valor;
+            });
+
+            input.addEventListener('focus', function () {
+                // remove qualquer texto não numérico ao focar
+                this.value = this.value.replace(/[^\d]/g, '');
+            });
+
+            input.addEventListener('blur', function () {
+                let raw = this.value.replace(/\D/g, '');
+                let valor = (parseInt(raw || 0) / 1000).toFixed(3);
+                this.value = valor;
+            });
+        });
+    });
 </script>
 @endsection
