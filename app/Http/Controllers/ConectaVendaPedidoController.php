@@ -51,37 +51,36 @@ class ConectaVendaPedidoController extends Controller
 
     public function finishOrder($id, Request $request)
     {
-        $pedido = ConectaVendaPedido::with('itens.produto')->findOrFail($id);
+        $pedido = ConectaVendaPedido::with('itens.produto.variacoes')->findOrFail($id);
         $config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
 
-        if (in_array($pedido->status, ['finalizado', 'cancelado'])) {
-            return redirect()->back()->with('error', 'Este pedido já está finalizado ou cancelado.');
+        if (in_array($pedido->situacao, ['finalizado', 'Cancelado','Finalizado','cancelado'])) {
+            return redirect()->back()->with(session()->flash('flash_error', 'Pedido já finalizado ou cancelado!'));
         }
 
         DB::beginTransaction();
         try {
 
             foreach ($pedido->itens as $item) {
-                $produto = Produto::where('id', $item->produto_id)->with('variacoes')->first();
-                $variacaoId = $produto->variacoes[0]->id ?? null;
+                $produto = $item->produto;
+                $variacaoId = $item->variacao_id ?? null;
                 $quantidade = $item->quantidade;
                 if (!$produto) {
                     throw new \Exception("Produto do item {$item->id} não encontrado.");
                 }
 
                 // 1) Reduz estoque se o produto gerencia estoque
-                if ($produto->gerenciar_estoque) {
-                    $this->estoqueUtil->reduzEstoque(
-                        $produto->id,
-                        $quantidade,
-                        $variacaoId,
-                        $request->local_id ?? null
-                    );
-                }
+
+                $this->estoqueUtil->reduzEstoque(
+                    $item->produto_id,
+                    $quantidade,
+                    $variacaoId,
+                    $request->local_id ?? null
+                );
 
                 // 2) Registra a movimentação de estoque
                 $this->estoqueUtil->movimentacaoProduto(
-                    $produto->id,
+                    $item->produto_id,
                     $quantidade,
                     'reducao',
                     $pedido->id,
