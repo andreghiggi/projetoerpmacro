@@ -62,7 +62,7 @@ class ConectaVendaPedidoController extends Controller
         try {
 
             foreach ($pedido->itens as $item) {
-                $produto = $item->produto;
+                $produto = $item;
                 $variacaoId = $item->variacao_id ?? null;
                 $quantidade = $item->quantidade;
                 if (!$produto) {
@@ -70,7 +70,6 @@ class ConectaVendaPedidoController extends Controller
                 }
 
                 // 1) Reduz estoque se o produto gerencia estoque
-
                 $this->estoqueUtil->reduzEstoque(
                     $item->produto_id,
                     $quantidade,
@@ -104,6 +103,7 @@ class ConectaVendaPedidoController extends Controller
             DB::commit();
             return redirect()->back()->with('success', 'Pedido finalizado e estoque atualizado com sucesso!');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->with('error', 'Erro ao finalizar pedido: ' . $e->getMessage());
         }
