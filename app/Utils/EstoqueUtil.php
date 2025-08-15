@@ -52,6 +52,73 @@ class EstoqueUtil
         }
     }
 
+    public function incrementaEstoqueCron($produto_id, $quantidade, $produto_variacao_id = null, $local_id = 2)
+    {
+        if ($produto_variacao_id) {
+            $variacaoExiste = \DB::table('produto_variacaos')
+                ->where('id', $produto_variacao_id)
+                ->exists();
+            if (!$variacaoExiste) {
+                $produto_variacao_id = null;
+            }
+        }
+
+        if (!$local_id) {
+            if (\Auth::check()) {
+                $usuario_id = \Auth::id();
+            } else {
+                $usuario_id = null;
+            }
+
+            $local = Localizacao::where('usuario_localizacaos.usuario_id', $usuario_id)
+                ->select('localizacaos.*')
+                ->join('usuario_localizacaos', 'usuario_localizacaos.localizacao_id', '=', 'localizacaos.id')
+                ->first();
+
+            if ($local) {
+                $local_id = $local->id;
+            }
+        }
+
+        // Busca estoque existente
+        $item = Estoque::where('produto_id', $produto_id)
+            ->when($produto_variacao_id !== null, function ($q) use ($produto_variacao_id) {
+                return $q->where('produto_variacao_id', $produto_variacao_id);
+            })
+            ->where('local_id', $local_id)
+            ->first();
+
+        $produto = Produto::find($produto_id);
+        if (!$produto) {
+            \Log::warning("Produto {$produto_id} não encontrado ao tentar incrementar estoque.");
+            return; // ou tratar de outra forma
+        }
+
+
+        if ($produto->combo) {
+            foreach ($produto->itensDoCombo as $c) {
+                $this->incrementaEstoque(
+                    $c->item_id,
+                    $c->quantidade * $quantidade,
+                    $produto_variacao_id,
+                    $local_id
+                );
+            }
+        } else {
+            if ($item) {
+                $item->quantidade += (float) $quantidade;
+                $item->save();
+            } else {
+                Estoque::create([
+                    'produto_id' => $produto_id,
+                    'quantidade' => $quantidade,
+                    'produto_variacao_id' => $produto_variacao_id, // agora só entra se existir
+                    'local_id' => $local_id
+                ]);
+            }
+        }
+    }
+
     public function reduzEstoque($produto_id, $quantidade, $produto_variacao_id, $local_id = null)
     {
         if(!$local_id){

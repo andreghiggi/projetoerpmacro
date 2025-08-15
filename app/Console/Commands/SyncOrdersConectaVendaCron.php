@@ -60,12 +60,22 @@ class SyncOrdersConectaVendaCron extends Command
             if($response->status() == 200){
                 $orders = json_decode($response);
                 foreach($orders->dados as $order){
-                    $pedido = $this->util->createOrder($order, $config);
+                    $data = ConectaVendaPedido::Where('id', $order->id)->first();
+                    if(!$data){
+                        $pedido = $this->util->createOrder($order, $config);
 
-                    if($pedido && isset($order->produtos)){
-                        foreach ($order->produtos as $item){
-                            $this->util->createItemOrder($item, $pedido->id);
+                        if($pedido && isset($order->produtos)){
+                            foreach ($order->produtos as $item){
+                                $this->util->createItemOrder($item, $pedido->id);
+                            }
                         }
+                    }
+                    if($order->situacao == 'Cancelado' || $order->situacao == 'cancelado'){
+                        $this->util->returnStock($order, $config);
+                    }else {
+                        $data = ConectaVendaPedido::Where('id', $order->id)->first();
+                        $data->situacao = $order->situacao;
+                        $data->save();
                     }
                 }
             }

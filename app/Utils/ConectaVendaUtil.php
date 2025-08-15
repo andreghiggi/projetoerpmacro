@@ -5,8 +5,10 @@ namespace App\Utils;
 use App\Interfaces\EstoqueIntegracaoInterface;
 use App\Models\ConectaVendaConfig;
 use App\Models\ConectaVendaItemPedido;
+use App\Models\Estoque;
 use App\Models\Produto;
 use App\Models\ConectaVendaPedido;
+use App\Utils\EstoqueUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -14,6 +16,11 @@ use Illuminate\Support\Facades\Http;
 
 class ConectaVendaUtil
 {
+    protected $utilEstoque;
+    public function __construct(EstoqueUtil $utilEstoque)
+    {
+        $this->utilEstoque = $utilEstoque;
+    }
     public function create(ConectaVendaConfig $empresa, Produto $produto)
     {
         $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
@@ -293,6 +300,39 @@ class ConectaVendaUtil
                 'sub_total'       => $item->qtde * $item->valor_unitario,
             ]
         );
+    }
+
+    public function returnStock($order, $config)
+    {
+        foreach($order->produtos as $produto){
+            $transacao = Estoque::where('produto_id', $produto->produto_id)
+                ->when($produto->variacao_id, function ($q) use ($produto) {
+                    $q->where('produto_variacao_id', $produto->variacao_id);
+                })
+                ->first();
+
+            $this->utilEstoque->incrementaEstoqueCron($produto->produto_id, $produto->qtde, $produto->variacao_id ?: null);
+
+            $usuarioId = \Auth::check() ? \Auth::id() : null;
+
+            if ($transacao) {
+                $this->utilEstoque->movimentacaoProduto(
+                    $produto->produto_id,
+                    $produto->qtde,
+                    'incremento',
+                    $transacao->id,
+                    'alteracao_estoque',
+                    $usuarioId,
+                    $produto->variacao_id
+                );
+            }
+        }
+
+        $data = ConectaVendaPedido::find($order->id);
+        if($data){
+            $data->situacao = $order->situacao;
+            $data->save();
+        }
     }
 
     public function updateOrderStatus($empresa, $conecta_venda_id, $situacao)
