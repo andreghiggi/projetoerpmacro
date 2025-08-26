@@ -69,9 +69,6 @@
                                             <a title="Ver pedido" class="btn btn-dark btn-sm text-white" href="{{ route('conecta-venda-pedidos.show', [$item->id]) }}">
                                                 <i class="ri-clipboard-line"></i>
                                             </a>
-{{--                                            <button type="button" class="btn btn-delete btn-sm btn-danger">--}}
-{{--                                                <i class="ri-delete-bin-line"></i>--}}
-{{--                                            </button>--}}
                                         </form>
                                     </td>
                                 </tr>

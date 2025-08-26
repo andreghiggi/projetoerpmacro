@@ -96,6 +96,10 @@ class Nfe extends Model
         return $this->hasOne(PedidoMercadoLivre::class, 'nfe_id');
     }
 
+    public function pedidoConectaVenda()
+    {
+        return $this->hasOne(ConectaVendaPedido::class, 'nfe_id');
+    }
     public function pedidoNuvemShop()
     {
         return $this->hasOne(NuvemShopPedido::class, 'nfe_id');
@@ -232,7 +236,7 @@ class Nfe extends Model
     public function isItemValidade ()
     {
         foreach($this->itens as $i){
-            if($i->produto->alerta_validade > 0) 
+            if($i->produto->alerta_validade > 0)
                 return 1;
         }
         return 0;

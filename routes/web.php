@@ -336,6 +336,7 @@ Route::resource('conecta-venda-config', 'ConectaVendaConfigController');
 Route::resource('conecta-venda-pedidos', 'ConectaVendaPedidoController');
 Route::resource('conecta-venda-produtos', 'ConectaVendaProdutoController');
 Route::get('conecta-venda-pedidos/{pedido}/finalizar', 'ConectaVendaPedidoController@finishOrder')->name('conecta-venda-pedidos.finishOrder');
+Route::get('conecta-venda-pedidos/{pedido}/createOrder', 'ConectaVendaPedidoController@createOrder')->name('conecta-venda-pedidos.createOrder');
 
 
 

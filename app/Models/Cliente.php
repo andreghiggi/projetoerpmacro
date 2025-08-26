@@ -28,6 +28,11 @@ class Cliente extends Model
         return "$this->rua, $this->numero - $this->bairro";
     }
 
+    public function setCpfCnpjAttribute($value)
+    {
+        $this->attributes['cpf_cnpj'] = preg_replace('/\D/', '', $value);
+    }
+
     public function cidade(){
         return $this->belongsTo(Cidade::class, 'cidade_id');
     }

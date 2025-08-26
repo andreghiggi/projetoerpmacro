@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cidade;
+use App\Models\Cliente;
 use App\Models\ConectaVendaConfig;
 use App\Models\ConectaVendaPedido;
+use App\Models\Empresa;
+use App\Models\NaturezaOperacao;
+use App\Models\Nfe;
 use App\Models\Produto;
+use App\Models\Transportadora;
 use App\Utils\ConectaVendaUtil;
 use App\Utils\EstoqueUtil;
 use Illuminate\Http\Request;
@@ -51,62 +57,63 @@ class ConectaVendaPedidoController extends Controller
 
     public function finishOrder($id, Request $request)
     {
-        $pedido = ConectaVendaPedido::with('itens.produto.variacoes')->findOrFail($id);
+        $item = ConectaVendaPedido::with('itens.produto.variacoes')->findOrFail($id);
         $config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
-
-        if (in_array($pedido->situacao, ['finalizado', 'Cancelado','Finalizado','cancelado'])) {
+        if (in_array($item->situacao, ['finalizado', 'Cancelado','Finalizado','cancelado'])) {
             return redirect()->back()->with(session()->flash('flash_error', 'Pedido já finalizado ou cancelado!'));
         }
 
-        DB::beginTransaction();
-        try {
+        $cpfCnpj = !empty(trim($item->cpf)) ? $item->cpf : $item->cnpj;
+        $item->cpfCnpj = $cpfCnpj;
+        $customer = Cliente::where('cpf_cnpj', $cpfCnpj)->first();
 
-            foreach ($pedido->itens as $item) {
-                $produto = $item->produto;
-                $variacaoId = $item->variacao_id ?? null;
-                $quantidade = $item->quantidade;
-                if (!$produto) {
-                    throw new \Exception("Produto do item {$item->id} não encontrado.");
-                }
-
-                // 1) Reduz estoque se o produto gerencia estoque
-
-                $this->estoqueUtil->reduzEstoque(
-                    $item->produto_id,
-                    $quantidade,
-                    $variacaoId,
-                    $request->local_id ?? null
-                );
-
-                // 2) Registra a movimentação de estoque
-                $this->estoqueUtil->movimentacaoProduto(
-                    $item->produto_id,
-                    $quantidade,
-                    'reducao',
-                    $pedido->id,
-                    'pedido_conecta',
-                    auth()->id(),
-                    $variacaoId
-                );
-            }
-
-            // 3) Atualiza status no Conecta Venda
-            $this->util->updateOrderStatus(
-                $config,
-                $pedido->id,
-                'finalizado'
-            );
-
-            // 4) Atualiza status local
-            $pedido->situacao = 'finalizado';
-            $pedido->save();
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Pedido finalizado e estoque atualizado com sucesso!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Erro ao finalizar pedido: ' . $e->getMessage());
+        if (!$customer) {
+            $customer = $this->cadastrarClienteConecta($item, $config->empresa_id);
         }
+
+        $item->cliente_id = $customer->id;
+        $cliente = $item->cliente;
+
+        $cidades = Cidade::all();
+        $transportadoras = Transportadora::where('empresa_id', request()->empresa_id)->get();
+
+        $naturezas = NaturezaOperacao::where('empresa_id', request()->empresa_id)->get();
+        if (sizeof($naturezas) == 0) {
+            session()->flash("flash_warning", "Primeiro cadastre um natureza de operação!");
+            return redirect()->route('natureza-operacao.create');
+        }
+        // $produtos = Produto::where('empresa_id', request()->empresa_id)->get();
+        $empresa = Empresa::findOrFail(request()->empresa_id);
+        $caixa = __isCaixaAberto();
+        $empresa = __objetoParaEmissao($empresa, $caixa->local_id);
+        $numeroNfe = Nfe::lastNumero($empresa);
+
+        $isPedidoConectaVenda = 1;
+        return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isPedidoConectaVenda', 'numeroNfe',
+            'caixa'));
+    }
+
+    protected function cadastrarClienteConecta($pedido, $empresa)
+    {
+        $cidade = Cidade::select('id')->where('nome', $pedido->cidade)->first();
+        $cliente = Cliente::create([
+            'empresa_id' => $empresa,
+            'razao_social' => $pedido->comprador,
+            'nome_fantasia' => $pedido->comprador ?? '',
+            'cpf_cnpj' => $pedido->cpfCnpj,
+            'ie' => $pedido->inscricao_estadual ?? '',
+            'contribuinte' => 0,
+            'consumidor_final' => 1,
+            'email' => $pedido->email ?? '',
+            'telefone' => $pedido->telefone ?? '',
+            'cidade_id' => $cidade->id,
+            'rua' => $pedido->endereco,
+            'cep' => $pedido->cep,
+            'numero' => $pedido->numero,
+            'bairro' => $pedido->bairro,
+            'complemento' => $pedido->complemento ?? ''
+        ]);
+        return $cliente->id;
     }
 
 }

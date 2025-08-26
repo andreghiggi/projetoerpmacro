@@ -1,8 +1,7 @@
 <tr class="dynamic-form">
     <td width="250">
         <select class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
-            <option value="{{ $prod->produto_id }}">{{ $prod->produto->nome }}</option>
-
+            <option value="{{ $prod->produto_id }}">{{ $prod->nome }}</option>
         </select>
     </td>
     <td width="80">
@@ -43,7 +42,7 @@
     <td>
         <select name="cst_csosn[]" class="form-control select2">
             @foreach(App\Models\Produto::listaCSTCSOSN() as $key => $c)
-            <option @if($prod->produto->cst_csosn == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                <option @if($prod->produto->cst_csosn == $key) selected @endif value="{{$key}}">{{$c}}</option>
             @endforeach
         </select>
         <div style="width: 400px"></div>
@@ -51,7 +50,7 @@
     <td>
         <select name="cst_pis[]" class="form-control select2">
             @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
-            <option @if($prod->produto->cst_pis == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                <option @if($prod->produto->cst_pis == $key) selected @endif value="{{$key}}">{{$c}}</option>
             @endforeach
         </select>
         <div style="width: 400px"></div>
@@ -59,7 +58,7 @@
     <td>
         <select name="cst_cofins[]" class="form-control select2">
             @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
-            <option @if($prod->produto->cst_cofins == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                <option @if($prod->produto->cst_cofins == $key) selected @endif value="{{$key}}">{{$c}}</option>
             @endforeach
         </select>
         <div style="width: 400px"></div>
@@ -67,7 +66,7 @@
     <td>
         <select name="cst_ipi[]" class="form-control select2">
             @foreach(App\Models\Produto::listaCST_IPI() as $key => $c)
-            <option @if($prod->produto->cst_ipi == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                <option @if($prod->produto->cst_ipi == $key) selected @endif value="{{$key}}">{{$c}}</option>
             @endforeach
         </select>
         <div style="width: 400px"></div>
@@ -78,7 +77,7 @@
     </td>
     <td>
         <input class="form-control" maxlength="6" type="text" name="nItemPed[]">
-        <div style="width: 200px"></div>
+        <div style="width: 200px"></div>yy
     </td>
     <td>
         <input class="form-control ignore" maxlength="200" type="text" name="infAdProd[]">

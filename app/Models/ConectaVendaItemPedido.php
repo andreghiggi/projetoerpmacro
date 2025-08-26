@@ -21,6 +21,6 @@ class ConectaVendaItemPedido extends Model
     }
 
     public function produto(){
-        return $this->belongsTo(Produto::class, 'produto_id', 'conecta_venda_id');
+        return $this->belongsTo(Produto::class, 'produto_id', 'id');
     }
 }

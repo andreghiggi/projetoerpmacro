@@ -26,6 +26,10 @@ function __convert_value_bd($valor)
 
 function __validaObjetoEmpresa($objeto)
 {
+    if (!Auth::check()) {
+        return true;
+    }
+
 	if(!Auth::user()->empresa){
 		return true;
 	}

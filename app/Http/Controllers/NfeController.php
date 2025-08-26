@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cidade;
+use App\Models\ConectaVendaPedido;
 use App\Models\Fornecedor;
 use App\Models\Cliente;
 use App\Models\ProdutoFornecedor;
@@ -223,8 +224,8 @@ class NfeController extends Controller
 
         $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
 
-        return view('nfe.create', 
-            compact('transportadoras', 'cidades', 'naturezas', 'numeroNfe', 'empresa', 'caixa', 
+        return view('nfe.create',
+            compact('transportadoras', 'cidades', 'naturezas', 'numeroNfe', 'empresa', 'caixa',
                 'isOrcamento', 'naturezaPadrao', 'config')
         );
     }
@@ -264,7 +265,7 @@ class NfeController extends Controller
 
             $danfe = new Danfe($xml);
             if($empresa->logo){
-                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . 
+                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') .
                     $empresa->logo));
                 $danfe->logoParameters($logo, 'L');
             }
@@ -426,7 +427,7 @@ class NfeController extends Controller
         ->where('status', 0)->sum('valor_integral');
         $somaPendente += $total;
         if($somaPendente > $cliente->limite_credito){
-            return "Limite de crédito do cliente ultrapassou em R$ " . __moeda($somaPendente-$cliente->limite_credito) . 
+            return "Limite de crédito do cliente ultrapassou em R$ " . __moeda($somaPendente-$cliente->limite_credito) .
             " - Total de crédito definido para este cliente R$ " . __moeda($cliente->limite_credito);
         }
         return 0;
@@ -434,7 +435,7 @@ class NfeController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
+//         dd($request->all());
         try {
             $retornoCredito = $this->validaCreditoCliente($request);
             if($retornoCredito != 0){
@@ -516,7 +517,6 @@ class NfeController extends Controller
                 }
 
                 $nfe = Nfe::create($request->all());
-
                 for ($i = 0; $i < sizeof($request->produto_id); $i++) {
 
                     $product = Produto::findOrFail($request->produto_id[$i]);
@@ -611,10 +611,10 @@ class NfeController extends Controller
                     if ($product->gerenciar_estoque && $request->orcamento == 0) {
                         if (isset($request->is_compra)) {
 
-                            $this->util->incrementaEstoque($product->id, __convert_value_bd($request->quantidade[$i]), 
+                            $this->util->incrementaEstoque($product->id, __convert_value_bd($request->quantidade[$i]),
                                 $variacao_id, $local_id);
                         } else {
-                            $this->util->reduzEstoque($product->id, __convert_value_bd($request->quantidade[$i]), 
+                            $this->util->reduzEstoque($product->id, __convert_value_bd($request->quantidade[$i]),
                                 $variacao_id, $local_id);
                         }
                     }
@@ -714,6 +714,14 @@ class NfeController extends Controller
                     $pedido->nfe_id = $nfe->id;
                     $pedido->save();
                 }
+
+                if ($request->pedido_conecta_venda_id) {
+                    $pedido = ConectaVendaPedido::findOrFail($request->pedido_conecta_venda_id);
+                    $pedido->nfe_id = $nfe->id;
+                    $pedido->situacao = 'Finalizado';
+                    $pedido->save();
+                }
+
                 if ($request->pedido_nuvem_shop_id) {
                     $pedido = NuvemShopPedido::findOrFail($request->pedido_nuvem_shop_id);
                     $pedido->nfe_id = $nfe->id;
@@ -989,7 +997,7 @@ public function update(Request $request, $id)
             }
             $config = Empresa::find($request->empresa_id);
             $tipoPagamento = $request->tipo_pagamento;
-            
+
             $request->merge([
                 'emissor_nome' => $config->nome,
                 'emissor_cpf_cnpj' => $config->cpf_cnpj,
@@ -1323,7 +1331,7 @@ public function danfeTemporaria($id)
 
     if (!isset($doc['erros_xml'])) {
         $xml = $doc['xml'];
-        
+
         $xmlTemp = simplexml_load_string($xml);
 
         $itensComErro = "";
@@ -1513,8 +1521,8 @@ public function importZipStore(Request $request){
 
 private function clearFolder($destino){
     $files = glob($destino."/*");
-    foreach($files as $file){ 
-        if(is_file($file)) unlink($file); 
+    foreach($files as $file){
+        if(is_file($file)) unlink($file);
     }
 }
 
@@ -1563,14 +1571,14 @@ private function preparaXmls($destino){
 
 private function getCliente($xml){
 
-    if(!isset($xml->NFe->infNFe->dest->enderDest->cMun)){ 
+    if(!isset($xml->NFe->infNFe->dest->enderDest->cMun)){
         return null;
     }
     $cidade = Cidade::where('codigo', $xml->NFe->infNFe->dest->enderDest->cMun)->first();
 
     $dadosCliente = [
         'cpf_cnpj' => isset($xml->NFe->infNFe->dest->CNPJ) ? (string)$xml->NFe->infNFe->dest->CNPJ : (string)$xml->NFe->infNFe->dest->CPF,
-        'razao_social' => (string)$xml->NFe->infNFe->dest->xNome,               
+        'razao_social' => (string)$xml->NFe->infNFe->dest->xNome,
         'nome_fantasia' => (string)$xml->NFe->infNFe->dest->xFant,
         'rua' => (string)$xml->NFe->infNFe->dest->enderDest->xLgr,
         'numero' => (string)$xml->NFe->infNFe->dest->enderDest->nro,
@@ -1655,7 +1663,7 @@ private function getFatura($xml){
                 $titulo = $dup->nDup;
                 $vencimento = $dup->dVenc;
 
-                $vlr_parcela = number_format((double) $dup->vDup, 2, ".", ""); 
+                $vlr_parcela = number_format((double) $dup->vDup, 2, ".", "");
 
                 $parcela = [
                     'numero' => (int)$titulo,
@@ -1888,10 +1896,10 @@ private function insereProdutos($data, $local_id){
 
             $item->referencia = $item->codigo;
             $item->valor_prazo = 0;
-            
+
             $p = Produto::create((array)$item);
             ProdutoLocalizacao::updateOrCreate([
-                'produto_id' => $p->id, 
+                'produto_id' => $p->id,
                 'localizacao_id' => $local_id
             ]);
             array_push($produtos, $p);
@@ -1920,7 +1928,7 @@ public function setCodigoUnico($id)
 }
 
 public function setarCodigoUnico(Request $request)
-{   
+{
     $nfe = Nfe::findOrFail($request->nfe_id);
     for ($i = 0; $i < sizeof($request->codigo); $i++) {
         $item = ProdutoUnico::findOrFail($request->codigo[$i]);
@@ -1989,7 +1997,7 @@ public function sendEmail(Request $request){
                 $m->from(env('MAIL_USERNAME'), $nomeEmail);
                 $m->subject('Envio de documento');
                 foreach($docs as $f){
-                    $m->attach($f); 
+                    $m->attach($f);
                 }
                 $m->to($email);
             });
@@ -2018,12 +2026,12 @@ private function gerarDanfeTemporaria($nfe){
 
 }
 
-private function unlinkr($dir){ 
-    $files = array_diff(scandir($dir), array('.', '..')); 
-    foreach ($files as $file) { 
-        (is_dir("$dir/$file")) ? $this->unlinkr("$dir/$file") : unlink("$dir/$file"); 
+private function unlinkr($dir){
+    $files = array_diff(scandir($dir), array('.', '..'));
+    foreach ($files as $file) {
+        (is_dir("$dir/$file")) ? $this->unlinkr("$dir/$file") : unlink("$dir/$file");
     }
-    return rmdir($dir); 
+    return rmdir($dir);
 }
 
 public function metas(Request $request){
@@ -2092,7 +2100,7 @@ private function somaVendasMes($empresa_id){
     ->where('estado', '!=', 'cancelado')
     ->whereMonth('created_at', date('m'))
     ->whereYear('created_at', date('Y'))
-    
+
     ->sum('total');
 
     return $soma;

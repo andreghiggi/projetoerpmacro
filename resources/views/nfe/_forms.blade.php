@@ -41,6 +41,10 @@
         <input type="hidden" name="pedido_nuvem_shop_id" value="{{$item->id}}">
         @endif
 
+        @isset($isPedidoConectaVenda)
+            <input type="hidden" name="pedido_conecta_venda_id" value="{{$item->id}}">
+        @endif
+
         @isset($cotacao)
         <input type="hidden" name="cotacao_id" value="{{$cotacao->id}}">
         @endif
@@ -234,7 +238,7 @@
                                 @endcan
                             </div>
                         </div>
-                        
+
                         <hr class="mt-3">
                         <div class="row d-cliente">
                             <div class="col-md-3">
@@ -352,14 +356,14 @@
                                     @if(isset($item))
 
                                     @foreach ($item->itens as $key => $prod)
-
                                     @isset($isOrdemServico)
                                     @include('ordem_servico.partials.itens', ['prod' => $prod])
                                     @elseif(isset($isPedidoEcommerce))
                                     @include('pedido_ecommerce.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @elseif(isset($isPedidoMercadoLivre))
                                     @include('mercado_livre_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
-
+                                    @elseif(isset($isPedidoConectaVenda))
+                                        @include('conecta_venda_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @elseif(isset($isReserva))
                                     @include('mercado_livre_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @elseif(isset($isPedidoWoocommerce))
@@ -789,7 +793,7 @@
                             {!!Form::tel('referencia', 'Referência NFe')
                             !!}
                         </div>
-                        
+
                         <div class="col-md-2 mt-3">
                             {!!Form::date('data_emissao_saida', 'Data Emissão Saída')
                             !!}
@@ -830,7 +834,7 @@
                             !!}
                         </div>
                         @endif
-                        
+
                         @if(!isset($isCompra))
                         @if(!isset($item) && $isOrcamento == 0)
                         <div class="col-md-2 mt-3 div-conta-receber">
@@ -959,7 +963,7 @@
                                         </td>
                                     </tr>
                                     @endif
-                                    
+
                                     @else
                                     @if(isset($item) && isset($item->fatura) && sizeof($item->fatura) > 0 && !isset($isOrdemServico))
                                     @foreach ($item->fatura as $f)
@@ -1008,7 +1012,7 @@
                                             </button>
                                         </td>
                                     </tr>
-                                    
+
                                     @endif
                                     @endif
                                 </tbody>

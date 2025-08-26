@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use App\Http\Controllers\NfeController;
 use App\Interfaces\EstoqueIntegracaoInterface;
 use App\Models\ConectaVendaConfig;
 use App\Models\ConectaVendaItemPedido;
@@ -17,9 +18,11 @@ use Illuminate\Support\Facades\Http;
 class ConectaVendaUtil
 {
     protected $utilEstoque;
-    public function __construct(EstoqueUtil $utilEstoque)
+    protected $utilNfe;
+    public function __construct(EstoqueUtil $utilEstoque,NfeController $utilNfe)
     {
         $this->utilEstoque = $utilEstoque;
+        $this->utilNfe = $utilNfe;
     }
     public function create(ConectaVendaConfig $empresa, Produto $produto)
     {
@@ -304,6 +307,10 @@ class ConectaVendaUtil
 
     public function returnStock($order, $config)
     {
+        $pedido = ConectaVendaPedido::where('id', $order->id)->first();
+        if($pedido->nfe_id){
+            $this->utilNfe->destroy($pedido->nfe_id);
+        }
         foreach($order->produtos as $produto){
             $transacao = Estoque::where('produto_id', $produto->produto_id)
                 ->when($produto->variacao_id, function ($q) use ($produto) {
