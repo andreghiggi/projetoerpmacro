@@ -9,7 +9,6 @@ use App\Models\ConectaVendaPedido;
 use App\Models\Empresa;
 use App\Models\NaturezaOperacao;
 use App\Models\Nfe;
-use App\Models\Produto;
 use App\Models\Transportadora;
 use App\Utils\ConectaVendaUtil;
 use App\Utils\EstoqueUtil;
@@ -73,7 +72,6 @@ class ConectaVendaPedidoController extends Controller
 
         $item->cliente_id = $customer->id;
         $cliente = $item->cliente;
-
         $cidades = Cidade::all();
         $transportadoras = Transportadora::where('empresa_id', request()->empresa_id)->get();
 
@@ -113,7 +111,7 @@ class ConectaVendaPedidoController extends Controller
             'bairro' => $pedido->bairro,
             'complemento' => $pedido->complemento ?? ''
         ]);
-        return $cliente->id;
+        return $cliente;
     }
 
 }

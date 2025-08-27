@@ -7,6 +7,7 @@ use App\Interfaces\EstoqueIntegracaoInterface;
 use App\Models\ConectaVendaConfig;
 use App\Models\ConectaVendaItemPedido;
 use App\Models\Estoque;
+use App\Models\Nfe;
 use App\Models\Produto;
 use App\Models\ConectaVendaPedido;
 use App\Utils\EstoqueUtil;
@@ -308,8 +309,12 @@ class ConectaVendaUtil
     public function returnStock($order, $config)
     {
         $pedido = ConectaVendaPedido::where('id', $order->id)->first();
+
         if($pedido->nfe_id){
-            $this->utilNfe->destroy($pedido->nfe_id);
+            $nf = Nfe::where('id', $pedido->nfe_id)->first();
+            if($nf){
+                $this->utilNfe->destroy($pedido->nfe_id);
+            }
         }
         foreach($order->produtos as $produto){
             $transacao = Estoque::where('produto_id', $produto->produto_id)
