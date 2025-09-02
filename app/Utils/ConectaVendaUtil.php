@@ -309,7 +309,6 @@ class ConectaVendaUtil
     public function returnStock($order, $config)
     {
         $pedido = ConectaVendaPedido::where('id', $order->id)->first();
-
         if($pedido->nfe_id){
             $nf = Nfe::where('id', $pedido->nfe_id)->first();
             if($nf){

@@ -91,6 +91,37 @@ class ConectaVendaPedidoController extends Controller
             'caixa'));
     }
 
+    public function destroy($id, Request $request)
+    {
+        try {
+            DB::beginTransaction();
+        $config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+        $item = ConectaVendaPedido::with('itens.produto.variacoes')->findOrFail($id);
+
+        if($item->situacao == "Cancelado" || $item->situacao == "cancelado"
+            || $item->situacao == "finalizado" || $item->situacao == "Finalizado"
+        ) {
+            return redirect()->back()->with(session()->flash('flash_error', 'Pedido já Se Encontra Finalizado ou Cancelado!'));
+        }
+
+        $response = $this->util->updateOrderStatus($config, $item->id, "cancelado");
+
+        if($response['ok'] != true){
+            return redirect()->back()->with(session()->flash('flash_error', 'Algo deu errado, o pedido não pode ser cancelado!'));
+        }
+
+        $this->util->returnStock($item, $config);
+        $item->situacao = "Cancelado";
+        $item->save();
+        DB::commit();
+        return redirect()->back()->with(session()->flash('flash_success', 'Pedido Cancelado!'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with(session()->flash('flash_error', $e->getMessage()));
+
+        }
+    }
+
     protected function cadastrarClienteConecta($pedido, $empresa)
     {
         $cidade = Cidade::select('id')->where('nome', $pedido->cidade)->first();

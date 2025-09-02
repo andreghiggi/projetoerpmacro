@@ -58,17 +58,21 @@
                                     <td>{{ ($item->pagamento_tipo) }}</td>
                                     <td>{{ sizeof($item->itens) }}</td>
                                     <td>
-{{--                                        {{ route('conecta-venda-pedidos.destroy', $item->id) }}--}}
-                                        <form action="" method="post" id="form-{{$item->id}}">
+                                        <a title="Finalizar Pedido" class="btn btn-success btn-sm text-white" href="{{ route('conecta-venda-pedidos.finishOrder', [$item->id]) }}">
+                                            <i class="ri-check-line"></i>
+                                        </a>
+                                        <a title="Ver pedido" class="btn btn-dark btn-sm text-white" href="{{ route('conecta-venda-pedidos.show', [$item->id]) }}">
+                                            <i class="ri-clipboard-line"></i>
+                                        </a>
+                                        <form action="{{route('conecta-venda-pedidos.destroy', $item->id)}}"
+                                              method="post"
+                                              id="form-{{$item->id}}"
+                                              style="display:inline;">
                                             @method('delete')
                                             @csrf
-{{--                                            {{dd($item)}}--}}
-                                            <a title="Finalizar Pedido" class="btn btn-success btn-sm text-white" href="{{ route('conecta-venda-pedidos.finishOrder', [$item->id]) }}">
-                                                    <i class="ri-check-line"></i>
-                                            </a>
-                                            <a title="Ver pedido" class="btn btn-dark btn-sm text-white" href="{{ route('conecta-venda-pedidos.show', [$item->id]) }}">
-                                                <i class="ri-clipboard-line"></i>
-                                            </a>
+                                            <button type="submit" title="Cancelar Pedido" id="cancelarConecta" class="btn btn-danger btn-sm btn-delete">
+                                                <i class="ri-delete-bin-2-line"></i>
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
@@ -88,5 +92,32 @@
         </div>
     </div>
 </div>
+@endsection
+@section('js')
+    <script>
+        document.getElementById('cancelarConecta').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                let form = this.closest('form');
+
+                Swal.fire({
+                    title: 'Você está certo?',
+                    text: "Deseja Cancelar o pedido, você não poderá recuperar esse item novamente!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Excluir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+
 @endsection
 
