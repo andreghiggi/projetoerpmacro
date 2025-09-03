@@ -321,15 +321,14 @@ class ConectaVendaUtil
                     $q->where('produto_variacao_id', $produto->variacao_id);
                 })
                 ->first();
-
-            $this->utilEstoque->incrementaEstoqueCron($produto->produto_id, $produto->qtde, $produto->variacao_id ?: null);
+            $this->utilEstoque->incrementaEstoqueCron($produto->produto_id, $produto->quantidade, $produto->variacao_id ?: null);
 
             $usuarioId = \Auth::check() ? \Auth::id() : null;
 
             if ($transacao) {
                 $this->utilEstoque->movimentacaoProduto(
                     $produto->produto_id,
-                    $produto->qtde,
+                    $produto->quantidade,
                     'incremento',
                     $transacao->id,
                     'alteracao_estoque',
