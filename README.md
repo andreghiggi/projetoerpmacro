@@ -7,6 +7,10 @@
 Projeto usando `docker-compose`, levantando uma imagem do server PHP e outra do banco MySql.
 
 ## Instalação
+
+Copie o `.env.example` para `.env`.
+Se for usar localmente isso é suficiente e o build fará o ajuste do resto. Se for para outros ambientes, ajustar conforme necessidade.
+
 Buildando pela primeira vez, instalando requerimentos do `composer` , construindo e populando o banco localmente (salvo na pasta `mysql-data`).:
 
 `docker-build.bat`
