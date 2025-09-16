@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: app
+    ports:
+      - "80:80"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    networks:
+      - local
+  db:
+    image: mysql:8.0
+    container_name: app_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - local
+
+volumes:
+  mysql_data:
+
+networks:
+  local:
+    driver: bridge
