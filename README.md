@@ -1,39 +1,23 @@
-# Macro ERP
+# Macro ERP (Docker)
 
-A Laravel-based Enterprise Resource Planning system.
+## Requerimentos
+- Docker
 
-## Requirements
+## Detalhes
+Projeto usando `docker-compose`, levantando uma imagem do server PHP e outra do banco MySql.
 
-- PHP >= 8.0
-- Composer
-- MySQL/PostgreSQL
-- Node.js & NPM (for frontend assets)
+## Instalação
+Buildando pela primeira vez, instalando requerimentos do `composer` , construindo e populando o banco localmente (salvo na pasta `mysql-data`).:
 
-## Installation
+`docker-build.bat`
 
-1. Clone the repository:
-2. Install PHP dependencies:
-3. Create and configure your environment file:
-4. Configure your database in the `.env` file:
-5. Run database migrations:
-6. Install frontend dependencies and build assets (if applicable):
+Para as vezes seguintes, somente levantando os servers:
 
+`docker-up.bat`
 
-## Running the Application
+Acessando o servidor de php via terminal:
 
-To start the development server:
+`docker-terminal-app.bat`
 
-
-The application will be available at http://localhost:8000
-
-## Common Artisan Commands
-
-- `php artisan list` - List all available Artisan commands
-- `php artisan migrate` - Run database migrations
-- `php artisan db:seed` - Seed the database with records
-- `php artisan make:controller ControllerName` - Create a new controller
-- `php artisan make:model ModelName -m` - Create a new model with migration
-- `php artisan storage:link` - Create a symbolic link from public/storage to storage/app/public
-- `php artisan queue:work` - Start processing queued jobs
-- `php artisan route:list` - Show all registered routes
+Aplicação disponível em http://localhost
 
