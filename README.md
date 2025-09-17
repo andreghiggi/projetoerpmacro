@@ -25,3 +25,14 @@ Acessando o servidor de php via terminal:
 
 Aplicação disponível em http://localhost
 
+## Alternativas para docker-compose
+Caso o docker-compose tenha problemas, existem as versões equivalentes de
+`docker-build.bat` e `docker-up.bat` que usam os comandos de docker puro para executar o mesmo ambiente descrito em `docker-compose.yaml` e são respectivamente:
+
+`docker-build-v2.bat`<br>`docker-up-v2.bat`
+
+## Problemas de performance com Docker
+Projetos grandes dentro do docker parecem ficar mais lentos do que deveriam, ao menos em ambiente windows.
+Uma das soluções é ir nas configuração do docker e desmarcar a opção `Use the WSL 2 based engine`.
+
+![alt text](image.png)

@@ -1,1 +1,1 @@
-docker compose exec app bash
+docker exec -it app bash

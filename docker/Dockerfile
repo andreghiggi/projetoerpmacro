@@ -1,6 +1,6 @@
 FROM public.ecr.aws/dwchiang/nginx-php-fpm:8.2.26-fpm-bookworm-nginx-1.27.1
 
-COPY --from=composer:latest  /usr/local/bin/composer /usr/bin/composer
+COPY --from=composer:latest  /usr/bin/composer /usr/bin/composer
 COPY docker/default.conf /etc/nginx/conf.d/default.conf
 COPY docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/php.ini /usr/local/etc/php/php.ini
