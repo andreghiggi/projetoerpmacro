@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 cd /app
 composer install --no-interaction --prefer-dist --no-dev
