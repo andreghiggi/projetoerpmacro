@@ -28,5 +28,5 @@ RUN docker-php-ext-install intl
 RUN docker-php-ext-install bcmath
 RUN docker-php-ext-install pdo 
 RUN docker-php-ext-install pdo_mysql
-
+RUN docker-php-ext-install fileinfo
 ENV dev=1

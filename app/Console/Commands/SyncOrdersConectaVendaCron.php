@@ -9,6 +9,7 @@ use App\Utils\ConectaVendaUtil;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\VarDumper\VarDumper;
 
 class SyncOrdersConectaVendaCron extends Command
 {
@@ -25,13 +26,23 @@ class SyncOrdersConectaVendaCron extends Command
      * @var string
      */
     protected $description = 'Sincroniza os pedidos do conecta venda com o ERP';
+    /**
+     * Url do Conecta (local ou live)
+     * @var string
+    */
+    protected $conecta_endpoint = "";
     protected ConectaVendaUtil $util;
 
     public function __construct(ConectaVendaUtil $util)
     {
         parent::__construct();
         $this->util = $util;
-
+        $conecta_local = env("CONECTA_LOCAL") ?? false;
+        if( $conecta_local ) {
+            // $this->conecta_endpoint = "conecta-api-v2";
+        } else {
+            $this->conecta_endpoint = "https://api.conectavenda.com.br";
+        }
     }
     /**
      * Execute the console command.
@@ -40,8 +51,8 @@ class SyncOrdersConectaVendaCron extends Command
     {
         $empresas = Empresa::where('status', 1)->get();
         foreach ($empresas as $empresa){
-
             $config = ConectaVendaConfig::where('empresa_id', $empresa->id)->first();
+            
             if($config == null){
                 continue;
             }
@@ -55,7 +66,13 @@ class SyncOrdersConectaVendaCron extends Command
                 'data' => (string) ($data->data_atualizacao_status ?? today()),
             ];
 
-            $response = Http::withOptions(['verify' => false])->asJson()->post('https://api.conectavenda.com.br/pedidos/listar', $payload);
+            $response = Http::withOptions([
+                    'verify' => false,
+                    'debug' => false]
+                )
+                ->asJson()
+                ->post("https://api.conectavenda.com.br/pedidos/listar", 
+                $payload );
 
             if($response->status() == 200){
                 $orders = json_decode($response);
@@ -66,6 +83,7 @@ class SyncOrdersConectaVendaCron extends Command
 
                         if($pedido && isset($order->produtos)){
                             foreach ($order->produtos as $item){
+                                print_r($item);
                                 $this->util->createItemOrder($item, $pedido->id);
                             }
                         }
