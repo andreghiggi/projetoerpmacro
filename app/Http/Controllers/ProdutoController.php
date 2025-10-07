@@ -305,7 +305,6 @@ class ProdutoController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request);
         $this->__validate($request);
         $produto = null;
         try {
@@ -402,215 +401,213 @@ class ProdutoController extends Controller
                 ]);
             }
 
-            $locais = isset($request->locais) ? $request->locais : [];
+            $locais = $request->locais ?? [];
 
             $produto = DB::transaction(function () use ($request, $locais) {
-                $produto = Produto::create($request->all());
+            $produto = Produto::create($request->all());
 
-                if($request->combo == 1 && $request->produto_combo_id){
-                    for($i=0; $i<sizeof($request->produto_combo_id); $i++){
-                        ProdutoCombo::create([
-                            'produto_id' => $produto->id,
-                            'item_id' => $request->produto_combo_id[$i],
-                            'quantidade' => $request->quantidade_combo[$i],
-                            'valor_compra' => __convert_value_bd($request->valor_compra_combo[$i]),
-                            'sub_total' => __convert_value_bd($request->subtotal_combo[$i])
-                        ]);
-                    }
+            if($request->combo == 1 && $request->produto_combo_id){
+                for($i=0; $i<sizeof($request->produto_combo_id); $i++){
+                    ProdutoCombo::create([
+                        'produto_id' => $produto->id,
+                        'item_id' => $request->produto_combo_id[$i],
+                        'quantidade' => $request->quantidade_combo[$i],
+                        'valor_compra' => __convert_value_bd($request->valor_compra_combo[$i]),
+                        'sub_total' => __convert_value_bd($request->subtotal_combo[$i])
+                    ]);
                 }
-                if($request->variavel){
-                    for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
-                        $file_name = '';
-                        if(isset($request->imagem_variacao[$i])){
-                        // requisição com imagem
-                            $imagem = $request->imagem_variacao[$i];
-                            $file_name = $this->util->uploadImageArray($imagem, '/produtos');
-                        }
-
-                        $dataVariacao = [
-                            'produto_id' => $produto->id,
-                            'descricao' => $request->descricao_variacao[$i],
-                            'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
-                            'codigo_barras' => $request->codigo_barras_variacao[$i],
-                            'referencia' => $request->referencia_variacao[$i],
-                            'imagem' => $file_name
-                        ];
-                        $variacao = ProdutoVariacao::create($dataVariacao);
-
-                        if($request->estoque_variacao[$i] && sizeof($locais) <= 1){
-                            $qtd = __convert_value_bd($request->estoque_variacao[$i]);
-                            $this->utilEstoque->incrementaEstoque($produto->id, $qtd, $variacao->id);
-                            $transacao = Estoque::where('produto_id', $produto->id)->first();
-                            $tipo = 'incremento';
-                            $codigo_transacao = $transacao->id;
-                            $tipo_transacao = 'alteracao_estoque';
-                            $this->utilEstoque->movimentacaoProduto($produto->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
-                        }
+            }
+            if($request->variavel){
+                for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
+                    $file_name = '';
+                    if(isset($request->imagem_variacao[$i])){
+                    // requisição com imagem
+                        $imagem = $request->imagem_variacao[$i];
+                        $file_name = $this->util->uploadImageArray($imagem, '/produtos');
                     }
-                }else{
 
-                    if($request->estoque_inicial && sizeof($locais) <= 1){
+                    $dataVariacao = [
+                        'produto_id' => $produto->id,
+                        'descricao' => $request->descricao_variacao[$i],
+                        'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
+                        'codigo_barras' => $request->codigo_barras_variacao[$i],
+                        'referencia' => $request->referencia_variacao[$i],
+                        'imagem' => $file_name
+                    ];
+                    $variacao = ProdutoVariacao::create($dataVariacao);
 
-                        $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial, null);
+                    if($request->estoque_variacao[$i] && sizeof($locais) <= 1){
+                        $qtd = __convert_value_bd($request->estoque_variacao[$i]);
+                        $this->utilEstoque->incrementaEstoque($produto->id, $qtd, $variacao->id);
                         $transacao = Estoque::where('produto_id', $produto->id)->first();
-
                         $tipo = 'incremento';
-                        if($transacao != null){
+                        $codigo_transacao = $transacao->id;
+                        $tipo_transacao = 'alteracao_estoque';
+                        $this->utilEstoque->movimentacaoProduto($produto->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
+                    }
+                }
+            }else{
+
+                if($request->estoque_inicial && sizeof($locais) <= 1){
+
+                    $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial, null);
+                    $transacao = Estoque::where('produto_id', $produto->id)->first();
+
+                    $tipo = 'incremento';
+                    if($transacao != null){
+                        $codigo_transacao = $transacao->id;
+                        $tipo_transacao = 'alteracao_estoque';
+                        $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                    }else{
+                        // combo
+                        foreach($produto->itensDoCombo as $c){
+                            $transacao = Estoque::where('produto_id', $c->item_id)->first();
                             $codigo_transacao = $transacao->id;
                             $tipo_transacao = 'alteracao_estoque';
-                            $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
-                        }else{
-                            // combo
-                            foreach($produto->itensDoCombo as $c){
-                                $transacao = Estoque::where('produto_id', $c->item_id)->first();
-                                $codigo_transacao = $transacao->id;
-                                $tipo_transacao = 'alteracao_estoque';
-                                $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
-                            }
+                            $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                         }
                     }
                 }
+            }
 
-                $this->insereEmListaDePrecos($produto);
+            $this->insereEmListaDePrecos($produto);
 
-                if($request->mercadolivre){
-                    $resp = $this->criaAnuncio($request, $produto);
-                    if(isset($resp['erro'])){
-                        DB::rollBack();
-                        return [
-                            'erro' => 1,
-                            'msg' => $resp['msg']
-                        ];
-                    }else{
-                        $resp = $resp['retorno'];
-                        $produto->mercado_livre_link = $resp->permalink;
-                        $produto->mercado_livre_id = $resp->id;
-                        $produto->save();
-                    }
+            if($request->mercadolivre){
+                $resp = $this->criaAnuncio($request, $produto);
+                if(isset($resp['erro'])){
+                    DB::rollBack();
+                    return [
+                        'erro' => 1,
+                        'msg' => $resp['msg']
+                    ];
+                }else{
+                    $resp = $resp['retorno'];
+                    $produto->mercado_livre_link = $resp->permalink;
+                    $produto->mercado_livre_id = $resp->id;
+                    $produto->save();
                 }
+            }
 
-                if($request->woocommerce){
-                    $resp = $this->criaProdutoWoocommerce($request, $produto);
-                    if(isset($resp['erro'])){
-                        DB::rollBack();
-                        return [
-                            'erro' => 1,
-                            'msg' => $resp['msg']
-                        ];
-                    }else{
-                        $produto->woocommerce_id = $resp['product_id'];
-                        $produto->save();
-                    }
+            if($request->woocommerce){
+                $resp = $this->criaProdutoWoocommerce($request, $produto);
+                if(isset($resp['erro'])){
+                    DB::rollBack();
+                    return [
+                        'erro' => 1,
+                        'msg' => $resp['msg']
+                    ];
+                }else{
+                    $produto->woocommerce_id = $resp['product_id'];
+                    $produto->save();
                 }
+            }
 
-                if($request->nuvemshop){
-                    $resp = $this->utilNuvemShop->create($request, $produto);
-                }
+            if($request->nuvemshop){
+                $resp = $this->utilNuvemShop->create($request, $produto);
+            }
 
-                if($request->conectavenda){
+            if($request->conectavenda){
 //                    dd($produto->estoque);
-                    $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
-                    $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
-                    $produto->solicita_observacao = $request->solicita_observacao;
-                    $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
-                    if(!$emp){
-                        session()->flash('flash_error', 'Conecta Venda não configurado!');
-                        return $produto;
-                    }
-                    try {
-                        $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
-                        if (isset($retornoConecta['produtos_ids'])) {
-                            $produto->conecta_venda_id = $produto->id;
-                            $produto->conecta_venda_status = 1;
-                            $produto->conecta_venda_data_publicacao = $request->created_at;
-                            $produto->save();
-                        } else {
-                            \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
-                            session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
-                        }
-
-                    } catch (\Exception $e) {
-                        \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                        session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                    }
+                $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+                $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+                $produto->solicita_observacao = $request->solicita_observacao;
+                $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+                if(!$emp){
+                    session()->flash('flash_error', 'Conecta Venda não configurado!');
+                    return $produto;
                 }
+                try {
+                    $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
+                    if (isset($retornoConecta['produtos_ids'])) {
+                        $produto->conecta_venda_id = $produto->id;
+                        $produto->conecta_venda_status = 1;
+                        $produto->conecta_venda_data_publicacao = $request->created_at;
+                        $produto->save();
+                    } else {
+                        \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
+                        session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
+                    }
+
+                } catch (\Exception $e) {
+                    \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+                    session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+                }
+            }
 
 
-                return $produto;
-            });
+            return $produto;
+        });
 
 
 
-if(isset($produto['erro'])){
-    session()->flash("flash_error", $produto['msg']);
-    return redirect()->back();
-}
-session()->flash("flash_success", "Produto cadastrado!");
+        if(isset($produto['erro'])){
+            session()->flash("flash_error", $produto['msg']);
+            return redirect()->back();
+        }
+        session()->flash("flash_success", "Produto cadastrado!");
 
-if(sizeof($locais) >= 2){
-    for($i=0; $i<sizeof($locais); $i++){
-        ProdutoLocalizacao::updateOrCreate([
-            'produto_id' => $produto->id,
-            'localizacao_id' => $locais[$i]
-        ]);
-    }
-    session()->flash("flash_success", "Produto cadastrado, informe o estoque de cada localização!");
-    return redirect()->route('estoque-localizacao.define', [$produto->id]);
-}else{
+        if(sizeof($locais) >= 2){
+            for($i=0; $i<sizeof($locais); $i++){
+                ProdutoLocalizacao::updateOrCreate([
+                    'produto_id' => $produto->id,
+                    'localizacao_id' => $locais[$i]
+                ]);
+            }
+            session()->flash("flash_success", "Produto cadastrado, informe o estoque de cada localização!");
+            return redirect()->route('estoque-localizacao.define', [$produto->id]);
+        }else{
 
-    if(sizeof($locais) == 1){
-        ProdutoLocalizacao::updateOrCreate([
-            'produto_id' => $produto->id,
-            'localizacao_id' => $locais[0]
-        ]);
-    }else{
-        ProdutoLocalizacao::updateOrCreate([
-            'produto_id' => $produto->id,
-            'localizacao_id' => $request->local_id
-        ]);
-    }
-}
+            if(sizeof($locais) == 1){
+                ProdutoLocalizacao::updateOrCreate([
+                    'produto_id' => $produto->id,
+                    'localizacao_id' => $locais[0]
+                ]);
+            }else{
+                ProdutoLocalizacao::updateOrCreate([
+                    'produto_id' => $produto->id,
+                    'localizacao_id' => $request->local_id
+                ]);
+            }
+        }
 
-__createLog($request->empresa_id, 'Produto', 'cadastrar', $produto->nome);
-if ($request->composto == true) {
-    session()->flash("flash_success", "Produto cadastrado, informe a composição!");
-    return redirect()->route('produto-composto.create', [$produto->id]);
-}
-} catch (\Exception $e) {
-    echo $e->getMessage();
-    die;
-    __createLog($request->empresa_id, 'Produto', 'erro', $e->getMessage());
-    session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
-    return redirect()->back();
-}
+        __createLog($request->empresa_id, 'Produto', 'cadastrar', $produto->nome);
+        if ($request->composto == true) {
+            session()->flash("flash_success", "Produto cadastrado, informe a composição!");
+            return redirect()->route('produto-composto.create', [$produto->id]);
+        }
+        } catch (\Exception $e) {
+            __createLog($request->empresa_id, 'Produto', 'erro', $e->getMessage());
+            session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
+            return redirect()->back();
+        }
 
-if ($produto->categoria && $produto->categoria->tipo_pizza) {
-    return redirect()->route('produtos.tamanho-pizza', [$produto->id]);
-}
+        if ($produto->categoria && $produto->categoria->tipo_pizza) {
+            return redirect()->route('produtos.tamanho-pizza', [$produto->id]);
+        }
 
-if (isset($request->redirect_cardapio)) {
-    return redirect()->route('produtos-cardapio.index');
-}
+        if (isset($request->redirect_cardapio)) {
+            return redirect()->route('produtos-cardapio.index');
+        }
 
-if (isset($request->redirect_delivery)) {
-    return redirect()->route('produtos-delivery.index');
-}
+        if (isset($request->redirect_delivery)) {
+            return redirect()->route('produtos-delivery.index');
+        }
 
-if (isset($request->redirect_nuvemshop)) {
-    return redirect()->route('nuvem-shop-produtos.index');
-}
+        if (isset($request->redirect_nuvemshop)) {
+            return redirect()->route('nuvem-shop-produtos.index');
+        }
 
-if (isset($request->redirect_ecommerce)) {
-    return redirect()->route('produtos-ecommerce.index');
-}
-if (isset($request->redirect_mercadolivre)) {
-    return redirect()->route('mercado-livre-produtos.index');
-}
+        if (isset($request->redirect_ecommerce)) {
+            return redirect()->route('produtos-ecommerce.index');
+        }
+        if (isset($request->redirect_mercadolivre)) {
+            return redirect()->route('mercado-livre-produtos.index');
+        }
 
-if (isset($request->redirect_woocommerce)) {
-    return redirect()->route('woocommerce-produtos.index');
-}
-return redirect()->route('produtos.index');
+        if (isset($request->redirect_woocommerce)) {
+            return redirect()->route('woocommerce-produtos.index');
+        }
+        return redirect()->route('produtos.index');
 }
 
 private function insereEmListaDePrecos($produto){
@@ -632,9 +629,11 @@ private function insereEmListaDePrecos($produto){
                 $valor = $produto->valor_compra - ($produto->valor_compra*($l->percentual_alteracao/100));
             }
         }
-        ItemListaPreco::create([
+        ItemListaPreco::updateOrCreate([
             'lista_id' => $l->id,
             'produto_id' => $produto->id,
+        ],
+        [
             'valor' => $valor,
             'percentual_lucro' => $l->percentual_alteracao
         ]);
@@ -643,16 +642,20 @@ private function insereEmListaDePrecos($produto){
 
 public function update(Request $request, $id)
 {
-    $item = Produto::findOrFail($id);
-    __validaObjetoEmpresa($item);
-    try {
-        $file_name = $item->imagem;
+    $produto = Produto::findOrFail($id);
+    __validaObjetoEmpresa($produto);
+    $this->__validate($request);
 
+    // dd($request);
+
+    $locais = $request->locais ?? [];
+
+    try {
+        $file_name = '';
         if ($request->hasFile('image')) {
-            $this->util->unlinkImage($item, '/produtos');
+            $this->util->unlinkImage($produto, '/produtos');
             $file_name = $this->util->uploadImage($request, '/produtos');
         }
-
         $categorias_woocommerce = [];
         if($request->categorias_woocommerce){
             for($i=0; $i<sizeof($request->categorias_woocommerce); $i++){
@@ -660,51 +663,51 @@ public function update(Request $request, $id)
             }
         }
         $request->merge([
-            'valor_unitario' => __convert_value_bd($request->valor_unitario),
-            'valor_prazo' => __convert_value_bd($request->valor_prazo),
-            'valor_compra' => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
-            'valor_minimo_venda' => $request->valor_minimo_venda ? __convert_value_bd($request->valor_minimo_venda) : 0,
-            'imagem' => $file_name,
-            'codigo_anp' => $request->codigo_anp ?? '',
-            'perc_glp' => $request->perc_glp ? __convert_value_bd($request->perc_glp) : 0,
-            'perc_gnn' => $request->perc_gnn ? __convert_value_bd($request->perc_gnn) : 0,
-            'perc_gni' => $request->perc_gni ? __convert_value_bd($request->perc_gni) : 0,
-            'valor_partida' => $request->valor_partida ? __convert_value_bd($request->valor_partida) : 0,
-            'unidade_tributavel' => $request->unidade_tributavel ?? '',
-            'quantidade_tributavel' => $request->quantidade_tributavel ? __convert_value_bd($request->quantidade_tributavel) : 0,
-            'adRemICMSRet' => $request->adRemICMSRet ? __convert_value_bd($request->adRemICMSRet) : 0,
-            'pBio' => $request->pBio ? __convert_value_bd($request->pBio) : 0,
-            'pOrig' => $request->pOrig ? __convert_value_bd($request->pOrig) : 0,
-            'indImport' => $request->indImport ?? '',
-            'cUFOrig' => $request->cUFOrig ?? '',
-            'cardapio' => $request->cardapio ? 1 : 0,
-            'delivery' => $request->delivery ? 1 : 0,
-            'ecommerce' => $request->ecommerce ? 1 : 0,
-            'reserva' => $request->reserva ? 1 : 0,
-            'texto_delivery' => $request->texto_delivery ?? '',
-            'texto_nuvem_shop' => $request->texto_nuvem_shop ?? '',
+            // 'woocommerce_valor' => $request->woocommerce_valor > 0 ? __convert_value_bd($request->woocommerce_valor) : __convert_value_bd($request->valor_unitario),
+            'valor_unitario'          => __convert_value_bd($request->valor_unitario),
+            'valor_prazo'             => __convert_value_bd($request->valor_prazo),
+            'valor_compra'            => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
+            'valor_minimo_venda'      => $request->valor_minimo_venda ? __convert_value_bd($request->valor_minimo_venda) : 0,
+            'imagem'                  => $file_name,
+            'codigo_anp'              => $request->codigo_anp ?? '',
+            'perc_glp'                => $request->perc_glp ? __convert_value_bd($request->perc_glp) : 0,
+            'perc_gnn'                => $request->perc_gnn ? __convert_value_bd($request->perc_gnn) : 0,
+            'perc_gni'                => $request->perc_gni ? __convert_value_bd($request->perc_gni) : 0,
+            'valor_partida'           => $request->valor_partida ? __convert_value_bd($request->valor_partida) : 0,
+            'unidade_tributavel'      => $request->unidade_tributavel ?? '',
+            'quantidade_tributavel'   => $request->quantidade_tributavel ? __convert_value_bd($request->quantidade_tributavel) : 0,
+            'adRemICMSRet'            => $request->adRemICMSRet ? __convert_value_bd($request->adRemICMSRet) : 0,
+            'pBio'                    => $request->pBio ? __convert_value_bd($request->pBio) : 0,
+            'pOrig'                   => $request->pOrig ? __convert_value_bd($request->pOrig) : 0,
+            'indImport'               => $request->indImport ?? '',
+            'cUFOrig'                 => $request->cUFOrig ?? '',
+            'cardapio'                => $request->cardapio ? 1 : 0,
+            'delivery'                => $request->delivery ? 1 : 0,
+            'ecommerce'               => $request->ecommerce ? 1 : 0,
+            'reserva'                 => $request->reserva ? 1 : 0,
+            'texto_delivery'          => $request->texto_delivery ?? '',
+            'texto_nuvem_shop'        => $request->texto_nuvem_shop ?? '',
             'mercado_livre_descricao' => $request->mercado_livre_descricao ?? '',
-            'estoque_minimo' => $request->estoque_minimo ? __convert_value_bd($request->estoque_minimo) : 0,
-            'mercado_livre_valor' => $request->mercado_livre_valor ? __convert_value_bd($request->mercado_livre_valor) : 0,
+            'estoque_minimo'          => $request->estoque_minimo ? __convert_value_bd($request->estoque_minimo) : 0,
+            'mercado_livre_valor'     => $request->mercado_livre_valor ? __convert_value_bd($request->mercado_livre_valor) : 0,
+            'perc_icms'               => $request->perc_icms ?? 0,
+            'perc_pis'                => $request->perc_pis ?? 0,
+            'perc_cofins'             => $request->perc_cofins ?? 0,
+            'perc_ipi'                => $request->perc_ipi ?? 0,
+            'cfop_estadual'           => $request->cfop_estadual ?? '',
+            'cfop_outro_estado'       => $request->cfop_outro_estado ?? '',
+            'valor_combo'             => $request->valor_combo ? __convert_value_bd($request->valor_combo) : 0,
+            'margem_combo'            => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 0,
+            'valor_atacado'           => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
+            'categorias_woocommerce'  => json_encode($categorias_woocommerce),
 
-            'perc_icms' => $request->perc_icms ?? 0,
-            'perc_pis' => $request->perc_pis ?? 0,
-            'perc_cofins' => $request->perc_cofins ?? 0,
-            'perc_ipi' => $request->perc_ipi ?? 0,
-            'cfop_estadual' => $request->cfop_estadual ?? '',
-            'cfop_outro_estado' => $request->cfop_outro_estado ?? '',
-            'valor_combo' => $request->valor_combo ? __convert_value_bd($request->valor_combo) : 0,
-            'margem_combo' => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 0,
-            'valor_atacado' => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
-            'categorias_woocommerce' => json_encode($categorias_woocommerce),
             'woocommerce_descricao' => $request->woocommerce_descricao ?? '',
-
         ]);
 
         if ($request->cardapio) {
             $request->merge([
                 'valor_cardapio' => $request->valor_cardapio ? __convert_value_bd($request->valor_cardapio) :
-                $request->valor_unitario,
+                $request->valor_unitario
             ]);
         }
 
@@ -712,217 +715,219 @@ public function update(Request $request, $id)
             $request->merge([
                 'valor_delivery' => $request->valor_delivery ? __convert_value_bd($request->valor_delivery) :
                 $request->valor_unitario,
-                'hash_delivery' => $item->hash_delivery != null ? $item->hash_delivery : Str::random(50),
+                'hash_delivery' => Str::random(50),
             ]);
         }
 
         if ($request->ecommerce) {
             $request->merge([
                 'valor_ecommerce' => $request->valor_ecommerce ? __convert_value_bd($request->valor_ecommerce) :
-                $request->valor_ecommerce,
-                'hash_ecommerce' => $item->hash_ecommerce != null ? $item->hash_ecommerce : Str::random(50),
+                $request->valor_unitario,
+                'hash_ecommerce' => Str::random(50),
                 'texto_ecommerce' => $request->texto_ecommerce ?? ''
+            ]);
+            // dd($request->all());
+        }else{
+            $request->merge([
+                'texto_ecommerce' => ''
             ]);
         }
 
-        $item->fill($request->all())->save();
+        $produto->fill($request->all())->save();
 
-        if($request->variavel){
 
-            // $item->variacoes()->delete();
-            $variacaoDelete = [];
-            for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
-                $dataVariacao = [
-                    'produto_id' => $item->id,
-                    'descricao' => $request->descricao_variacao[$i],
-                    'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
-                    'codigo_barras' => $request->codigo_barras_variacao[$i],
-                    'referencia' => $request->referencia_variacao[$i],
-                ];
-                if(isset($request->variacao_id[$i])){
-                    $variacao = ProdutoVariacao::findOrfail($request->variacao_id[$i]);
-
-                    $file_name = $variacao->imagem;
-
-                    if(isset($request->imagem_variacao[$i])){
-
-                        if($file_name != null){
-                            $this->util->unlinkImage($variacao, '/produtos');
-                        }
-                        // requisição com imagem
-                        $imagem = $request->imagem_variacao[$i];
-                        $file_name = $this->util->uploadImageArray($imagem, '/produtos');
-
-                    }
-                    $dataVariacao['imagem'] = $file_name;
-
-                    $variacao->fill($dataVariacao)->save();
-                    $variacaoDelete[] = $request->variacao_id[$i];
-                }else{
-                    $file_name = '';
-                    if(isset($request->imagem_variacao[$i])){
-                            // requisição com imagem
-                        $imagem = $request->imagem_variacao[$i];
-                        $file_name = $this->util->uploadImageArray($imagem, '/produtos');
-                    }
-                    $dataVariacao['imagem'] = $file_name;
-
-                    ProdutoVariacao::create($dataVariacao);
-                }
-            }
-            foreach($item->variacoes as $v){
-                if(!in_array($v->id, $variacaoDelete)){
-                    //verifica
-                    $itemNfce = \App\Models\ItemNfce::where('variacao_id', $v->id)
-                    ->first();
-                    $itemNfe = \App\Models\ItemNfe::where('variacao_id', $v->id)
-                    ->first();
-                    if($itemNfce == null && $itemNfe == null){
-                        if($v->estoque){
-                            $v->estoque->delete();
-                        }
-                        if($v->movimentacaoProduto){
-                            $v->movimentacaoProduto->delete();
-                        }
-                        $v->delete();
-                    }else{
-                        session()->flash("flash_error", "Esta variação $v->descricao já possui vendas ou compras não é possivel remover");
-                        return redirect()->back();
-                    }
-                }
-            }
-            // dd($variacaoDelete);
-        }else{
-            ProdutoVariacao::where('produto_id', $item->id)->delete();
-        }
-
-        if($request->combo == 1 && $request->produto_combo_id){
-            $item->itensDoCombo()->delete();
-            for($i=0; $i<sizeof($request->produto_combo_id); $i++){
-                ProdutoCombo::create([
-                    'produto_id' => $item->id,
-                    'item_id' => $request->produto_combo_id[$i],
-                    'quantidade' => $request->quantidade_combo[$i],
-                    'valor_compra' => __convert_value_bd($request->valor_compra_combo[$i]),
-                    'sub_total' => __convert_value_bd($request->subtotal_combo[$i])
-                ]);
-            }
-        }
-
-        if($request->mercadolivre){
-            if($item->mercado_livre_id == null){
-                $resp = $this->criaAnuncio($request, $item);
-            }else{
-                $resp = $this->atualizaAnuncio($request, $item);
-            }
-            if(isset($resp['erro'])){
-                session()->flash("flash_error", $resp['msg']);
-
-            }else{
-                $resp = $resp['retorno'];
-                $item->mercado_livre_link = $resp->permalink;
-                $item->mercado_livre_id = $resp->id;
-                $item->save();
-                session()->flash("flash_success", "Produto atualizado!");
-            }
-        }else{
-            session()->flash("flash_success", "Produto atualizado!");
-        }
-
-        if($request->woocommerce){
-            if($item->woocommerce_id == null){
-                $resp = $this->criaProdutoWoocommerce($request, $item);
-            }else{
-                $resp = $this->atualizaProdutoWoocommerce($request, $item);
-            }
-            if(isset($resp['erro'])){
-                session()->flash("flash_error", $resp['msg']);
-
-            }else{
-                $item->woocommerce_id = $resp['product_id'];
-                $item->save();
-                session()->flash("flash_success", "Produto atualizado!");
-
-            }
-        }else{
-            session()->flash("flash_success", "Produto atualizado!");
-        }
-
-        if($request->conectavenda){
-            $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
-            if(!$emp){
-                session()->flash('flash_error', 'Conecta Venda não configurado!');
-                return $item;
-            }
-
-            if(!$item->conceta_venda_id){
-                try {
-                    $item->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
-                    $item->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
-                    $item->solicita_observacao = $request->solicita_observacao;
-                    $retornoConecta = $this->utilConectaVenda->create($emp, $item);
-                    if (isset($retornoConecta['produtos_ids'])) {
-                        $item->conecta_venda_id = $retornoConecta['produtos_ids'][0]['id'];
-                        $item->conecta_venda_status = 1;
-                        $item->conecta_venda_data_publicacao = Carbon::now();
-                        $item->save();
-                    } else {
-                        \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
-                        session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
-                    }
-
-                } catch (\Exception $e) {
-                    \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                    session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                }
-            } else{
-                try {
-                    $item->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
-                    $item->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
-                    $item->solicita_observacao = $request->solicita_observacao;
-                    $retornoConecta = $this->utilConectaVenda->update($emp, $item);
-                    if (isset($retornoConecta['produtos_ids'])) {
-                        $item->conecta_venda_id = $retornoConecta['produtos_ids'][0]['id'];
-                        $item->conecta_venda_status = 0;
-                        $item->conecta_venda_data_publicacao = $request->updated_at;
-                        $item->save();
-                    } else {
-                        \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
-                        session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
-                    }
-
-                } catch (\Exception $e) {
-                    \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                    session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                }
-            }
-
-        }
-
-        if(isset($request->locais)){
-
+        if(isset($locais)){
             $locais = __getLocaisAtivoUsuario();
             $locais = $locais->pluck(['id'])->toArray();
 
-            foreach($item->locais as $l){
+            foreach($produto->locais as $l){
                 if(in_array($l->localizacao_id, $locais)){
                     $l->delete();
                 }
             }
-            for($i=0; $i<sizeof($request->locais); $i++){
+            for($i=0; $i<sizeof($locais); $i++){
                 ProdutoLocalizacao::updateOrCreate([
-                    'produto_id' => $item->id,
-                    'localizacao_id' => $request->locais[$i]
+                    'produto_id'     => $produto->id,
+                    'localizacao_id' => $locais[$i]
                 ]);
             }
         }
 
-        __createLog($request->empresa_id, 'Produto', 'editar', $item->nome);
-        if ($request->composto == true) {
-            session()->flash("flash_success", "Produto atualizado, informe a composição!");
-            return redirect()->route('produto-composto.create', [$item->id]);
+        $variacoes_presentes = [];
+
+        if($request->variavel){
+            for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
+                $id_variacao = $request->variacao_id[$i] ?? 0;
+
+                $file_name = '';
+                if(isset($request->imagem_variacao[$i])){
+                // requisição com imagem
+                    $imagem = $request->imagem_variacao[$i];
+                    $file_name = $this->util->uploadImageArray($imagem, '/produtos');
+                }
+
+                $dataVariacao = [
+                    'produto_id'    => $produto->id,
+                    'descricao'     => $request->descricao_variacao[$i],
+                    'valor'         => __convert_value_bd($request->valor_venda_variacao[$i]),
+                    'codigo_barras' => $request->codigo_barras_variacao[$i],
+                    'referencia'    => $request->referencia_variacao[$i],
+                    'imagem'        => $file_name
+                ];
+                $variacao = ProdutoVariacao::updateOrCreate(
+                    ['id' => $id_variacao],
+                    $dataVariacao);
+
+                $variacoes_presentes[] = $variacao->id;
+
+                if( $id_variacao == 0 && $request->estoque_variacao[$i] && isset($locais) && sizeof($locais) <= 1){
+                    $qtd = __convert_value_bd($request->estoque_variacao[$i]);
+                    $this->utilEstoque->incrementaEstoque($produto->id, $qtd, $variacao->id);
+                    $transacao = Estoque::where('produto_id', $produto->id)->first();
+                    $tipo = 'incremento';
+                    $codigo_transacao = $transacao->id;
+                    $tipo_transacao = 'alteracao_estoque';
+                    $this->utilEstoque->movimentacaoProduto($produto->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
+                }
+            }
+        }else{
+            if($request->estoque_inicial && isset($locais) && sizeof($locais) <= 1){
+                
+                $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial, null);
+                $transacao = Estoque::where('produto_id', $produto->id)->first();
+
+                $tipo = 'incremento';
+                if($transacao != null){
+                    $codigo_transacao = $transacao->id;
+                    $tipo_transacao = 'alteracao_estoque';
+                    $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                }else{
+                    // combo
+                    foreach($produto->itensDoCombo as $c){
+                        $transacao = Estoque::where('produto_id', $c->item_id)->first();
+                        $codigo_transacao = $transacao->id;
+                        $tipo_transacao = 'alteracao_estoque';
+                        $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                    }
+                }
+            }
         }
+
+        // Remove variações que não foram enviadas pelo request 
+        // (portanto que foram deletadas no front)
+        ProdutoVariacao::removerVariacoesNaoPresentes( $produto->id, $variacoes_presentes );
+        $this->insereEmListaDePrecos($produto);
+
+        // @NOTE(Patric):
+        // Removendo lógicas de outros módulos, por enquanto
+
+//         if($request->mercadolivre){
+//             $resp = $this->criaAnuncio($request, $produto);
+//             if(isset($resp['erro'])){
+//                 DB::rollBack();
+//                 return [
+//                     'erro' => 1,
+//                     'msg' => $resp['msg']
+//                 ];
+//             }else{
+//                 $resp = $resp['retorno'];
+//                 $produto->mercado_livre_link = $resp->permalink;
+//                 $produto->mercado_livre_id = $resp->id;
+//                 $produto->save();
+//             }
+//         }
+
+//         if($request->woocommerce){
+//             $resp = $this->criaProdutoWoocommerce($request, $produto);
+//             if(isset($resp['erro'])){
+//                 DB::rollBack();
+//                 return [
+//                     'erro' => 1,
+//                     'msg' => $resp['msg']
+//                 ];
+//             }else{
+//                 $produto->woocommerce_id = $resp['product_id'];
+//                 $produto->save();
+//             }
+//         }
+
+//         if($request->nuvemshop){
+//             $resp = $this->utilNuvemShop->create($request, $produto);
+//         }
+
+//         if($request->conectavenda){
+// //                    dd($produto->estoque);
+//             $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+//             $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+//             $produto->solicita_observacao = $request->solicita_observacao;
+//             $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+//             if(!$emp){
+//                 session()->flash('flash_error', 'Conecta Venda não configurado!');
+//                 return $produto;
+//             }
+//             try {
+//                 $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
+//                 if (isset($retornoConecta['produtos_ids'])) {
+//                     $produto->conecta_venda_id = $produto->id;
+//                     $produto->conecta_venda_status = 1;
+//                     $produto->conecta_venda_data_publicacao = $request->created_at;
+//                     $produto->save();
+//                 } else {
+//                     \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
+//                     session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
+//                 }
+
+//             } catch (\Exception $e) {
+//                 \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+//                 session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+//             }
+//         }
+
+
+    //     return $produto;
+    // });
+
+
+
+    if(isset($produto['erro'])){
+        session()->flash("flash_error", $produto['msg']);
+        return redirect()->back();
+    }
+    session()->flash("flash_success", "Produto cadastrado!");
+
+    if(sizeof($locais) >= 2){
+        for($i=0; $i<sizeof($locais); $i++){
+            ProdutoLocalizacao::updateOrCreate([
+                'produto_id' => $produto->id,
+                'localizacao_id' => $locais[$i]
+            ]);
+        }
+        session()->flash("flash_success", "Produto cadastrado, informe o estoque de cada localização!");
+        return redirect()->route('estoque-localizacao.define', [$produto->id]);
+    }else{
+
+        if(sizeof($locais) == 1){
+            ProdutoLocalizacao::updateOrCreate([
+                'produto_id' => $produto->id,
+                'localizacao_id' => $locais[0]
+            ]);
+        }else{
+            ProdutoLocalizacao::updateOrCreate([
+                'produto_id' => $produto->id,
+                'localizacao_id' => $request->local_id
+            ]);
+        }
+    }
+
+    __createLog($request->empresa_id, 'Produto', 'editar', $produto->nome);
+
+    if ($request->composto == true) {
+        session()->flash("flash_success", "Produto atualizado, informe a composição!");
+        return redirect()->route('produto-composto.create', [$produto->id]);
+    }
     } catch (\Exception $e) {
+        dd("catch", $e);
+
         __createLog($request->empresa_id, 'Produto', 'erro', $e->getMessage());
         session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
     }
@@ -939,6 +944,324 @@ public function update(Request $request, $id)
         return redirect()->route('mercado-livre-produtos.index');
     }
     return redirect()->route('produtos.index');
+
+    // dd($request);
+
+    // $item = Produto::findOrFail($id);
+    // __validaObjetoEmpresa($item);
+    
+    // try {
+    //     $file_name = $item->imagem;
+
+    //     if ($request->hasFile('image')) {
+    //         $this->util->unlinkImage($item, '/produtos');
+    //         $file_name = $this->util->uploadImage($request, '/produtos');
+    //     }
+
+    //     $categorias_woocommerce = [];
+    //     if($request->categorias_woocommerce){
+    //         for($i=0; $i<sizeof($request->categorias_woocommerce); $i++){
+    //             array_push($categorias_woocommerce, $request->categorias_woocommerce[$i]);
+    //         }
+    //     }
+    //     $request->merge([
+    //         'valor_unitario' => __convert_value_bd($request->valor_unitario),
+    //         'valor_prazo' => __convert_value_bd($request->valor_prazo),
+    //         'valor_compra' => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
+    //         'valor_minimo_venda' => $request->valor_minimo_venda ? __convert_value_bd($request->valor_minimo_venda) : 0,
+    //         'imagem' => $file_name,
+    //         'codigo_anp' => $request->codigo_anp ?? '',
+    //         'perc_glp' => $request->perc_glp ? __convert_value_bd($request->perc_glp) : 0,
+    //         'perc_gnn' => $request->perc_gnn ? __convert_value_bd($request->perc_gnn) : 0,
+    //         'perc_gni' => $request->perc_gni ? __convert_value_bd($request->perc_gni) : 0,
+    //         'valor_partida' => $request->valor_partida ? __convert_value_bd($request->valor_partida) : 0,
+    //         'unidade_tributavel' => $request->unidade_tributavel ?? '',
+    //         'quantidade_tributavel' => $request->quantidade_tributavel ? __convert_value_bd($request->quantidade_tributavel) : 0,
+    //         'adRemICMSRet' => $request->adRemICMSRet ? __convert_value_bd($request->adRemICMSRet) : 0,
+    //         'pBio' => $request->pBio ? __convert_value_bd($request->pBio) : 0,
+    //         'pOrig' => $request->pOrig ? __convert_value_bd($request->pOrig) : 0,
+    //         'indImport' => $request->indImport ?? '',
+    //         'cUFOrig' => $request->cUFOrig ?? '',
+    //         'cardapio' => $request->cardapio ? 1 : 0,
+    //         'delivery' => $request->delivery ? 1 : 0,
+    //         'ecommerce' => $request->ecommerce ? 1 : 0,
+    //         'reserva' => $request->reserva ? 1 : 0,
+    //         'texto_delivery' => $request->texto_delivery ?? '',
+    //         'texto_nuvem_shop' => $request->texto_nuvem_shop ?? '',
+    //         'mercado_livre_descricao' => $request->mercado_livre_descricao ?? '',
+    //         'estoque_minimo' => $request->estoque_minimo ? __convert_value_bd($request->estoque_minimo) : 0,
+    //         'mercado_livre_valor' => $request->mercado_livre_valor ? __convert_value_bd($request->mercado_livre_valor) : 0,
+
+    //         'perc_icms' => $request->perc_icms ?? 0,
+    //         'perc_pis' => $request->perc_pis ?? 0,
+    //         'perc_cofins' => $request->perc_cofins ?? 0,
+    //         'perc_ipi' => $request->perc_ipi ?? 0,
+    //         'cfop_estadual' => $request->cfop_estadual ?? '',
+    //         'cfop_outro_estado' => $request->cfop_outro_estado ?? '',
+    //         'valor_combo' => $request->valor_combo ? __convert_value_bd($request->valor_combo) : 0,
+    //         'margem_combo' => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 0,
+    //         'valor_atacado' => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
+    //         'categorias_woocommerce' => json_encode($categorias_woocommerce),
+    //         'woocommerce_descricao' => $request->woocommerce_descricao ?? '',
+
+    //     ]);
+
+    //     if ($request->cardapio) {
+    //         $request->merge([
+    //             'valor_cardapio' => $request->valor_cardapio ? __convert_value_bd($request->valor_cardapio) :
+    //             $request->valor_unitario,
+    //         ]);
+    //     }
+
+    //     if ($request->delivery) {
+    //         $request->merge([
+    //             'valor_delivery' => $request->valor_delivery ? __convert_value_bd($request->valor_delivery) :
+    //             $request->valor_unitario,
+    //             'hash_delivery' => $item->hash_delivery != null ? $item->hash_delivery : Str::random(50),
+    //         ]);
+    //     }
+
+    //     if ($request->ecommerce) {
+    //         $request->merge([
+    //             'valor_ecommerce' => $request->valor_ecommerce ? __convert_value_bd($request->valor_ecommerce) :
+    //             $request->valor_ecommerce,
+    //             'hash_ecommerce' => $item->hash_ecommerce != null ? $item->hash_ecommerce : Str::random(50),
+    //             'texto_ecommerce' => $request->texto_ecommerce ?? ''
+    //         ]);
+    //     }
+
+    //     $item->fill($request->all())->save();
+
+    //     if($request->variavel){
+            
+    //         // $item->variacoes()->delete();
+    //         $variacaoDelete = [];
+    //         $variacoes_existentes = [];
+    //         for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
+    //             $dataVariacao = [
+    //                 'produto_id' => $item->id,
+    //                 'descricao' => $request->descricao_variacao[$i],
+    //                 'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
+    //                 'codigo_barras' => $request->codigo_barras_variacao[$i],
+    //                 'referencia' => $request->referencia_variacao[$i],
+    //             ];
+
+
+    //             if(isset($request->variacao_id[$i])){
+    //                 $variacao = ProdutoVariacao::findOrfail($request->variacao_id[$i]);
+
+    //                 $file_name = $variacao->imagem;
+
+    //                 if(isset($request->imagem_variacao[$i])){
+
+    //                     if($file_name != null){
+    //                         $this->util->unlinkImage($variacao, '/produtos');
+    //                     }
+    //                     // requisição com imagem
+    //                     $imagem = $request->imagem_variacao[$i];
+    //                     $file_name = $this->util->uploadImageArray($imagem, '/produtos');
+
+    //                 }
+    //                 $dataVariacao['imagem'] = $file_name;
+
+    //                 $variacao->fill($dataVariacao)->save();
+    //                 // $variacaoDelete[]       = $request->variacao_id[$i];
+    //                 $variacoes_existentes[] = $request->variacao_id[$i];
+    //             }else{
+    //                 $file_name = '';
+    //                 if(isset($request->imagem_variacao[$i])){
+    //                         // requisição com imagem
+    //                     $imagem = $request->imagem_variacao[$i];
+    //                     $file_name = $this->util->uploadImageArray($imagem, '/produtos');
+    //                 }
+    //                 $dataVariacao['imagem'] = $file_name;
+    //                 $response = ProdutoVariacao::create($dataVariacao);
+    //                 $estoque_qtde = $request->estoque_variacao[$i];
+    //                 $produto_id   = $response->produto_id;
+    //                 $variacao_id  = $response->id;
+    //                 $this->utilEstoque->incrementaEstoque($produto_id, $estoque_qtde, $variacao_id);
+    //                 $variacoes_existentes[] = $request->variacao_id[$i];
+    //             }
+                
+    //         }
+    //         $deletados = ProdutoVariacao::removerVariacoesNaoPresentes( $id , $variacoes_existentes);
+    //         dd($deletados, $id, $variacoes_existentes);
+
+    //         // @NOTE(Patric):
+    //         // Removendo esta lógica aqui. 
+    //         // Não compreendo bem a razão de apagar as variações, mas ele está impedindo de 
+    //         // atualizar variações novas nos produtos, então até não entender exatamente o que está acontecendo
+    //         // o código abaixo vai ser comentado.
+
+    //         // foreach($item->variacoes as $v){
+    //         //     if(!in_array($v->id, $variacaoDelete)){
+    //         //         //verifica
+    //         //         $itemNfce = \App\Models\ItemNfce::where('variacao_id', $v->id)
+    //         //         ->first();
+    //         //         $itemNfe = \App\Models\ItemNfe::where('variacao_id', $v->id)
+    //         //         ->first();
+    //         //         if($itemNfce == null && $itemNfe == null){
+    //         //             if($v->estoque){
+    //         //                 $v->estoque->delete();
+    //         //             }
+    //         //             if($v->movimentacaoProduto){
+    //         //                 $v->movimentacaoProduto->delete();
+    //         //             }
+    //         //             $v->delete();
+    //         //         }else{
+    //         //             session()->flash("flash_error", "Esta variação $v->descricao já possui vendas ou compras não é possivel remover");
+    //         //             return redirect()->back();
+    //         //         }
+    //         //     }
+    //         // }
+
+    //     }else{
+    //         ProdutoVariacao::where('produto_id', $item->id)->delete();
+    //     }
+
+    //     if($request->combo == 1 && $request->produto_combo_id){
+    //         $item->itensDoCombo()->delete();
+    //         for($i=0; $i<sizeof($request->produto_combo_id); $i++){
+    //             ProdutoCombo::create([
+    //                 'produto_id' => $item->id,
+    //                 'item_id' => $request->produto_combo_id[$i],
+    //                 'quantidade' => $request->quantidade_combo[$i],
+    //                 'valor_compra' => __convert_value_bd($request->valor_compra_combo[$i]),
+    //                 'sub_total' => __convert_value_bd($request->subtotal_combo[$i])
+    //             ]);
+    //         }
+    //     }
+
+    //     if($request->mercadolivre){
+    //         if($item->mercado_livre_id == null){
+    //             $resp = $this->criaAnuncio($request, $item);
+    //         }else{
+    //             $resp = $this->atualizaAnuncio($request, $item);
+    //         }
+    //         if(isset($resp['erro'])){
+    //             session()->flash("flash_error", $resp['msg']);
+
+    //         }else{
+    //             $resp = $resp['retorno'];
+    //             $item->mercado_livre_link = $resp->permalink;
+    //             $item->mercado_livre_id = $resp->id;
+    //             $item->save();
+    //             session()->flash("flash_success", "Produto atualizado!");
+    //         }
+    //     }else{
+    //         session()->flash("flash_success", "Produto atualizado!");
+    //     }
+
+    //     if($request->woocommerce){
+    //         if($item->woocommerce_id == null){
+    //             $resp = $this->criaProdutoWoocommerce($request, $item);
+    //         }else{
+    //             $resp = $this->atualizaProdutoWoocommerce($request, $item);
+    //         }
+    //         if(isset($resp['erro'])){
+    //             session()->flash("flash_error", $resp['msg']);
+
+    //         }else{
+    //             $item->woocommerce_id = $resp['product_id'];
+    //             $item->save();
+    //             session()->flash("flash_success", "Produto atualizado!");
+
+    //         }
+    //     }else{
+    //         session()->flash("flash_success", "Produto atualizado!");
+    //     }
+
+    //     if($request->conectavenda){
+    //         $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+    //         if(!$emp){
+    //             session()->flash('flash_error', 'Conecta Venda não configurado!');
+    //             return $item;
+    //         }
+
+    //         if(!$item->conceta_venda_id){
+    //             try {
+    //                 $item->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+    //                 $item->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+    //                 $item->solicita_observacao = $request->solicita_observacao;
+    //                 $retornoConecta = $this->utilConectaVenda->create($emp, $item);
+    //                 if (isset($retornoConecta['produtos_ids'])) {
+    //                     $item->conecta_venda_id = $retornoConecta['produtos_ids'][0]['id'];
+    //                     $item->conecta_venda_status = 1;
+    //                     $item->conecta_venda_data_publicacao = Carbon::now();
+    //                     $item->save();
+    //                 } else {
+    //                     \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
+    //                     session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
+    //                 }
+
+    //             } catch (\Exception $e) {
+    //                 \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+    //                 session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+    //             }
+    //         } else{
+    //             try {
+    //                 $item->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+    //                 $item->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+    //                 $item->solicita_observacao = $request->solicita_observacao;
+    //                 $retornoConecta = $this->utilConectaVenda->update($emp, $item);
+    //                 if (isset($retornoConecta['produtos_ids'])) {
+    //                     $item->conecta_venda_id = $retornoConecta['produtos_ids'][0]['id'];
+    //                     $item->conecta_venda_status = 0;
+    //                     $item->conecta_venda_data_publicacao = $request->updated_at;
+    //                     $item->save();
+    //                 } else {
+    //                     \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
+    //                     session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
+    //                 }
+
+    //             } catch (\Exception $e) {
+    //                 \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+    //                 session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+    //             }
+    //         }
+
+    //     }
+
+    //     if(isset($request->locais)){
+
+    //         $locais = __getLocaisAtivoUsuario();
+    //         $locais = $locais->pluck(['id'])->toArray();
+
+    //         foreach($item->locais as $l){
+    //             if(in_array($l->localizacao_id, $locais)){
+    //                 $l->delete();
+    //             }
+    //         }
+    //         for($i=0; $i<sizeof($request->locais); $i++){
+    //             ProdutoLocalizacao::updateOrCreate([
+    //                 'produto_id' => $item->id,
+    //                 'localizacao_id' => $request->locais[$i]
+    //             ]);
+    //         }
+    //     }
+
+    //     __createLog($request->empresa_id, 'Produto', 'editar', $item->nome);
+    //     if ($request->composto == true) {
+    //         session()->flash("flash_success", "Produto atualizado, informe a composição!");
+    //         return redirect()->route('produto-composto.create', [$item->id]);
+    //     }
+    // } catch (\Exception $e) {
+    //     __createLog($request->empresa_id, 'Produto', 'erro', $e->getMessage());
+    //     session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
+    // }
+    // if (isset($request->redirect_cardapio)) {
+    //     return redirect()->route('produtos-cardapio.index');
+    // }
+    // if (isset($request->redirect_delivery)) {
+    //     return redirect()->route('produtos-delivery.index');
+    // }
+    // if (isset($request->redirect_ecommerce)) {
+    //     return redirect()->route('produtos-ecommerce.index');
+    // }
+    // if (isset($request->redirect_mercadolivre)) {
+    //     return redirect()->route('mercado-livre-produtos.index');
+    // }
+    // return redirect()->route('produtos.index');
 }
 
 public function destroy($id)
@@ -1621,8 +1944,6 @@ private function criaProdutoWoocommerce($request, $produto){
             ];
         }
     }catch(\Exception $e){
-        echo $e->getMessage();
-        die;
         return [
             'erro' => 1,
             'msg' => $e->getMessage()
@@ -1663,8 +1984,6 @@ private function atualizaProdutoWoocommerce($request, $item){
             ];
         }
     }catch(\Exception $e){
-        // echo $e->getMessage();
-        // die;
         return [
             'erro' => 1,
             'msg' => $e->getMessage()

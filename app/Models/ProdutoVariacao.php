@@ -40,4 +40,10 @@ class ProdutoVariacao extends Model
         return "/uploads/produtos/$this->imagem";
     }
 
+    public static function removerVariacoesNaoPresentes( $produto_id, $variacoes_presentes = [] ) {
+        return ProdutoVariacao::where( 'produto_id', $produto_id )
+        ->whereNotIn('id', $variacoes_presentes)
+        ->delete();
+    }
+
 }
