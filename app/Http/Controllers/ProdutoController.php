@@ -648,8 +648,6 @@ public function update(Request $request, $id)
     __validaObjetoEmpresa($produto);
     $this->__validate($request);
 
-    // dd($request);
-
     $locais = $request->locais ?? [];
 
     try {
@@ -761,6 +759,14 @@ public function update(Request $request, $id)
             for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
                 $id_variacao = $request->variacao_id[$i] ?? 0;
 
+                $dataVariacao = [
+                    'produto_id'    => $produto->id,
+                    'descricao'     => $request->descricao_variacao[$i],
+                    'valor'         => __convert_value_bd($request->valor_venda_variacao[$i]),
+                    'codigo_barras' => $request->codigo_barras_variacao[$i],
+                    'referencia'    => $request->referencia_variacao[$i],
+                ];
+
                 $file_name = '';
                 if(isset($request->imagem_variacao[$i])){
                 // requisição com imagem
@@ -768,14 +774,14 @@ public function update(Request $request, $id)
                     $file_name = $this->util->uploadImageArray($imagem, '/produtos');
                 }
 
-                $dataVariacao = [
-                    'produto_id'    => $produto->id,
-                    'descricao'     => $request->descricao_variacao[$i],
-                    'valor'         => __convert_value_bd($request->valor_venda_variacao[$i]),
-                    'codigo_barras' => $request->codigo_barras_variacao[$i],
-                    'referencia'    => $request->referencia_variacao[$i],
-                    'imagem'        => $file_name
-                ];
+                if( $file_name ) {
+                    $produto_variacao = ProdutoVariacao::find( $id_variacao );
+                    if( $produto_variacao !== null ){
+                        $this->util->unlinkImage($produto_variacao, '/produtos');
+                    }
+                    $dataVariacao['imagem'] = $file_name;
+                }
+                
                 $variacao = ProdutoVariacao::updateOrCreate(
                     ['id' => $id_variacao],
                     $dataVariacao);
