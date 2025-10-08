@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class ProdutoVariacao extends Model
 {
@@ -41,9 +42,18 @@ class ProdutoVariacao extends Model
     }
 
     public static function removerVariacoesNaoPresentes( $produto_id, $variacoes_presentes = [] ) {
-        return ProdutoVariacao::where( 'produto_id', $produto_id )
-        ->whereNotIn('id', $variacoes_presentes)
-        ->delete();
+        DB::transaction(function () use ($produto_id, $variacoes_presentes) {
+            $variacoes = ProdutoVariacao::where( 'produto_id', $produto_id )
+            ->whereNotIn('id', $variacoes_presentes)->get();
+
+            $variacoes_ids = $variacoes->pluck('id');
+
+            if( $variacoes_ids->isNotEmpty() ) {
+                Estoque::whereIn( 'produto_variacao_id', $variacoes_ids )->delete();
+                MovimentacaoProduto::whereIn( 'produto_variacao_id', $variacoes_ids )->delete();
+                ProdutoVariacao::whereIn( 'id', $variacoes_ids )->delete();
+            }
+        });
     }
 
 }
