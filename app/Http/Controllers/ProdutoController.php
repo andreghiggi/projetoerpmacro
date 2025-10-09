@@ -650,11 +650,14 @@ public function update(Request $request, $id)
 
     $locais = $request->locais ?? [];
 
+    // dd($request);
+
     try {
         $file_name = '';
         if ($request->hasFile('image')) {
             $this->util->unlinkImage($produto, '/produtos');
             $file_name = $this->util->uploadImage($request, '/produtos');
+            $request->merge(['imagem' => $file_name]);
         }
         $categorias_woocommerce = [];
         if($request->categorias_woocommerce){
@@ -668,7 +671,7 @@ public function update(Request $request, $id)
             'valor_prazo'             => __convert_value_bd($request->valor_prazo),
             'valor_compra'            => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
             'valor_minimo_venda'      => $request->valor_minimo_venda ? __convert_value_bd($request->valor_minimo_venda) : 0,
-            'imagem'                  => $file_name,
+            // 'imagem'                  => $file_name,
             'codigo_anp'              => $request->codigo_anp ?? '',
             'perc_glp'                => $request->perc_glp ? __convert_value_bd($request->perc_glp) : 0,
             'perc_gnn'                => $request->perc_gnn ? __convert_value_bd($request->perc_gnn) : 0,
@@ -700,8 +703,7 @@ public function update(Request $request, $id)
             'margem_combo'            => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 0,
             'valor_atacado'           => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
             'categorias_woocommerce'  => json_encode($categorias_woocommerce),
-
-            'woocommerce_descricao' => $request->woocommerce_descricao ?? '',
+            'woocommerce_descricao'   => $request->woocommerce_descricao ?? '',
         ]);
 
         if ($request->cardapio) {

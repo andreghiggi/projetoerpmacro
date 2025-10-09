@@ -17,7 +17,7 @@
 		<input type="text" class="form-control ignore" name="referencia_variacao[]" value="">
 	</td>
 	<td>
-        <input type="number" step="1" min="0" class="form-control ignore qtd" name="estoque_variacao[]" value="">
+        <input type="number" step="1" min="0" class="form-control ignore" name="estoque_variacao[]" value="">
 
 {{--        <input type="text" class="form-control ignore qtd" name="estoque_variacao[]" value="">--}}
 	</td>
