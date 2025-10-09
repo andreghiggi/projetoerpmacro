@@ -2,15 +2,15 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/agilizeerpcom/erpmacro.agilizeerp.com.br
-    - /bin/cp -R app $DEPLOYPATH
-    - /bin/cp -R bootstrap $DEPLOYPATH
-    - /bin/cp -R config $DEPLOYPATH
-    - /bin/cp -R database $DEPLOYPATH
-    - /bin/cp -R public $DEPLOYPATH
-    - /bin/cp -R resources $DEPLOYPATH
-    - /bin/cp -R routes $DEPLOYPATH
-    - /bin/cp -R storage $DEPLOYPATH
-    - /bin/cp -R .env $DEPLOYPATH
-    - /bin/cp -R .htaccess $DEPLOYPATH
-    - /bin/cp -R artisan $DEPLOYPATH
-    - /bin/cp -R bd.sql $DEPLOYPATH
+    - /bin/cp -auvR app $DEPLOYPATH
+    - /bin/cp -auvR bootstrap $DEPLOYPATH
+    - /bin/cp -auvR config $DEPLOYPATH
+    - /bin/cp -auvR database $DEPLOYPATH
+    - /bin/cp -auvR public $DEPLOYPATH
+    - /bin/cp -auvR resources $DEPLOYPATH
+    - /bin/cp -auvR routes $DEPLOYPATH
+    - /bin/cp -auvR storage $DEPLOYPATH
+    - /bin/cp -auvR .env $DEPLOYPATH
+    - /bin/cp -auvR .htaccess $DEPLOYPATH
+    - /bin/cp -auvR artisan $DEPLOYPATH
+    - /bin/cp -auvR bd.sql $DEPLOYPATH
