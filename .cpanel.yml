@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/agilizeerpcom/erpmacro.agilizeerp.com.br
+    - export DEPLOYPATH=/home/agilizeerpcom/erpmacro.agilizeerp.com.br/.
     - /bin/cp -auvR app $DEPLOYPATH
     - /bin/cp -auvR bootstrap $DEPLOYPATH
     - /bin/cp -auvR config $DEPLOYPATH
