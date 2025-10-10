@@ -10,7 +10,6 @@ deployment:
     - /bin/cp -auvR resources $DEPLOYPATH/resources
     - /bin/cp -auvR routes $DEPLOYPATH/routes
     - /bin/cp -auvR storage $DEPLOYPATH/storage
-    # - /bin/cp -auv .env $DEPLOYPATH/.env
     - /bin/cp -auv .htaccess $DEPLOYPATH/.htaccess
     - /bin/cp -auv artisan $DEPLOYPATH/artisan
     - /bin/cp -auv bd.sql $DEPLOYPATH/bd.sql
