@@ -13,4 +13,4 @@ deployment:
     - /bin/cp -auv artisan $DEPLOYPATH/artisan
     - /bin/cp -auv bd.sql $DEPLOYPATH/bd.sql
     - /bin/cp -auv composer.json $DEPLOYPATH/composer.json
-    - cd $DEPLOYPATH && /bin/php artisan migrate
+    - cd $DEPLOYPATH && php artisan migrate
