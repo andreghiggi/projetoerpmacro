@@ -10,7 +10,7 @@ use App\Models\Empresa;
 use App\Models\NaturezaOperacao;
 use App\Models\Nfe;
 use App\Models\Transportadora;
-use App\Utils\ConectaVendaUtil;
+use App\Utils\ConectaVendaSincronizador;
 use App\Utils\EstoqueUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ class ConectaVendaPedidoController extends Controller
 {
 
     protected $util;
-    public function __construct(ConectaVendaUtil $util, EstoqueUtil $estoqueUtil)
+    public function __construct(ConectaVendaSincronizador $util, EstoqueUtil $estoqueUtil)
     {
         $this->util = $util;
         $this->estoqueUtil = $estoqueUtil;
@@ -83,7 +83,9 @@ class ConectaVendaPedidoController extends Controller
         // $produtos = Produto::where('empresa_id', request()->empresa_id)->get();
         $empresa = Empresa::findOrFail(request()->empresa_id);
         $caixa = __isCaixaAberto();
-        $empresa = __objetoParaEmissao($empresa, $caixa->local_id);
+        if($caixa) {
+            $empresa = __objetoParaEmissao($empresa, $caixa->local_id);
+        }
         $numeroNfe = Nfe::lastNumero($empresa);
 
         $isPedidoConectaVenda = 1;
@@ -95,27 +97,27 @@ class ConectaVendaPedidoController extends Controller
     {
         try {
             DB::beginTransaction();
-        $config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
-        $item = ConectaVendaPedido::with('itens.produto.variacoes')->findOrFail($id);
+            $config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+            
+            $item = ConectaVendaPedido::with('itens.produto.variacoes')->findOrFail($id);
+            if($item->situacao == "Cancelado" || $item->situacao == "cancelado") {
+                return redirect()->back()->with(session()->flash('flash_error', 'Pedido já Se Encontra Cancelado!'));
+            }
 
-        if($item->situacao == "Cancelado" || $item->situacao == "cancelado") {
-            return redirect()->back()->with(session()->flash('flash_error', 'Pedido já Se Encontra Cancelado!'));
-        }
-
-        if($item->nf_id != null) {
+            if($item->nf_id != null) {
                 return redirect()->back()->with(session()->flash('flash_error', 'Pedido já Se Encontra Faturado!'));
             }
 
-        if($item->situacao == "finalizado" || $item->situacao == "Finalizado"){
-            $response = $this->util->updateOrderStatus($config, $item->id, "cancelado");
-            $this->util->returnStock($item, $config);
-            $item->situacao = "Cancelado";
-            $item->save();
-            DB::commit();
-            return redirect()->back()->with(session()->flash('flash_success', 'Pedido Cancelado!'));
-        }
+            if($item->situacao == "finalizado" || $item->situacao == "Finalizado"){
+                $response = $this->util->updateOrderStatus($config, $item->conecta_pedido_id, "cancelado");
+                $this->util->returnStock($item, $config);
+                $item->situacao = "Cancelado";
+                $item->save();
+                DB::commit();
+                return redirect()->back()->with(session()->flash('flash_success', 'Pedido Cancelado!'));
+            }
 
-            $response = $this->util->updateOrderStatus($config, $item->id, "cancelado");
+            $response = $this->util->updateOrderStatus($config, $item->conecta_pedido_id, "cancelado");
             $item->situacao = "Cancelado";
             $item->save();
             if($response['ok'] != true){
@@ -127,7 +129,6 @@ class ConectaVendaPedidoController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with(session()->flash('flash_error', $e->getMessage()));
-
         }
     }
 

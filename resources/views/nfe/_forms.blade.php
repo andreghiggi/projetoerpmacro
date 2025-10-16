@@ -1,3 +1,5 @@
+
+
 @if(__countLocalAtivo() > 1 && __escolheLocalidade())
 <div class="row mb-2">
     <div class="col-md-3">
@@ -371,7 +373,7 @@
                                     @elseif(isset($isPedidoNuvemShop))
                                     @include('woocommerce_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @else
-
+                                        
                                     <tr class="dynamic-form">
                                         <td class="sticky-col first-col">
                                             <input type="hidden" class="_key" name="_key[]" value="{{ $key }}">
@@ -398,6 +400,7 @@
                                             @if($prod->variacao_id)
                                             <span>variação: <strong>{{ $prod->produtoVariacao->descricao }}</strong></span>
                                             @endif
+                                        
                                             <input name="variacao_id[]" type="hidden" value="{{ $prod->variacao_id }}">
                                             <div style="width: 500px;"></div>
                                             @if(isset($prod->itensDimensao) && sizeof($prod->itensDimensao) > 0)

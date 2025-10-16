@@ -518,32 +518,32 @@ class NfeController extends Controller
 
                 $nfe = Nfe::create($request->all());
                 for ($i = 0; $i < sizeof($request->produto_id); $i++) {
-
+                    
                     $product = Produto::findOrFail($request->produto_id[$i]);
                     $variacao_id = isset($request->variacao_id[$i]) ? $request->variacao_id[$i] : null;
                     $itemNfe = ItemNfe::create([
-                        'nfe_id' => $nfe->id,
-                        'produto_id' => (int)$request->produto_id[$i],
-                        'quantidade' => __convert_value_bd($request->quantidade[$i]),
-                        'valor_unitario' => __convert_value_bd($request->valor_unitario[$i]),
-                        'sub_total' => __convert_value_bd($request->sub_total[$i]),
-                        'perc_icms' => __convert_value_bd($request->perc_icms[$i]),
-                        'perc_pis' => __convert_value_bd($request->perc_pis[$i]),
-                        'perc_cofins' => __convert_value_bd($request->perc_cofins[$i]),
-                        'perc_ipi' => __convert_value_bd($request->perc_ipi[$i]),
-                        'cst_csosn' => $request->cst_csosn[$i],
-                        'cst_pis' => $request->cst_pis[$i],
-                        'cst_cofins' => $request->cst_cofins[$i],
-                        'cst_ipi' => $request->cst_ipi[$i],
-                        'perc_red_bc' => $request->perc_red_bc[$i] ? __convert_value_bd($request->perc_red_bc[$i]) : 0,
-                        'cfop' => $request->cfop[$i],
-                        'ncm' => $request->ncm[$i],
+                        'nfe_id'                  => $nfe->id,
+                        'produto_id'              => (int)$request->produto_id[$i],
+                        'quantidade'              => __convert_value_bd($request->quantidade[$i]),
+                        'valor_unitario'          => __convert_value_bd($request->valor_unitario[$i]),
+                        'sub_total'               => __convert_value_bd($request->sub_total[$i]),
+                        'perc_icms'               => __convert_value_bd($request->perc_icms[$i]),
+                        'perc_pis'                => __convert_value_bd($request->perc_pis[$i]),
+                        'perc_cofins'             => __convert_value_bd($request->perc_cofins[$i]),
+                        'perc_ipi'                => __convert_value_bd($request->perc_ipi[$i]),
+                        'cst_csosn'               => $request->cst_csosn[$i],
+                        'cst_pis'                 => $request->cst_pis[$i],
+                        'cst_cofins'              => $request->cst_cofins[$i],
+                        'cst_ipi'                 => $request->cst_ipi[$i],
+                        'perc_red_bc'             => $request->perc_red_bc[$i] ? __convert_value_bd($request->perc_red_bc[$i]) : 0,
+                        'cfop'                    => $request->cfop[$i],
+                        'ncm'                     => $request->ncm[$i],
                         'codigo_beneficio_fiscal' => $request->codigo_beneficio_fiscal[$i],
-                        'variacao_id' => $variacao_id,
-                        'cEnq' => $product->cEnq,
-                        'xPed' => $request->xPed[$i],
-                        'nItemPed' => $request->nItemPed[$i],
-                        'infAdProd' => $request->infAdProd[$i],
+                        'variacao_id'             => $variacao_id,
+                        'cEnq'                    => $product->cEnq,
+                        'xPed'                    => $request->xPed[$i],
+                        'nItemPed'                => $request->nItemPed[$i],
+                        'infAdProd'               => $request->infAdProd[$i],
                     ]);
 
                     if($request->orcamento == 0 && $product->tipo_producao){
@@ -582,20 +582,19 @@ class NfeController extends Controller
                             if($request->_key[$i] == $request->_line[$l]){
 
                                 ItemDimensaoNfe::create([
-                                    'item_nfe_id' => $itemNfe->id,
+                                    'item_nfe_id'       => $itemNfe->id,
                                     'valor_unitario_m2' => __convert_value_bd($request->dimensao_valor_unitario_m2[$l]),
-                                    'largura' => $request->dimensao_largura[$l],
-                                    'altura' => $request->dimensao_altura[$l],
-                                    'quantidade' => $request->dimensao_quantidade[$l],
-                                    'm2_total' => $request->dimensao_m2_total[$l],
-                                    'espessura' => $request->dimensao_espessura[$l] ?? 0,
-                                    'observacao' => $request->dimensao_observacao[$l] ?? '',
-                                    'sub_total' => __convert_value_bd($request->dimensao_sub_total[$l])
+                                    'largura'           => $request->dimensao_largura[$l],
+                                    'altura'            => $request->dimensao_altura[$l],
+                                    'quantidade'        => $request->dimensao_quantidade[$l],
+                                    'm2_total'          => $request->dimensao_m2_total[$l],
+                                    'espessura'         => $request->dimensao_espessura[$l] ?? 0,
+                                    'observacao'        => $request->dimensao_observacao[$l] ?? '',
+                                    'sub_total'         => __convert_value_bd($request->dimensao_sub_total[$l])
                                 ]);
                             }
                         }
                     }
-
 
                     if (isset($request->is_compra)) {
 
@@ -603,14 +602,13 @@ class NfeController extends Controller
                         $product->save();
 
                         ProdutoFornecedor::updateOrCreate([
-                            'produto_id' => $product->id,
+                            'produto_id'    => $product->id,
                             'fornecedor_id' => $fornecedor_id
                         ]);
                     }
 
                     if ($product->gerenciar_estoque && $request->orcamento == 0) {
                         if (isset($request->is_compra)) {
-
                             $this->util->incrementaEstoque($product->id, __convert_value_bd($request->quantidade[$i]),
                                 $variacao_id, $local_id);
                         } else {

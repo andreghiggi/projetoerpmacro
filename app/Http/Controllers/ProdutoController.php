@@ -13,7 +13,7 @@ use App\Models\ProdutoPizzaValor;
 use App\Models\ProdutoCombo;
 use App\Models\CategoriaWoocommerce;
 use App\Models\MovimentacaoProduto;
-use App\Utils\ConectaVendaUtil;
+use App\Utils\ConectaVendaSincronizador;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Utils\UploadUtil;
@@ -50,7 +50,7 @@ class ProdutoController extends Controller
     protected $utilWocommerce;
 
     public function __construct(UploadUtil $util, MercadoLivreUtil $utilMercadoLivre,
-        EstoqueUtil $utilEstoque, NuvemShopUtil $utilNuvemShop, WoocommerceUtil $utilWocommerce, ConectaVendaUtil $utilConectaVenda)
+        EstoqueUtil $utilEstoque, NuvemShopUtil $utilNuvemShop, WoocommerceUtil $utilWocommerce, ConectaVendaSincronizador $utilConectaVenda)
     {
         $this->util = $util;
         $this->utilMercadoLivre = $utilMercadoLivre;
@@ -506,8 +506,7 @@ class ProdutoController extends Controller
                 $resp = $this->utilNuvemShop->create($request, $produto);
             }
 
-            if($request->conectavenda){
-//                    dd($produto->estoque);
+            if(env("CONECTAVENDA") == 1){
                 $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
                 $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
                 $produto->solicita_observacao = $request->solicita_observacao;
@@ -827,6 +826,40 @@ public function update(Request $request, $id)
         // (portanto que foram deletadas no front)
         ProdutoVariacao::removerVariacoesNaoPresentes( $produto->id, $variacoes_presentes );
         $this->insereEmListaDePrecos($produto);
+
+        // @NOTE(Patric): 
+        // Essa variação não vem.  ($request->conectavenda)
+        // Não faço ideia se algum dia veio, e não sei aonde ela é setada ;/
+
+        // if($request->conectavenda){
+        if(env("CONECTAVENDA")){
+            $produto->conecta_venda_qtd_minima    = $request->conecta_venda_qtd_minima;
+            $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+            $produto->solicita_observacao         = $request->solicita_observacao;
+
+            $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+            if(!$emp){
+                session()->flash('flash_error', 'Conecta Venda não configurado!');
+                return $produto;
+            }
+            try {
+                $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
+                if (isset($retornoConecta['produtos_ids'])) {
+                    $produto->conecta_venda_id = $produto->id;
+                    $produto->conecta_venda_status = 1;
+                    $produto->conecta_venda_data_publicacao = $request->created_at;
+                    $produto->save();
+                } else {
+                    \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
+                    session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
+                }
+
+            } catch (\Exception $e) {
+                \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+                session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+            }
+        }
+
 
         // @NOTE(Patric):
         // Removendo lógicas de outros módulos, por enquanto

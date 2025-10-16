@@ -5,7 +5,8 @@ namespace App\Console\Commands;
 use App\Models\ConectaVendaConfig;
 use App\Models\ConectaVendaPedido;
 use App\Models\Empresa;
-use App\Utils\ConectaVendaUtil;
+use App\Utils\ConectaVendaSincronizador;
+use App\Utils\HttpUtil;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -25,9 +26,9 @@ class SyncOrdersConectaVendaCron extends Command
      * @var string
      */
     protected $description = 'Sincroniza os pedidos do conecta venda com o ERP';
-    protected ConectaVendaUtil $util;
+    protected ConectaVendaSincronizador $util;
 
-    public function __construct(ConectaVendaUtil $util)
+    public function __construct(ConectaVendaSincronizador $util)
     {
         parent::__construct();
         $this->util = $util;
@@ -45,36 +46,38 @@ class SyncOrdersConectaVendaCron extends Command
             if($config == null){
                 continue;
             }
+
             $data = DB::table('conecta_venda_pedidos')
                 ->select('data_atualizacao_status')
                 ->where('empresa_id', $empresa->id)
                 ->orderBy('data_atualizacao_status', 'desc')->first();
 
+            $last_update_date = '2000-01-01 00:00:00';
+            if( !empty($data->data_atualizacao_status) ) {
+                $last_update_date = $data->data_atualizacao_status;
+            }
+
+            // $last_update_date = '2025-10-14 19:02:00'; // Para testes
+
             $payload = [
                 'chave' => $config->client_secret,
-                'data' => (string) ($data->data_atualizacao_status ?? today()),
+                'data'  => $last_update_date,
             ];
 
             $response = Http::withOptions(['verify' => false])->asJson()->post('https://api.conectavenda.com.br/pedidos/listar', $payload);
 
             if($response->status() == 200){
-                $orders = json_decode($response);
-                foreach($orders->dados as $order){
-                    $data = ConectaVendaPedido::Where('id', $order->id)->first();
+                $conecta_pedidos = json_decode($response);
+                foreach($conecta_pedidos->dados as $conecta_pedido){
+                    $data = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
                     if(!$data){
-                        $pedido = $this->util->createOrder($order, $config);
-
-                        if($pedido && isset($order->produtos)){
-                            foreach ($order->produtos as $item){
-                                $this->util->createItemOrder($item, $pedido->id);
-                            }
-                        }
+                        $pedido = $this->util->createOrder($conecta_pedido, $config);
                     }
-                    if($order->situacao == 'Cancelado' || $order->situacao == 'cancelado'){
-                        $this->util->returnStock($order, $config);
+                    if($conecta_pedido->situacao == 'Cancelado' || $conecta_pedido->situacao == 'cancelado'){
+                        $this->util->returnStock($conecta_pedido, $config);
                     }else {
-                        $data = ConectaVendaPedido::Where('id', $order->id)->first();
-                        $data->situacao = $order->situacao;
+                        $data = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
+                        $data->situacao = $conecta_pedido->situacao;
                         $data->save();
                     }
                 }

@@ -6,7 +6,7 @@ use App\Models\ConectaVendaConfig;
 use App\Models\Empresa;
 use App\Models\MovimentacaoProduto;
 use App\Models\Produto;
-use App\Utils\ConectaVendaUtil;
+use App\Utils\ConectaVendaSincronizador;
 use Illuminate\Console\Command;
 
 
@@ -26,9 +26,9 @@ class SyncEstoque extends Command
      */
     protected $description = 'Sincronica o estoque com o conecta venda';
 
-    protected ConectaVendaUtil $util;
+    protected ConectaVendaSincronizador $util;
 
-    public function __construct(ConectaVendaUtil $util)
+    public function __construct(ConectaVendaSincronizador $util)
     {
         parent::__construct();
         $this->util = $util;

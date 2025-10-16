@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConectaVendaConfig;
-use App\Utils\ConectaVendaUtil;
+use App\Utils\ConectaVendaSincronizador;
 use Illuminate\Http\Request;
 use App\Models\Produto;
 use App\Models\Empresa;
@@ -22,7 +22,7 @@ class ConectaVendaProdutoController extends Controller
     protected $util;
     protected $utilEstoque;
 
-    public function __construct(ConectaVendaUtil $utilConectaVenda, EstoqueUtil $utilEstoque)
+    public function __construct(ConectaVendaSincronizador $utilConectaVenda, EstoqueUtil $utilEstoque)
     {
         $this->utilConectaVenda = $utilConectaVenda;
         $this->utilEstoque = $utilEstoque;

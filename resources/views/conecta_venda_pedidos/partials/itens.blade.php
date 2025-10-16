@@ -3,6 +3,7 @@
         <select class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
             <option value="{{ $prod->produto_id }}">{{ $prod->nome }}</option>
         </select>
+        <input name="variacao_id[]" type="hidden" value="{{ $prod->variacao_id }}">
     </td>
     <td width="80">
         <input value="{{ __moeda($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
