@@ -316,15 +316,10 @@ class ConectaVendaSincronizador
         $variacao              = ProdutoVariacao::find( $variacao_id_part );
 
         if( !$produto ) {
-            // Ignorando erros por enquanto
-            return;
             throw new \Exception("Produto com ID: '$item->produto_id' não existe!");
         }
 
         if( !$variacao ) {
-            // Ignorando erros por enquanto
-            return;
-            
             throw new \Exception("Variação com ID: '$variacao_id_part' não existe!");
         }
 
