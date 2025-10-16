@@ -13,3 +13,4 @@ deployment:
     - /bin/cp -auv .htaccess $DEPLOYPATH/.htaccess
     - /bin/cp -auv artisan $DEPLOYPATH/artisan
     - /bin/cp -auv bd.sql $DEPLOYPATH/bd.sql
+    - /bin/php artisan migrate
