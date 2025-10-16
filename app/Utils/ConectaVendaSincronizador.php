@@ -305,8 +305,6 @@ class ConectaVendaSincronizador
 
     public function createItemOrder($item, $pedido)
     {
-        dd("aqui ???? ");
-
         $produto               = Produto::find( $item->produto_id );
 
         if( !str_contains( $item->variacao_id, "." ) ) {
