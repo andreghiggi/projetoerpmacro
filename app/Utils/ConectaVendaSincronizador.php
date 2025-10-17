@@ -32,12 +32,12 @@ class ConectaVendaSincronizador
             throw new \Exception("Chave de API do Conecta Venda não encontrada para a empresa.");
         }
 
+
         $produto_grupo = $produto->categoria->nome ?? 'Sem Grupo';
 
         if($produto->subcategoria){
             $produto_grupo = $produto_grupo . ' - ' . $produto->subcategoria->nome;
         }
-
         $produto_foto = $produto->img_app;
 
         $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
@@ -61,7 +61,10 @@ class ConectaVendaSincronizador
         $variacoes_request = [];
         $fotos_request    = [];
 
+
+
         if($produto->variacoes->isNotEmpty()){
+
             foreach ($produto->variacoes as $i => $variacao) {
                 $variacao_id = "{$produto->id}.{$variacao->id}";
                 // @NOTE: Mandar sempre o produto mesmo sem estoque ?? 
@@ -71,7 +74,7 @@ class ConectaVendaSincronizador
                     "id"        => $variacao_id,
                     "descricao" => $variacao->descricao,
                     "ordem"     => $i + 1,
-                    "estoque"   => $estoque,
+                    // "estoque"   => $estoque,
                     "ativo"     => 1,
                     "precos"    => [
                         [
@@ -80,17 +83,20 @@ class ConectaVendaSincronizador
                         ]
                     ]
                 ];
+
                 if(!empty($variacao->imagem)){
                     $fotos_request[] = $variacao->img_app;
-                } else {
-                    // Se não tem foto na variação, vai usar a foto do produto
-                    $fotos_request[] = $produto_foto;
+                } 
+
+                if(!$estoque_sob_encomenda) {
+                    $variacao_request['estoque'] = $estoque;
                 }
+
                 $variacoes_request[] = $variacao_request;
             }
         }else {
             $variacao_id = "{$produto->id}.1";
-            $estoque     = (int) $produto->estoque->quantidade ?? 0;
+            $estoque     = (int) $produto->estoque?->quantidade ?? 0;
             $variacao_request    = [
                 "id"        => $variacao_id,
                 "descricao" => 'Único',
@@ -113,6 +119,11 @@ class ConectaVendaSincronizador
             $variacoes_request[] = $variacao_request;
         }
 
+        if( !$fotos_request ) {
+            // Se não tem foto na variação, vai usar a foto do produto
+            $fotos_request[] = $produto_foto;
+        }
+        
         $produto_request['variacoes'] = $variacoes_request;
         $produto_request['fotos']     = $fotos_request;
 
@@ -120,7 +131,10 @@ class ConectaVendaSincronizador
             'chave' => $config->client_secret,
             'dados' => [$produto_request]
         ];
+
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
+
+        // HttpUtil::dd($response, $payload);
 
         if (!$response->successful()) {
             throw new \Exception("Erro ao enviar produto ao Conecta Venda: " . $response->body());

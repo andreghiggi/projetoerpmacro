@@ -502,8 +502,8 @@ class ProdutoController extends Controller
             if($request->nuvemshop){
                 $resp = $this->utilNuvemShop->create($request, $produto);
             }
-
             if(env("CONECTAVENDA") == 1){
+
                 $produto->conecta_venda_qtd_minima    = $request->conecta_venda_qtd_minima;
                 $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
                 $produto->solicita_observacao         = $request->solicita_observacao;
