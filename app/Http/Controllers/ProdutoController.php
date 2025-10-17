@@ -310,9 +310,7 @@ class ProdutoController extends Controller
         try {
             $file_name = '';
             if ($request->hasFile('image')) {
-                // dd($request->file('image'));
                 $file_name = $this->util->uploadImage($request, '/produtos');
-//                dd($file_name);
             }
             $categorias_woocommerce = [];
             if($request->categorias_woocommerce){
@@ -328,43 +326,43 @@ class ProdutoController extends Controller
             $numeroSequencial = __getUltimoNumeroSequencial($request->empresa_id, 'produtos');
             $numeroSequencial++;
             $request->merge([
-                'woocommerce_valor' => $request->woocommerce_valor > 0 ? __convert_value_bd($request->woocommerce_valor) : __convert_value_bd($request->valor_unitario),
-                'valor_unitario' => __convert_value_bd($request->valor_unitario),
-                'valor_prazo' => __convert_value_bd($request->valor_prazo),
-                'valor_compra' => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
-                'valor_minimo_venda' => $request->valor_minimo_venda ? __convert_value_bd($request->valor_minimo_venda) : 0,
-                'imagem' => $file_name,
-                'codigo_anp' => $request->codigo_anp ?? '',
-                'perc_glp' => $request->perc_glp ? __convert_value_bd($request->perc_glp) : 0,
-                'perc_gnn' => $request->perc_gnn ? __convert_value_bd($request->perc_gnn) : 0,
-                'perc_gni' => $request->perc_gni ? __convert_value_bd($request->perc_gni) : 0,
-                'valor_partida' => $request->valor_partida ? __convert_value_bd($request->valor_partida) : 0,
-                'unidade_tributavel' => $request->unidade_tributavel ?? '',
-                'quantidade_tributavel' => $request->quantidade_tributavel ? __convert_value_bd($request->quantidade_tributavel) : 0,
-                'adRemICMSRet' => $request->adRemICMSRet ? __convert_value_bd($request->adRemICMSRet) : 0,
-                'pBio' => $request->pBio ? __convert_value_bd($request->pBio) : 0,
-                'pOrig' => $request->pOrig ? __convert_value_bd($request->pOrig) : 0,
-                'indImport' => $request->indImport ?? '',
-                'cUFOrig' => $request->cUFOrig ?? '',
-                'cardapio' => $request->cardapio ? 1 : 0,
-                'delivery' => $request->delivery ? 1 : 0,
-                'ecommerce' => $request->ecommerce ? 1 : 0,
-                'reserva' => $request->reserva ? 1 : 0,
-                'texto_delivery' => $request->texto_delivery ?? '',
-                'texto_nuvem_shop' => $request->texto_nuvem_shop ?? '',
+                'woocommerce_valor'       => $request->woocommerce_valor > 0 ? __convert_value_bd($request->woocommerce_valor) : __convert_value_bd($request->valor_unitario),
+                'valor_unitario'          => __convert_value_bd($request->valor_unitario),
+                'valor_prazo'             => __convert_value_bd($request->valor_prazo),
+                'valor_compra'            => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
+                'valor_minimo_venda'      => $request->valor_minimo_venda ? __convert_value_bd($request->valor_minimo_venda) : 0,
+                'imagem'                  => $file_name,
+                'codigo_anp'              => $request->codigo_anp ?? '',
+                'perc_glp'                => $request->perc_glp ? __convert_value_bd($request->perc_glp) : 0,
+                'perc_gnn'                => $request->perc_gnn ? __convert_value_bd($request->perc_gnn) : 0,
+                'perc_gni'                => $request->perc_gni ? __convert_value_bd($request->perc_gni) : 0,
+                'valor_partida'           => $request->valor_partida ? __convert_value_bd($request->valor_partida) : 0,
+                'unidade_tributavel'      => $request->unidade_tributavel ?? '',
+                'quantidade_tributavel'   => $request->quantidade_tributavel ? __convert_value_bd($request->quantidade_tributavel) : 0,
+                'adRemICMSRet'            => $request->adRemICMSRet ? __convert_value_bd($request->adRemICMSRet) : 0,
+                'pBio'                    => $request->pBio ? __convert_value_bd($request->pBio) : 0,
+                'pOrig'                   => $request->pOrig ? __convert_value_bd($request->pOrig) : 0,
+                'indImport'               => $request->indImport ?? '',
+                'cUFOrig'                 => $request->cUFOrig ?? '',
+                'cardapio'                => $request->cardapio ? 1 : 0,
+                'delivery'                => $request->delivery ? 1 : 0,
+                'ecommerce'               => $request->ecommerce ? 1 : 0,
+                'reserva'                 => $request->reserva ? 1 : 0,
+                'texto_delivery'          => $request->texto_delivery ?? '',
+                'texto_nuvem_shop'        => $request->texto_nuvem_shop ?? '',
                 'mercado_livre_descricao' => $request->mercado_livre_descricao ?? '',
-                'estoque_minimo' => $request->estoque_minimo ? __convert_value_bd($request->estoque_minimo) : 0,
-                'mercado_livre_valor' => $request->mercado_livre_valor ? __convert_value_bd($request->mercado_livre_valor) : 0,
-                'perc_icms' => $request->perc_icms ?? 0,
-                'perc_pis' => $request->perc_pis ?? 0,
-                'perc_cofins' => $request->perc_cofins ?? 0,
-                'perc_ipi' => $request->perc_ipi ?? 0,
-                'cfop_estadual' => $request->cfop_estadual ?? '',
-                'cfop_outro_estado' => $request->cfop_outro_estado ?? '',
-                'valor_combo' => $request->valor_combo ? __convert_value_bd($request->valor_combo) : 0,
-                'margem_combo' => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 0,
-                'valor_atacado' => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
-                'categorias_woocommerce' => json_encode($categorias_woocommerce),
+                'estoque_minimo'          => $request->estoque_minimo ? __convert_value_bd($request->estoque_minimo) : 0,
+                'mercado_livre_valor'     => $request->mercado_livre_valor ? __convert_value_bd($request->mercado_livre_valor) : 0,
+                'perc_icms'               => $request->perc_icms ?? 0,
+                'perc_pis'                => $request->perc_pis ?? 0,
+                'perc_cofins'             => $request->perc_cofins ?? 0,
+                'perc_ipi'                => $request->perc_ipi ?? 0,
+                'cfop_estadual'           => $request->cfop_estadual ?? '',
+                'cfop_outro_estado'       => $request->cfop_outro_estado ?? '',
+                'valor_combo'             => $request->valor_combo ? __convert_value_bd($request->valor_combo) : 0,
+                'margem_combo'            => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 0,
+                'valor_atacado'           => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
+                'categorias_woocommerce'  => json_encode($categorias_woocommerce),
 
                 'woocommerce_descricao' => $request->woocommerce_descricao ?? '',
                 'numero_sequencial' => $numeroSequencial
@@ -394,7 +392,6 @@ class ProdutoController extends Controller
                     'hash_ecommerce' => Str::random(50),
                     'texto_ecommerce' => $request->texto_ecommerce ?? ''
                 ]);
-                // dd($request->all());
             }else{
                 $request->merge([
                     'texto_ecommerce' => ''
@@ -507,10 +504,10 @@ class ProdutoController extends Controller
             }
 
             if(env("CONECTAVENDA") == 1){
-                $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
+                $produto->conecta_venda_qtd_minima    = $request->conecta_venda_qtd_minima;
                 $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
-                $produto->solicita_observacao = $request->solicita_observacao;
-                $emp = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+                $produto->solicita_observacao         = $request->solicita_observacao;
+                $emp                                  = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
                 if(!$emp){
                     session()->flash('flash_error', 'Conecta Venda não configurado!');
                     return $produto;
@@ -649,8 +646,6 @@ public function update(Request $request, $id)
 
     $locais = $request->locais ?? [];
 
-    // dd($request);
-
     try {
         $file_name = '';
         if ($request->hasFile('image')) {
@@ -727,7 +722,6 @@ public function update(Request $request, $id)
                 'hash_ecommerce' => Str::random(50),
                 'texto_ecommerce' => $request->texto_ecommerce ?? ''
             ]);
-            // dd($request->all());
         }else{
             $request->merge([
                 'texto_ecommerce' => ''
@@ -899,7 +893,6 @@ public function update(Request $request, $id)
 //         }
 
 //         if($request->conectavenda){
-// //                    dd($produto->estoque);
 //             $produto->conecta_venda_qtd_minima = $request->conecta_venda_qtd_minima;
 //             $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
 //             $produto->solicita_observacao = $request->solicita_observacao;
@@ -969,8 +962,6 @@ public function update(Request $request, $id)
         return redirect()->route('produto-composto.create', [$produto->id]);
     }
     } catch (\Exception $e) {
-        dd("catch", $e);
-
         __createLog($request->empresa_id, 'Produto', 'erro', $e->getMessage());
         session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
     }
@@ -987,8 +978,6 @@ public function update(Request $request, $id)
         return redirect()->route('mercado-livre-produtos.index');
     }
     return redirect()->route('produtos.index');
-
-    // dd($request);
 
     // $item = Produto::findOrFail($id);
     // __validaObjetoEmpresa($item);
@@ -1128,7 +1117,6 @@ public function update(Request $request, $id)
                 
     //         }
     //         $deletados = ProdutoVariacao::removerVariacoesNaoPresentes( $id , $variacoes_existentes);
-    //         dd($deletados, $id, $variacoes_existentes);
 
     //         // @NOTE(Patric):
     //         // Removendo esta lógica aqui. 
@@ -1525,7 +1513,6 @@ public function storeModelo(Request $request)
 
                                 $cont++;
                             }else{
-                                // dd($data);
                                 $produtoDuplicado->codigo_barras = $data['codigo_barras'];
                                 $produtoDuplicado->ncm = $data['ncm'];
                                 $produtoDuplicado->unidade = $data['unidade'];
@@ -1609,7 +1596,6 @@ private function preparaObjeto($linha, $empresa_id)
     if(!str_contains($ncm, ".")){
         $ncm = __mask($ncm, '####.##.##');
     }
-    // dd($ncm);
 
     $categoria = CategoriaProduto::where('empresa_id', $empresa_id)
     ->where('status', 1)
@@ -1623,39 +1609,39 @@ private function preparaObjeto($linha, $empresa_id)
     $percentualLucro = ($valorUnitario/$valorCompra)*100;
 
     $data = [
-        'empresa_id' => $empresa_id,
-        'nome' => $linha[0],
+        'empresa_id'    => $empresa_id,
+        'nome'          => $linha[0],
         'codigo_barras' => $linha[5],
-        'ncm' => $ncm,
-        'cest' => $linha[6],
-        'unidade' => $linha[17] != '' ? $linha[17] : 'UN',
-        'perc_icms' => $linha[20] != '' ? __convert_value_bd($linha[20]) : 0,
-        'perc_pis' => $linha[21] != '' ? __convert_value_bd($linha[21]) : 0,
+        'ncm'           => $ncm,
+        'cest'          => $linha[6],
+        'unidade'       => $linha[17] != '' ? $linha[17] : 'UN',
+        'perc_icms'     => $linha[20] != '' ? __convert_value_bd($linha[20]) : 0,
+        'perc_pis'      => $linha[21] != '' ? __convert_value_bd($linha[21]) : 0,
 
-        'perc_cofins' => $linha[22] != '' ? __convert_value_bd($linha[22]) : 0,
-        'perc_ipi' => $linha[23] != '' ? __convert_value_bd($linha[23]) : 0,
-        'cst_csosn' => $linha[7],
-        'cst_pis' => $linha[8],
-        'cst_cofins' => $linha[9],
-        'cst_ipi' => $linha[10],
-        'valor_unitario' => $valorUnitario,
-        'origem' => $linha[12] != '' ? $linha[12] : 1,
-        'perc_red_bc' => $linha[11] != '' ? __convert_value_bd($linha[11]) : 0,
-        'cfop_estadual' => $linha[14],
-        'cfop_outro_estado' => $linha[15],
-        'cEnq' => $linha[13],
-        'categoria_id' => $categoria != null ? $categoria->id : null,
-        'gerenciar_estoque' => $linha[19] != '' ? $linha[19] : 0,
+        'perc_cofins'             => $linha[22] != '' ? __convert_value_bd($linha[22]) : 0,
+        'perc_ipi'                => $linha[23] != '' ? __convert_value_bd($linha[23]) : 0,
+        'cst_csosn'               => $linha[7],
+        'cst_pis'                 => $linha[8],
+        'cst_cofins'              => $linha[9],
+        'cst_ipi'                 => $linha[10],
+        'valor_unitario'          => $valorUnitario,
+        'origem'                  => $linha[12] != '' ? $linha[12] : 1,
+        'perc_red_bc'             => $linha[11] != '' ? __convert_value_bd($linha[11]) : 0,
+        'cfop_estadual'           => $linha[14],
+        'cfop_outro_estado'       => $linha[15],
+        'cEnq'                    => $linha[13],
+        'categoria_id'            => $categoria != null ? $categoria->id : null,
+        'gerenciar_estoque'       => $linha[19] != '' ? $linha[19] : 0,
         'codigo_beneficio_fiscal' => $linha[16],
-        'valor_compra' => $valorCompra,
+        'valor_compra'            => $valorCompra,
 
-        'cfop_entrada_estadual' => $linha[24],
+        'cfop_entrada_estadual'     => $linha[24],
         'cfop_entrada_outro_estado' => $linha[25],
-        'estoque' => $linha[26],
-        'estoque_minimo' => $linha[27] ?? 0,
-        'referencia' => $linha[28] ?? '',
-        'percentual_lucro' => $percentualLucro,
-        'valor_prazo' => 0
+        'estoque'                   => $linha[26],
+        'estoque_minimo'            => $linha[27] ?? 0,
+        'referencia'                => $linha[28] ?? '',
+        'percentual_lucro'          => $percentualLucro,
+        'valor_prazo'               => 0
     ];
     return $data;
 }
@@ -1678,7 +1664,6 @@ private function validaArquivo($rows)
                 $cfopEstado = $r[14];
                 $cfopOutroEstado = $r[15];
 
-                // dd($r);
 
                 if ($r[27] == null && $key == 0) {
                     $msgErro .= "O arquivo deve conter 28 colunas";
@@ -1942,7 +1927,6 @@ private function criaProdutoWoocommerce($request, $produto){
             foreach($produto->variacoes as $v){
                 $data['attributes'][0]['options'][] = $v->descricao;
             }
-            // dd($data);
 
             $data['default_attributes'] = [
 
@@ -1954,10 +1938,7 @@ private function criaProdutoWoocommerce($request, $produto){
 
         }
 
-        // dd($data);
-
         $product = $woocommerceClient->post("products", $data);
-        // dd($product);
         if(sizeof($produto->variacoes) > 0){
             //salva variações
             foreach($produto->variacoes as $v){
@@ -1976,7 +1957,6 @@ private function criaProdutoWoocommerce($request, $produto){
                 $variation = $woocommerceClient->post("products/$product_id/variations", $dataVariacao);
             }
         }
-        // dd($variation);
 
         // $product = $woocommerceClient->post("products", $data);
 
@@ -2021,7 +2001,6 @@ private function atualizaProdutoWoocommerce($request, $item){
 
         $endPoint = 'products';
         $product = $woocommerceClient->put($endPoint."/$item->woocommerce_id", $data);
-            // dd($product);
         if($product){
             return [
                 'sucesso' => 1,
@@ -2079,7 +2058,6 @@ private function criaAnuncio($request, $produto){
             'value_name' => $request->mercado_livre_modelo
         ];
     }
-        // dd($dataMercadoLivre);
 
     $configMercadoLivre = MercadoLivreConfig::where('empresa_id', $request->empresa_id)
     ->first();
@@ -2175,7 +2153,6 @@ private function atualizaAnuncio($request, $produto){
 
     $res = curl_exec($curl);
     $prod = json_decode($res);
-        // dd($prod);
 
     $dataMercadoLivre = [
         'title' => $produto->nome,
@@ -2194,7 +2171,6 @@ private function atualizaAnuncio($request, $produto){
         $dataMercadoLivre['price'] = __convert_value_bd($request->mercado_livre_valor);
     }
 
-        // dd($dataMercadoLivre);
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, "https://api.mercadolibre.com/items/$produto->mercado_livre_id");
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

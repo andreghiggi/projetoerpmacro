@@ -40,6 +40,8 @@ class ConectaVendaSincronizador
 
         $produto_foto = $produto->img_app;
 
+        $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
+
         $produto_request = [
             'id'                   => (string) $produto->id,
             'referencia'           => $produto->referencia ?? '',
@@ -93,7 +95,7 @@ class ConectaVendaSincronizador
                 "id"        => $variacao_id,
                 "descricao" => 'Único',
                 "ordem"     => 1,
-                "estoque"   => $estoque,
+                // "estoque"   => $estoque,
                 "ativo"     => 1,
                 "precos"    => [
                     [
@@ -103,6 +105,10 @@ class ConectaVendaSincronizador
                     ]
                 ]
             ];
+
+            if(!$estoque_sob_encomenda) {
+                $variacao_request['estoque'] = $estoque;
+            }
 
             $variacoes_request[] = $variacao_request;
         }
