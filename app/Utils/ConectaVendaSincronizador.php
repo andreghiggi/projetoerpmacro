@@ -38,6 +38,8 @@ class ConectaVendaSincronizador
             $produto_grupo = $produto_grupo . ' - ' . $produto->subcategoria->nome;
         }
 
+        $produto_foto = $produto->img_app;
+
         $produto_request = [
             'id'                   => (string) $produto->id,
             'referencia'           => $produto->referencia ?? '',
@@ -51,11 +53,7 @@ class ConectaVendaSincronizador
             'qtde_minima'          => (int) ($produto->conecta_venda_qtd_minima ?? 1),
             'data_publicacao'      => $produto->created_at->format('Y-m-d H:i:s'),
             'ativo'                => 1,
-            'fotos'                => [
-                $produto->img_app
-//                $this->getBase64Image($produto->imagem) ?? []
-            ],
-
+            'fotos'                => []
         ];
 
         $variacoes_request = [];
@@ -82,6 +80,9 @@ class ConectaVendaSincronizador
                 ];
                 if(!empty($variacao->imagem)){
                     $fotos_request[] = $variacao->img_app;
+                } else {
+                    // Se não tem foto na variação, vai usar a foto do produto
+                    $fotos_request[] = $produto_foto;
                 }
                 $variacoes_request[] = $variacao_request;
             }
