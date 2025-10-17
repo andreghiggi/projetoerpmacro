@@ -99,7 +99,7 @@ class ConectaVendaSincronizador
             $estoque     = (int) $produto->estoque?->quantidade ?? 0;
             $variacao_request    = [
                 "id"        => $variacao_id,
-                "descricao" => 'Único',
+                "descricao" => '',
                 "ordem"     => 1,
                 // "estoque"   => $estoque,
                 "ativo"     => 1,
