@@ -25,13 +25,9 @@ class ConectaVendaSincronizador
         $this->utilEstoque = $utilEstoque;
         $this->utilNfe = $utilNfe;
     }
-    public function create(ConectaVendaConfig $empresa, Produto $produto)
-    {
-        $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
-        if (!$config || !$config->client_secret) {
-            throw new \Exception("Chave de API do Conecta Venda não encontrada para a empresa.");
-        }
 
+    // Monta Um Produto do request de criar produtos do Conecta.
+    private function __conecta_produto_create( Produto $produto ) {
 
         $produto_grupo = $produto->categoria->nome ?? 'Sem Grupo';
 
@@ -60,8 +56,6 @@ class ConectaVendaSincronizador
 
         $variacoes_request = [];
         $fotos_request    = [];
-
-
 
         if($produto->variacoes->isNotEmpty()){
 
@@ -126,6 +120,18 @@ class ConectaVendaSincronizador
         
         $produto_request['variacoes'] = $variacoes_request;
         $produto_request['fotos']     = $fotos_request;
+
+        return $produto_request;
+
+    }
+    public function create(ConectaVendaConfig $empresa, Produto $produto)
+    {
+        $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
+        if (!$config || !$config->client_secret) {
+            throw new \Exception("Chave de API do Conecta Venda não encontrada para a empresa.");
+        }
+
+        $produto_request = $this->__conecta_produto_create($produto);
 
         $payload = [
             'chave' => $config->client_secret,
@@ -458,50 +464,68 @@ class ConectaVendaSincronizador
             throw new \Exception("Produto {$produto->id} não possui conecta_venda_id vinculado.");
         }
 
-        $produtoConecta = [
-            'id'                   => (string) $produto->conecta_venda_id,
-            'referencia'           => (string) $produto->referencia ?? $produto->id,
-            'nome'                 => $produto->nome,
-            'descricao'            => $produto->observacao ?? 'Descrição do Produto',
-            'grupo'                => $produto->categoria->nome ?? 'Grupo de produtos',
-            'peso'                 => (float) ($produto->peso ?? 0),
-            'solicitar_observacao' => 1,
-            'ean'                  => $produto->codigo_barras ?? '',
-            'multiplicador'        => 1,
-            'qtde_minima'          => 1,
-            'data_publicacao'      => $produto->created_at->format('Y-m-d H:i:s'),
-            'ativo'                => 1,
-            'variacoes'            => [],
-        ];
+        $estoques_request = [];
 
-        foreach ($produto->variacoes as $i => $v) {
-            $produtoConecta["variacoes"][] = [
-                "id" => (string) $v->id,
-                "descricao" => $v->descricao,
-                "estoque" => (int) ($v->estoque()->sum('quantidade') ?? 0),
-                "ordem" => $i + 1,
-                "ativo" => 1,
-                "precos" => [
-                    [
-                        "tabela" => "Padrão",
-                        "valor" => (float) $v->valor
-                    ]
-                ]
+        foreach ($produto->variacoes as $i => $variacao) {
+            $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
+
+            if($estoque_sob_encomenda) {
+                continue;
+            }
+
+            $produto_id  = (string)$produto->id;
+            $variacao_id = "{$produto->id}.{$variacao->id}";
+            $estoque     = (int) ($variacao->estoque()->sum('quantidade'));
+
+            $estoques_request[] = [
+                'produto_id'          => $produto_id,
+                'produto_variacao_id' => $variacao_id,
+                'estoque'             => $estoque,
             ];
         }
 
         $payload = [
             'chave' => $config->client_secret,
-            'dados' => [$produtoConecta]
+            'dados' => $estoques_request,
         ];
 
-        $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
+        $response = Http::asJson()->post('https://api.conectavenda.com.br/estoques/editar', $payload);
 
         if (!$response->successful()) {
             throw new \Exception("Erro ao atualizar estoque no Conecta Venda: " . $response->body());
         }
 
         return $response->json();
+    }
+
+    public function enviar_todos_produtos( ConectaVendaConfig $empresa ) {
+        $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
+        if (!$config || !$config->client_secret) {
+            throw new \Exception("Chave de API do Conecta Venda não encontrada para a empresa.");
+        }
+
+        $produtos_request = [];
+
+        $produtos = Produto::all();
+        foreach($produtos as $produto) {
+            $produtos_request[] = $this->__conecta_produto_create($produto);
+        }
+
+        $payload = [
+            'chave' => $config->client_secret,
+            'dados' => $produtos_request
+        ];
+
+        $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
+
+        // HttpUtil::dd($response, $payload);
+
+        if (!$response->successful()) {
+            throw new \Exception("Erro ao enviar produto ao Conecta Venda: " . $response->body());
+        }
+
+        return $response->json();
+
     }
 
 }
