@@ -444,24 +444,24 @@ class ProdutoController extends Controller
                     }
                 }
             }else{
+                
+                if($request->gerenciar_estoque && sizeof($locais) <= 1){
 
-                if($request->estoque_inicial && sizeof($locais) <= 1){
-
-                    $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial, null);
+                    $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial ?? 0, null);
                     $transacao = Estoque::where('produto_id', $produto->id)->first();
 
                     $tipo = 'incremento';
                     if($transacao != null){
                         $codigo_transacao = $transacao->id;
                         $tipo_transacao = 'alteracao_estoque';
-                        $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                        $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                     }else{
                         // combo
                         foreach($produto->itensDoCombo as $c){
                             $transacao = Estoque::where('produto_id', $c->item_id)->first();
                             $codigo_transacao = $transacao->id;
                             $tipo_transacao = 'alteracao_estoque';
-                            $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                            $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                         }
                     }
                 }
@@ -794,23 +794,23 @@ public function update(Request $request, $id)
                 }
             }
         }else{
-            if($request->estoque_inicial && isset($locais) && sizeof($locais) <= 1){
+            if($request->gerenciar_estoque && isset($locais) && sizeof($locais) <= 1){
                 
-                $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial, null);
+                $this->utilEstoque->incrementaEstoque($produto->id, $request->estoque_inicial ?? 0, null);
                 $transacao = Estoque::where('produto_id', $produto->id)->first();
 
                 $tipo = 'incremento';
                 if($transacao != null){
                     $codigo_transacao = $transacao->id;
                     $tipo_transacao = 'alteracao_estoque';
-                    $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                    $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                 }else{
                     // combo
                     foreach($produto->itensDoCombo as $c){
                         $transacao = Estoque::where('produto_id', $c->item_id)->first();
                         $codigo_transacao = $transacao->id;
                         $tipo_transacao = 'alteracao_estoque';
-                        $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                        $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                     }
                 }
             }

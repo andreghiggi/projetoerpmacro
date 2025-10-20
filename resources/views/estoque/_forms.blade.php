@@ -112,22 +112,25 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td width="250px">
-                                    <div class="mt-1">
-                                        {!!Form::select('variacao_modelo_id', 'Variação principal', ['' => 'Selecione'] + $variacoes->pluck('descricao', 'id')->all())
-                                        ->attrs(['class' => 'form-select'])
-                                        ->value(isset($item) ? $item->variacao_modelo_id : null)
-                                        !!}
-                                    </div>
+                                @if(isset($item) && $item->produto->variacoes && $item->produto->variacoes->count() > 0)
+                                <tr>
+                                
+                                    <td width="250px">
+                                        <div class="mt-1">
+                                            {!!Form::select('variacao_modelo_id', 'Variação principal', ['' => 'Selecione'] + $item->produto->variacoes[0]->pluck('descricao', 'id')->all())
+                                            ->attrs(['class' => 'form-select'])
+                                            ->value(isset($item) ? $item->variacao_modelo_id : null)
+                                            !!}
+                                        </div>
 
-                                    <div class="mt-2">
-                                        {!!Form::select('sub_variacao_modelo_id', 'Sub variação', ['' => 'Selecione'] + $variacoes->pluck('descricao', 'id')->all())
-                                        ->attrs(['class' => 'form-select'])
-                                        ->value(isset($item) ? $item->variacao_modelo_id : null)
-                                        !!}
-                                    </div>
-                                </td>
+                                        <div class="mt-2">
+                                            {!!Form::select('sub_variacao_modelo_id', 'Sub variação', ['' => 'Selecione'] + $item->produto->variacoes[0]->pluck('descricao', 'id')->all())
+                                            ->attrs(['class' => 'form-select'])
+                                            ->value(isset($item) ? $item->variacao_modelo_id : null)
+                                            !!}
+                                        </div>
+                                    </td>
+
                                 <td>
                                     <div class="row">
                                         <table class="table table-dynamic table-variacao">
@@ -185,6 +188,8 @@
                                     </div>
                                 </td>
                             </tr>
+                            @endif
+
                             </tbody>
                         </table>
                     </div>
