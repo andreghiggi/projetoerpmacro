@@ -49,11 +49,8 @@ class EstoqueController extends Controller
             return $query->join('produto_localizacaos', 'produto_localizacaos.produto_id', '=', 'produtos.id')
             ->whereIn('produto_localizacaos.localizacao_id', $locais);
         })
-        ->groupBy('produtos.id', 'localizacaos.id');
-
-        dd($data->ddRawSql());
-        // ->orderBy('produtos.nome', 'asc')
-        // ->paginate(env("PAGINACAO"));
+        ->groupBy('produtos.id', 'localizacaos.id')
+        ->paginate(env("PAGINACAO"));
 
         // $data = Estoque::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
         // ->leftjoin('produtos', 'produtos.id', '=', 'estoques.produto_id')
