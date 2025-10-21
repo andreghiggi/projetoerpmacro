@@ -433,7 +433,8 @@ class ProdutoController extends Controller
                     ];
                     $variacao = ProdutoVariacao::create($dataVariacao);
 
-                    if($request->estoque_variacao[$i] && sizeof($locais) <= 1){
+                    // if($request->estoque_variacao[$i] && sizeof($locais) <= 1){
+                    if( sizeof($locais) <= 1){
                         $qtd = __convert_value_bd($request->estoque_variacao[$i]);
                         $this->utilEstoque->incrementaEstoque($produto->id, $qtd, $variacao->id);
                         $transacao = Estoque::where('produto_id', $produto->id)->first();
@@ -783,8 +784,9 @@ public function update(Request $request, $id)
 
                 $variacoes_presentes[] = $variacao->id;
 
-                if( $id_variacao == 0 && $request->estoque_variacao[$i] && isset($locais) && sizeof($locais) <= 1){
-                    $qtd = __convert_value_bd($request->estoque_variacao[$i]);
+                // if( $id_variacao == 0 && $request->estoque_variacao[$i] && isset($locais) && sizeof($locais) <= 1){
+                if( $id_variacao == 0 && isset($locais) && sizeof($locais) <= 1){
+                    $qtd = __convert_value_bd($request->estoque_variacao[$i] ?? 0);
                     $this->utilEstoque->incrementaEstoque($produto->id, $qtd, $variacao->id);
                     $transacao = Estoque::where('produto_id', $produto->id)->first();
                     $tipo = 'incremento';
