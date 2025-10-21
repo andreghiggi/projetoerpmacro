@@ -73,9 +73,9 @@
                                     </td>
                                     <td>
                                         @if(!$item->unidadeDecimal())
-                                        {{ number_format($item->quantidade, 0) }}
+                                        {{ number_format($item->estoque->quantidade, 0) }}
                                         @else
-                                        {{ number_format($item->quantidade, 3, '.', '') }}
+                                        {{ number_format($item->estoque->quantidade, 3, '.', '') }}
                                         @endif
                                         <!-- @if(__countLocalAtivo() == 1)
 
@@ -109,16 +109,16 @@
                                     <th>{{ $item->local->descricao }}</th>
                                     @endif
                                     <td style="width: 300px">
-                                        <form action="{{ route('estoque.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form action="{{ route('estoque.destroy', $item->estoque_id) }}" method="post" id="form-{{$item->estoque_id}}">
                                             @method('delete')
                                             @csrf
                                             @can('estoque_edit')
-                                            <a title="Editar estoque" href="{{ route('estoque.edit', [$item->id]) }}" class="btn btn-dark btn-sm">
+                                            <a title="Editar estoque" href="{{ route('estoque.edit', [$item->estoque_id]) }}" class="btn btn-dark btn-sm">
                                                 <i class="ri-pencil-fill"></i>
                                             </a>
                                             @endcan
                                             @can('produtos_edit')
-                                            <a title="Editar produto" href="{{ route('produtos.edit', [$item->produto_id]) }}" class="btn btn-warning btn-sm">
+                                            <a title="Editar produto" href="{{ route('produtos.edit', [$item->id]) }}" class="btn btn-warning btn-sm">
                                                 <i class="ri-pencil-fill"></i>
                                             </a>
                                             @endcan

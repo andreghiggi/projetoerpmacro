@@ -33,7 +33,7 @@ class EstoqueController extends Controller
         $local_id = $request->local_id;
 
         
-        $data = Produto::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
+        $data = Produto::select('produtos.*', 'estoques.id as estoque_id', 'localizacaos.nome as localizacao_nome')
         ->leftjoin('estoques', 'produtos.id', '=', 'estoques.produto_id')
         ->join('localizacaos', 'localizacaos.id', '=', 'estoques.local_id')
         ->where('produtos.empresa_id', request()->empresa_id)
@@ -52,7 +52,6 @@ class EstoqueController extends Controller
         ->groupBy('produtos.id', 'localizacaos.id')
         // ->orderBy('produtos.nome', 'asc')
         ->paginate(env("PAGINACAO"));
-
 
         // $data = Estoque::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
         // ->leftjoin('produtos', 'produtos.id', '=', 'estoques.produto_id')
