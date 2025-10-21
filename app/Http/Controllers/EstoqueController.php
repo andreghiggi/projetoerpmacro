@@ -6,6 +6,7 @@ use App\Models\ProdutoVariacao;
 use App\Models\VariacaoModelo;
 use Illuminate\Http\Request;
 use App\Models\Estoque;
+use App\Models\Produto;
 use App\Utils\EstoqueUtil;
 use App\Models\ProdutoLocalizacao;
 use App\Models\Localizacao;
@@ -30,10 +31,12 @@ class EstoqueController extends Controller
         $locais = $locais->pluck(['id']);
 
         $local_id = $request->local_id;
+
         $data = Estoque::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
-        ->join('produtos', 'produtos.id', '=', 'estoques.produto_id')
+        ->leftjoin('produtos', 'produtos.id', '=', 'estoques.produto_id')
         ->join('localizacaos', 'localizacaos.id', '=', 'estoques.local_id')
         ->where('produtos.empresa_id', request()->empresa_id)
+        ->where('produtos.gerenciar_estoque', 1)
         ->when(!empty($request->produto), function ($q) use ($request) {
             return $q->where('produtos.nome', 'LIKE', "%$request->produto%");
         })
@@ -49,6 +52,7 @@ class EstoqueController extends Controller
         // ->orderBy('produtos.nome', 'asc')
         ->paginate(env("PAGINACAO"));
 
+        // dd( $data );
         return view('estoque.index', compact('data'));
     }
 

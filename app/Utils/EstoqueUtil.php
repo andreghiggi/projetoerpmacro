@@ -43,10 +43,10 @@ class EstoqueUtil
                 $item->save();
             } else {
                 Estoque::create([
-                    'produto_id' => $produto_id,
-                    'quantidade' => $quantidade,
+                    'produto_id'          => $produto_id,
+                    'quantidade'          => $quantidade,
                     'produto_variacao_id' => $produto_variacao_id,
-                    'local_id' => $local_id
+                    'local_id'            => $local_id
                 ]);
             }
         }
