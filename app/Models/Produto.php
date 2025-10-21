@@ -883,4 +883,15 @@ class Produto extends Model
 
 	}
 
+	public function descricao(){
+        if($this->produto_variacao_id == null){
+            return $this->nome;
+        }
+        if($this->produtoVariacao){
+            return $this->nome . " - " . $this->produtoVariacao->descricao;
+        }
+
+        return $this->nome;
+    }
+
 }

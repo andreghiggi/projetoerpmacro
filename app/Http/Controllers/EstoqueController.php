@@ -32,8 +32,9 @@ class EstoqueController extends Controller
 
         $local_id = $request->local_id;
 
-        $data = Estoque::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
-        ->leftjoin('produtos', 'produtos.id', '=', 'estoques.produto_id')
+        
+        $data = Produto::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
+        ->leftjoin('estoques', 'produtos.id', '=', 'estoques.produto_id')
         ->join('localizacaos', 'localizacaos.id', '=', 'estoques.local_id')
         ->where('produtos.empresa_id', request()->empresa_id)
         ->where('produtos.gerenciar_estoque', 1)
@@ -51,6 +52,27 @@ class EstoqueController extends Controller
         ->groupBy('produtos.id', 'localizacaos.id')
         // ->orderBy('produtos.nome', 'asc')
         ->paginate(env("PAGINACAO"));
+
+
+        // $data = Estoque::select('estoques.*', 'produtos.nome as produto_nome', 'localizacaos.nome as localizacao_nome')
+        // ->leftjoin('produtos', 'produtos.id', '=', 'estoques.produto_id')
+        // ->join('localizacaos', 'localizacaos.id', '=', 'estoques.local_id')
+        // ->where('produtos.empresa_id', request()->empresa_id)
+        // ->where('produtos.gerenciar_estoque', 1)
+        // ->when(!empty($request->produto), function ($q) use ($request) {
+        //     return $q->where('produtos.nome', 'LIKE', "%$request->produto%");
+        // })
+        // ->when($local_id, function ($query) use ($local_id) {
+        //     return $query->join('produto_localizacaos', 'produto_localizacaos.produto_id', '=', 'produtos.id')
+        //     ->where('produto_localizacaos.localizacao_id', $local_id);
+        // })
+        // ->when(!$local_id, function ($query) use ($locais) {
+        //     return $query->join('produto_localizacaos', 'produto_localizacaos.produto_id', '=', 'produtos.id')
+        //     ->whereIn('produto_localizacaos.localizacao_id', $locais);
+        // })
+        // ->groupBy('produtos.id', 'localizacaos.id')
+        // // ->orderBy('produtos.nome', 'asc')
+        // ->paginate(env("PAGINACAO"));
 
         // dd( $data );
         return view('estoque.index', compact('data'));

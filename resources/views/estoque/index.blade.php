@@ -66,20 +66,20 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td><img class="img-60" src="{{ $item->produto->img }}"></td>
-                                    <td>{{ $item->produto->numero_sequencial }}</td>
+                                    <td><img class="img-60" src="{{ $item->img }}"></td>
+                                    <td>{{ $item->numero_sequencial }}</td>
                                     <td>
                                         {{ $item->descricao() }}
                                     </td>
                                     <td>
-                                        @if(!$item->produto->unidadeDecimal())
+                                        @if(!$item->unidadeDecimal())
                                         {{ number_format($item->quantidade, 0) }}
                                         @else
                                         {{ number_format($item->quantidade, 3, '.', '') }}
                                         @endif
                                         <!-- @if(__countLocalAtivo() == 1)
 
-                                        @if(!$item->produto->unidadeDecimal())
+                                        @if(!$item->unidadeDecimal())
                                         {{ number_format($item->quantidade, 0) }}
                                         @else
                                         {{ number_format($item->quantidade, 3, '.', '') }}
@@ -87,11 +87,11 @@
 
                                         @else
 
-                                        @foreach($item->produto->estoqueLocais as $e)
+                                        @foreach($item->estoqueLocais as $e)
                                         @if($e->local)
                                         {{ $e->local->descricao }}:
                                         <strong class="text-success">
-                                            @if(!$item->produto->unidadeDecimal())
+                                            @if(!$item->unidadeDecimal())
                                             {{ number_format($e->quantidade, 0) }}
                                             @else
                                             {{ number_format($e->quantidade, 3) }}
@@ -103,8 +103,8 @@
 
                                         @endif -->
                                     </td>
-                                    <td>{{ __moeda($item->produto->valor_unitario) }}</td>
-                                    <td>{{ $item->produto->unidade }}</td>
+                                    <td>{{ __moeda($item->valor_unitario) }}</td>
+                                    <td>{{ $item->unidade }}</td>
                                     @if(__countLocalAtivo() > 1)
                                     <th>{{ $item->local->descricao }}</th>
                                     @endif
