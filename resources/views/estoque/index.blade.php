@@ -66,20 +66,20 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td><img class="img-60" src="{{ $item->img }}"></td>
-                                    <td>{{ $item->numero_sequencial }}</td>
+                                    <td><img class="img-60" src="{{ $item->produto->img }}"></td>
+                                    <td>{{ $item->produto->numero_sequencial }}</td>
                                     <td>
                                         {{ $item->descricao() }}
                                     </td>
                                     <td>
-                                        @if(!$item->unidadeDecimal())
-                                        {{ number_format($item->estoque->quantidade, 0) }}
+                                        @if(!$item->produto->unidadeDecimal())
+                                        {{ number_format($item->quantidade, 0) }}
                                         @else
-                                        {{ number_format($item->estoque->quantidade, 3, '.', '') }}
+                                        {{ number_format($item->quantidade, 3, '.', '') }}
                                         @endif
                                         <!-- @if(__countLocalAtivo() == 1)
 
-                                        @if(!$item->unidadeDecimal())
+                                        @if(!$item->produto->unidadeDecimal())
                                         {{ number_format($item->quantidade, 0) }}
                                         @else
                                         {{ number_format($item->quantidade, 3, '.', '') }}
@@ -87,11 +87,11 @@
 
                                         @else
 
-                                        @foreach($item->estoqueLocais as $e)
+                                        @foreach($item->produto->estoqueLocais as $e)
                                         @if($e->local)
                                         {{ $e->local->descricao }}:
                                         <strong class="text-success">
-                                            @if(!$item->unidadeDecimal())
+                                            @if(!$item->produto->unidadeDecimal())
                                             {{ number_format($e->quantidade, 0) }}
                                             @else
                                             {{ number_format($e->quantidade, 3) }}
@@ -103,22 +103,22 @@
 
                                         @endif -->
                                     </td>
-                                    <td>{{ __moeda($item->valor_unitario) }}</td>
-                                    <td>{{ $item->unidade }}</td>
+                                    <td>{{ __moeda($item->produto->valor_unitario) }}</td>
+                                    <td>{{ $item->produto->unidade }}</td>
                                     @if(__countLocalAtivo() > 1)
                                     <th>{{ $item->local->descricao }}</th>
                                     @endif
                                     <td style="width: 300px">
-                                        <form action="{{ route('estoque.destroy', $item->estoque_id) }}" method="post" id="form-{{$item->estoque_id}}">
+                                        <form action="{{ route('estoque.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @csrf
                                             @can('estoque_edit')
-                                            <a title="Editar estoque" href="{{ route('estoque.edit', [$item->estoque_id]) }}" class="btn btn-dark btn-sm">
+                                            <a title="Editar estoque" href="{{ route('estoque.edit', [$item->id]) }}" class="btn btn-dark btn-sm">
                                                 <i class="ri-pencil-fill"></i>
                                             </a>
                                             @endcan
                                             @can('produtos_edit')
-                                            <a title="Editar produto" href="{{ route('produtos.edit', [$item->id]) }}" class="btn btn-warning btn-sm">
+                                            <a title="Editar produto" href="{{ route('produtos.edit', [$item->produto_id]) }}" class="btn btn-warning btn-sm">
                                                 <i class="ri-pencil-fill"></i>
                                             </a>
                                             @endcan
