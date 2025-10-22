@@ -465,6 +465,8 @@ class ConectaVendaSincronizador
 
         $estoques_request = [];
 
+        dd($produto->variacoes);
+
         if( isset($produto->variacoes) && $produto->variacoes ) {
             dd("aquix1");
             foreach ($produto->variacoes as $i => $variacao) {
