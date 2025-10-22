@@ -213,7 +213,7 @@ class EstoqueUtil
     }
 
     public function movimentacaoProduto($produto_id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, $user_id,
-        $produto_variacao_id = null){
+        $produto_variacao_id = null, $ignorar_integracao = false){
         $estoque = Estoque::where('produto_id', $produto_id)->first();
         MovimentacaoProduto::create([
             'produto_id'          => $produto_id,
@@ -228,7 +228,7 @@ class EstoqueUtil
 
         $produto = Produto::findOrFail($produto_id);
 
-        if(plano_ativo("Conecta Venda")) {
+        if( $ignorar_integracao === false && plano_ativo("Conecta Venda") ) {
             $conecta_sync   = new ConectaVendaSincronizador();
             $empresa_id     = \Auth::user()->empresa->empresa_id;
             $conecta_config = ConectaVendaConfig::where('empresa_id', $empresa_id)->first();

@@ -415,6 +415,7 @@ class ProdutoController extends Controller
                     ]);
                 }
             }
+
             if($request->variavel){
                 for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
                     $file_name = '';
@@ -442,7 +443,8 @@ class ProdutoController extends Controller
                         $tipo = 'incremento';
                         $codigo_transacao = $transacao->id;
                         $tipo_transacao = 'alteracao_estoque';
-                        $this->utilEstoque->movimentacaoProduto($produto->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
+                        $ignorar_integracao = true;
+                        $this->utilEstoque->movimentacaoProduto($produto->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id, $ignorar_integracao);
                     }
                 }
             }else{
@@ -456,14 +458,16 @@ class ProdutoController extends Controller
                     if($transacao != null){
                         $codigo_transacao = $transacao->id;
                         $tipo_transacao = 'alteracao_estoque';
-                        $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                        $ignorar_integracao = true;
+                        $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $ignorar_integracao);
                     }else{
                         // combo
                         foreach($produto->itensDoCombo as $c){
                             $transacao = Estoque::where('produto_id', $c->item_id)->first();
                             $codigo_transacao = $transacao->id;
                             $tipo_transacao = 'alteracao_estoque';
-                            $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                            $ignorar_integracao = true;
+                            $this->utilEstoque->movimentacaoProduto($c->item_id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $ignorar_integracao);
                         }
                     }
                 }
@@ -531,7 +535,6 @@ class ProdutoController extends Controller
                     session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
                 }
             }
-
 
             return $produto;
         });
