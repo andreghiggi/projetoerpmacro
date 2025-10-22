@@ -489,7 +489,7 @@ class ConectaVendaSincronizador
 
         $response = Http::asJson()->post('https://api.conectavenda.com.br/estoques/editar', $payload);
 
-        // HttpUtil::dd($response, $payload);
+        HttpUtil::dd($response, $payload);
 
         if (!$response->successful()) {
             throw new \Exception("Erro ao atualizar estoque no Conecta Venda: " . $response->body());
