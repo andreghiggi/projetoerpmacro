@@ -465,22 +465,43 @@ class ConectaVendaSincronizador
 
         $estoques_request = [];
 
-        foreach ($produto->variacoes as $i => $variacao) {
+        if( !empty($produto->variacoes) ) {
+
+            foreach ($produto->variacoes as $i => $variacao) {
+                $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
+
+                if($estoque_sob_encomenda) {
+                    continue;
+                }
+
+                $produto_id  = (string)$produto->id;
+                $variacao_id = "{$produto->id}.{$variacao->id}";
+                $estoque     = (int) ($variacao->estoque()->sum('quantidade'));
+
+                $estoques_request[] = [
+                    'produto_id'          => $produto_id,
+                    'produto_variacao_id' => $variacao_id,
+                    'estoque'             => $estoque,
+                ];
+            }
+        } else {
+
             $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
 
             if($estoque_sob_encomenda) {
-                continue;
+                return;
             }
 
             $produto_id  = (string)$produto->id;
-            $variacao_id = "{$produto->id}.{$variacao->id}";
-            $estoque     = (int) ($variacao->estoque()->sum('quantidade'));
+            $variacao_id = "{$produto->id}.1";
+            $estoque     = (int) ($produto->estoque()->sum('quantidade'));
 
             $estoques_request[] = [
                 'produto_id'          => $produto_id,
                 'produto_variacao_id' => $variacao_id,
                 'estoque'             => $estoque,
             ];
+
         }
 
         $payload = [
