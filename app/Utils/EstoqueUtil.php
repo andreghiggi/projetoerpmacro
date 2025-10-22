@@ -228,7 +228,7 @@ class EstoqueUtil
 
         $produto = Produto::findOrFail($produto_id);
 
-        if( $ignorar_integracao === false && plano_ativo("Conecta Venda") ) {
+        if( $ignorar_integracao === false && plano_ativo("Conecta Venda") && $produto->conecta_venda_id ) {
             $conecta_sync   = new ConectaVendaSincronizador();
             $empresa_id     = \Auth::user()->empresa->empresa_id;
             $conecta_config = ConectaVendaConfig::where('empresa_id', $empresa_id)->first();

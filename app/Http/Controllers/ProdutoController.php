@@ -508,8 +508,7 @@ class ProdutoController extends Controller
             if($request->nuvemshop){
                 $resp = $this->utilNuvemShop->create($request, $produto);
             }
-            if(env("CONECTAVENDA") == 1){
-
+            if($request->conectavenda){
                 $produto->conecta_venda_qtd_minima    = $request->conecta_venda_qtd_minima;
                 $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
                 $produto->solicita_observacao         = $request->solicita_observacao;
@@ -578,7 +577,6 @@ class ProdutoController extends Controller
         }
         } catch (\Exception $e) {
             echo $e->getMessage();
-            die;
             __createLog($request->empresa_id, 'Produto', 'erro', $e->getMessage());
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
             return redirect()->back();
@@ -1306,7 +1304,7 @@ public function destroy($id)
     $item = Produto::findOrFail($id);
     __validaObjetoEmpresa($item);
 
-    if(plano_ativo("Conecta Venda")){
+    if(plano_ativo("Conecta Venda") && $item->conecta_venda_id){
         $desativar      = true;
         $empresa_id     = \Auth::user()->empresa->empresa_id;
         $conecta_config = ConectaVendaConfig::where('empresa_id', $empresa_id)->first();
