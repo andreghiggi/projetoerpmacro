@@ -465,9 +465,7 @@ class ConectaVendaSincronizador
 
         $estoques_request = [];
 
-        dd( $produto, !empty($produto->variacoes) );
-
-        if( !empty($produto->variacoes) ) {
+        if( isset($produto->variacoes) && $produto->variacoes ) {
 
             foreach ($produto->variacoes as $i => $variacao) {
                 $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
