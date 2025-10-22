@@ -12,6 +12,7 @@ use App\Models\Produto;
 use App\Models\ConectaVendaPedido;
 use App\Models\ProdutoVariacao;
 use App\Utils\EstoqueUtil;
+use App\Utils\HttpUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use function PHPUnit\Framework\isNull;
