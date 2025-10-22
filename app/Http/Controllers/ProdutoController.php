@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\ConectaVendaConfig;
 use App\Models\Produto;
 use App\Models\Empresa;
@@ -788,10 +789,10 @@ public function update(Request $request, $id)
                 if( $id_variacao == 0 && isset($locais) && sizeof($locais) <= 1){
                     $qtd = __convert_value_bd($request->estoque_variacao[$i] ?? 0);
                     $this->utilEstoque->incrementaEstoque($produto->id, $qtd, $variacao->id);
-                    $transacao = Estoque::where('produto_id', $produto->id)->first();
-                    $tipo = 'incremento';
+                    $transacao        = Estoque::where('produto_id', $produto->id)->first();
+                    $tipo             = 'incremento';
                     $codigo_transacao = $transacao->id;
-                    $tipo_transacao = 'alteracao_estoque';
+                    $tipo_transacao   = 'alteracao_estoque';
                     $this->utilEstoque->movimentacaoProduto($produto->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
                 }
             }
@@ -1301,6 +1302,14 @@ public function destroy($id)
 {
     $item = Produto::findOrFail($id);
     __validaObjetoEmpresa($item);
+
+    if(plano_ativo("Conecta Venda")){
+        $desativar      = true;
+        $empresa_id     = \Auth::user()->empresa->empresa_id;
+        $conecta_config = ConectaVendaConfig::where('empresa_id', $empresa_id)->first();
+        $this->utilConectaVenda->create( $conecta_config, $item, $desativar);
+    }
+
     try {
         $descricaoLog = $item->nome;
         DB::transaction(function () use ($item) {

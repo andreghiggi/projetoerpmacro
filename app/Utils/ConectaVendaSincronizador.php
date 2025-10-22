@@ -18,16 +18,12 @@ use function PHPUnit\Framework\isNull;
 
 class ConectaVendaSincronizador
 {
-    protected $utilEstoque;
-    protected $utilNfe;
-    public function __construct(EstoqueUtil $utilEstoque,NfeController $utilNfe)
+    public function __construct()
     {
-        $this->utilEstoque = $utilEstoque;
-        $this->utilNfe = $utilNfe;
     }
 
     // Monta Um Produto do request de criar produtos do Conecta.
-    private function __conecta_produto_create( Produto $produto ) {
+    private function __conecta_produto_create( Produto $produto, bool $desativar = false ) {
 
         $produto_grupo = $produto->categoria->nome ?? 'Sem Grupo';
 
@@ -37,6 +33,8 @@ class ConectaVendaSincronizador
         $produto_foto = $produto->img_app;
 
         $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
+
+        $ativo = $desativar ? 0 : 1;
 
         $produto_request = [
             'id'                   => (string) $produto->id,
@@ -50,7 +48,7 @@ class ConectaVendaSincronizador
             'multiplicador'        => (int) ($produto->conecta_venda_multiplicador ?? 1),
             'qtde_minima'          => (int) ($produto->conecta_venda_qtd_minima ?? 1),
             'data_publicacao'      => $produto->created_at->format('Y-m-d H:i:s'),
-            'ativo'                => 1,
+            'ativo'                => $ativo,
             'fotos'                => []
         ];
 
@@ -124,14 +122,14 @@ class ConectaVendaSincronizador
         return $produto_request;
 
     }
-    public function create(ConectaVendaConfig $empresa, Produto $produto)
+    public function create(ConectaVendaConfig $empresa, Produto $produto, bool $desativar = false)
     {
         $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
         if (!$config || !$config->client_secret) {
             throw new \Exception("Chave de API do Conecta Venda não encontrada para a empresa.");
         }
 
-        $produto_request = $this->__conecta_produto_create($produto);
+        $produto_request = $this->__conecta_produto_create($produto, $desativar);
 
         $payload = [
             'chave' => $config->client_secret,
@@ -377,12 +375,12 @@ class ConectaVendaSincronizador
     public function returnStock($order, $config)
     {
         $pedido = ConectaVendaPedido::where('id', $order->id)->first();
-        if(!empty($pedido->nfe_id)){
-            $nf = Nfe::where('id', $pedido->nfe_id)->first();
-            if($nf){
-                $this->utilNfe->destroy($pedido->nfe_id);
-            }
-        }
+        // if(!empty($pedido->nfe_id)){
+        //     $nf = Nfe::where('id', $pedido->nfe_id)->first();
+        //     if($nf){
+        //         // $this->utilNfe->destroy($pedido->nfe_id);
+        //     }
+        // }
         foreach($order->produtos as $produto){
             $qtd = $produto->quantidade ?? $produto->qtde ?? 0;
             $transacao = Estoque::where('produto_id', $produto->produto_id)
@@ -390,20 +388,20 @@ class ConectaVendaSincronizador
                     $q->where('produto_variacao_id', $produto->variacao_id);
                 })
                 ->first();
-            $this->utilEstoque->incrementaEstoqueCron($produto->produto_id, $qtd, $produto->variacao_id ?: null);
+            // $this->utilEstoque->incrementaEstoqueCron($produto->produto_id, $qtd, $produto->variacao_id ?: null);
 
             $usuarioId = \Auth::check() ? \Auth::id() : null;
 
             if ($transacao) {
-                $this->utilEstoque->movimentacaoProduto(
-                    $produto->produto_id,
-                    $qtd,
-                    'incremento',
-                    $transacao->id,
-                    'alteracao_estoque',
-                    $usuarioId,
-                    $produto->variacao_id
-                );
+                // $this->utilEstoque->movimentacaoProduto(
+                //     $produto->produto_id,
+                //     $qtd,
+                //     'incremento',
+                //     $transacao->id,
+                //     'alteracao_estoque',
+                //     $usuarioId,
+                //     $produto->variacao_id
+                // );
             }
         }
 
@@ -490,6 +488,8 @@ class ConectaVendaSincronizador
         ];
 
         $response = Http::asJson()->post('https://api.conectavenda.com.br/estoques/editar', $payload);
+
+        // HttpUtil::dd($response, $payload);
 
         if (!$response->successful()) {
             throw new \Exception("Erro ao atualizar estoque no Conecta Venda: " . $response->body());

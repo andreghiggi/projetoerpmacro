@@ -149,7 +149,6 @@ class EstoqueController extends Controller
     }
 
     public function update(Request $request, $id){
-
         try {
             // dd($request->all());
 

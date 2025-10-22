@@ -1,4 +1,3 @@
-
 @section('css')
 <style type="text/css">
     .image-variation{
@@ -962,6 +961,7 @@
                         <div class="card">
                             <div class="card-header">
                                 <h4>
+                                    
                                     @isset($conectavenda)
                                         @if($conectavenda == 1)
                                             <input type="hidden" name="redirect_conectavenda" value="1">

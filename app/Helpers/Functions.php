@@ -764,3 +764,8 @@ function __setUltimoNumeroSequencial($empresa_id, $tabela, $numero){
 		$config->save();
 	}
 }
+
+function plano_ativo($plano){
+	return __isActivePlan(\Auth::user()->empresa, $plano);
+}
+

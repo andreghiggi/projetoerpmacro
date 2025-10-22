@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use App\Models\Estoque;
 use App\Models\Produto;
 use App\Models\Localizacao;
+use App\Models\ConectaVendaConfig;
 use App\Models\MovimentacaoProduto;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +33,6 @@ class EstoqueUtil
 
         $produto = Produto::findOrFail($produto_id);
         if($produto->combo){
-
             foreach($produto->itensDoCombo as $c){
                 $this->incrementaEstoque($c->item_id, $c->quantidade * $quantidade, $produto_variacao_id, $local_id);
             }
@@ -49,6 +49,9 @@ class EstoqueUtil
                     'local_id'            => $local_id
                 ]);
             }
+
+            
+
         }
     }
 
@@ -213,15 +216,25 @@ class EstoqueUtil
         $produto_variacao_id = null){
         $estoque = Estoque::where('produto_id', $produto_id)->first();
         MovimentacaoProduto::create([
-            'produto_id' => $produto_id,
-            'quantidade' => $quantidade,
-            'tipo' => $tipo,
-            'codigo_transacao' => $codigo_transacao,
-            'tipo_transacao' => $tipo_transacao,
+            'produto_id'          => $produto_id,
+            'quantidade'          => $quantidade,
+            'tipo'                => $tipo,
+            'codigo_transacao'    => $codigo_transacao,
+            'tipo_transacao'      => $tipo_transacao,
             'produto_variacao_id' => $produto_variacao_id,
-            'user_id' => $user_id,
-            'estoque_atual' => $estoque ? $estoque->quantidade : 0
+            'user_id'             => $user_id,
+            'estoque_atual'       => $estoque ? $estoque->quantidade : 0
         ]);
+
+        $produto = Produto::findOrFail($produto_id);
+
+        if(plano_ativo("Conecta Venda")) {
+            $conecta_sync   = new ConectaVendaSincronizador();
+            $empresa_id     = \Auth::user()->empresa->empresa_id;
+            $conecta_config = ConectaVendaConfig::where('empresa_id', $empresa_id)->first();
+            $conecta_sync->atualizarEstoque( $conecta_config, $produto );
+        }
+
     }
 
 }
