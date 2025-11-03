@@ -31,7 +31,7 @@ class ConectaVendaSincronizador
         if($produto->subcategoria){
             $produto_grupo = $produto_grupo . ' - ' . $produto->subcategoria->nome;
         }
-        $produto_foto = $produto->img_app;
+        $produto_fotos = $produto->imagens();
 
         $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
 
@@ -77,8 +77,14 @@ class ConectaVendaSincronizador
                     ]
                 ];
 
-                if(!empty($variacao->imagem)){
-                    $fotos_request[] = $variacao->img_app;
+                $variacao_imagens = $variacao->imagens();
+
+                if( $produto_fotos ) {
+                    array_push( $fotos_request, ...$produto_fotos );
+                }
+
+                if( $variacao_imagens ){
+                    array_push( $fotos_request, ...$variacao_imagens );
                 } 
 
                 if(!$estoque_sob_encomenda) {
@@ -112,9 +118,8 @@ class ConectaVendaSincronizador
             $variacoes_request[] = $variacao_request;
         }
 
-        if( !$fotos_request ) {
-            // Se não tem foto na variação, vai usar a foto do produto
-            $fotos_request[] = $produto_foto;
+        if( $produto_fotos ) {
+            array_push( $fotos_request, ...$produto_fotos );
         }
         
         $produto_request['variacoes'] = $variacoes_request;
