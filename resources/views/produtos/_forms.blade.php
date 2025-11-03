@@ -375,9 +375,9 @@
                                                 </thead>
                                                 <tbody>
                                                     @isset($item)
-                                                        @foreach($item->variacoes as $v)
+                                                        @foreach($item->variacoes as $index => $v)
                                                             <tr class="dynamic-form">
-                                                        <input type="hidden" name="variacao_id[]]]" value="{{ $v->id }}">
+                                                        <input type="hidden" name="variacao_id[]" value="{{ $v->id }}">
                                                         <td>
                                                             <input type="text" class="form-control" name="descricao_variacao[]" value="{{ $v->descricao }}" required readonly>
                                                         </td>
@@ -395,14 +395,23 @@
                                                             <input type="number" class="form-control ignore" readonly name="estoque_variacao[]" value="{{ $v->estoque_total ?? 0 }}">
                                                         </td>
                                                         <td>
-                                                            <input class="ignore" accept="image/*" type="file" class="form-control" name="imagem_variacao[]" value="">
-                                                            <img src="{{ $v->img }}" class="image-variation"><br>
-                                                            <span>imagem atual</span>
-                                                        </td>
-                                                        <td>
-                                                            <button type="button" class="btn btn-sm btn-danger btn-remove-tr-variacao">
-                                                                <i class="ri-subtract-line"></i>
-                                                            </button>
+
+                                                            @if( $v->imagens() )
+                                                            @foreach($v->imagens() as $img_index => $imagem) 
+
+                                                            <div id="image_variacao_frame_{{ $index }}_{{ $img_index }}" class="card form-input" style="max-width: 100%; width: 150px; margin: 0;">
+                                                                <div class="preview" style="width: 100%; text-align: center;">
+                                                                    <button type="button" id="image_variacao_remove_{{ $index }}_{{ $img_index }}" class="btn btn-link-danger btn-sm btn-danger">x</button>
+                                                                    <button type="button" id="image_variacao_add_{{ $index }}_{{ $img_index }}" class="btn btn-link-primary btn-sm btn-primary">+</button>
+                                                                    <img id="image_variacao_preview_{{ $index }}_{{ $img_index }}" src="{{ $imagem }}" style="max-width: 100%; width: 100%; height: auto; display: block;">
+                                                                </div>
+                                                                <label id="image_variacao_input_label_{{ $index }}_{{ $img_index }}" for="image_variacao_input_{{ $index }}_{{ $img_index }}" style="text-align: center; display: block; margin: 5px 0;">Imagem</label>
+                                                                <input type="file" id="image_variacao_input_{{ $index }}_{{ $img_index }}" name="image_variacao[{{ $index }}][]" accept="image/*">
+                                                                <input type="hidden" id="image_variacao_list_{{ $index }}_{{ $img_index }}" name="image_variacao_list[{{ $index }}][]" value="{{ $v->id ."|". $imagem }}" >
+                                                            </div>
+
+                                                            @endforeach
+                                                            @endif
                                                         </td>
                                                     </tr>
                                                     @endforeach
@@ -490,24 +499,33 @@
 
                 <div class="col-12"></div>
 
-                <div class="card col-md-3 mt-3 form-input">
-                    <div class="preview">
-                        <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
-                        @isset($item)
-                        <img id="file-ip-1-preview" src="{{ $item->img }}">
-                        @else
-                        <img id="file-ip-1-preview" src="/imgs/no-image.png">
-                        @endif
+                @if($item->imagens())
+                @foreach($item->imagens() as $index => $imagem)
+                    <div id="image_frame_{{ $index }}" class="card col-md-3 mt-3 form-input">
+                        <div class="preview">
+                            <button type="button" id="image_remove_{{ $index }}" class="btn btn-link-danger btn-sm btn-danger">x</button>
+                            <button type="button" id="image_add_{{ $index }}"      class="btn btn-link-primary btn-sm btn-primary">+</button>
+                            <img id="image_preview_{{ $index }}" src="{{ $imagem }}">
+                        </div>
+                        <label id="image_input_label_{{ $index }}" for="image_input_{{ $index }}">Imagem</label>
+                        <input type="file" id="image_input_{{ $index }}" name="image[]" data-index="0" accept="image/*">
+                        <input type="hidden" id="image_list_{{ $index }}" name="image_list[]" value="{{ $imagem }}" >
                     </div>
-                    <label for="file-ip-1">Imagem</label>
-                    @isset($item)
-                    <a class="btn btn-danger btn-sm w-50 mt-2 mb-1" href="{{ route('produtos.remove-image', [$item->id])}}">
-                        <i class="ri-close-line"></i>
-                        Remover imagem
-                    </a>
-                    @endif
-                    <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);">
-                </div>
+                @endforeach
+                @else
+
+                <div id="image_frame_0" class="card col-md-3 mt-3 form-input">
+                        <div class="preview">
+                            <button type="button" id="image_remove_0" class="btn btn-link-danger btn-sm btn-danger">x</button>
+                            <button type="button" id="image_add_0"      class="btn btn-link-primary btn-sm btn-primary">+</button>
+                            <img id="image_preview_0" src="/imgs/no-image.png">
+                        </div>
+                        <label id="image_input_label_0" for="image_input_0">Imagem</label>
+                        <input type="file" id="image_input_0" name="image[]" data-index="0" accept="image/*">
+                        <input type="hidden" id="image_list_0" name="image_list[]" value="" >
+                    </div>
+
+                @endif
             </div>
         </div>
     </div>

@@ -66,6 +66,8 @@ class SyncOrdersConectaVendaCron extends Command
 
             $response = Http::withOptions(['verify' => false])->asJson()->post('https://api.conectavenda.com.br/pedidos/listar', $payload);
 
+            // HttpUtil::dd($response, $payload);
+
             if($response->status() == 200){
                 $conecta_pedidos = json_decode($response);
                 foreach($conecta_pedidos->dados as $conecta_pedido){

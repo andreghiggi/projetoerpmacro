@@ -42,18 +42,39 @@ class Produto extends Model
 
 	public function getImgAppAttribute()
 	{
-		if($this->imagem == ""){
+		$imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
+		if(!$imagem == ""){
 			return env("APP_URL") . "/imgs/no-image.png";
 		}
-		return env("APP_URL") . "/uploads/produtos/$this->imagem";
+		return env("APP_URL") . "/uploads/produtos/$imagem->imagem";
 	}
 
 	public function getImgAttribute()
 	{
-		if($this->imagem == ""){
+		$imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
+		if(!$imagem){
 			return "/imgs/no-image.png";
 		}
-		return "/uploads/produtos/$this->imagem";
+		return "/uploads/produtos/$imagem->imagem";
+	}
+
+	public function imagens()
+	{
+		$imagem = ProdutoImagens::where([
+			["produto_id", $this->id],
+			["produto_variacao_id", 0],
+		])
+		->orderBy('ordem')->get();
+		
+		$imagens = array_map( function($img){
+			return "/uploads/produtos/$img[imagem]";	
+		} ,$imagem->toArray()  );
+
+		return $imagens;
+
+		if(!$imagem){
+			return ["/imgs/no-image.png"];
+		}
 	}
 
 	public function estoqueAtual(){
