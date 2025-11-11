@@ -42,20 +42,28 @@ class Produto extends Model
 
 	public function getImgAppAttribute()
 	{
-		$imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
-		if(!$imagem == ""){
-			return env("APP_URL") . "/imgs/no-image.png";
-		}
-		return env("APP_URL") . "/uploads/produtos/$imagem->imagem";
+		// @NOTE:
+		// Removendo o que existia, e buscando pela função nova imagens()
+		return $this->imagens()[0];
+
+		// $imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
+		// if(!$imagem == ""){
+		// 	return env("APP_URL") . "/imgs/no-image.png";
+		// }
+		// return env("APP_URL") . "/uploads/produtos/$imagem->imagem";
 	}
 
 	public function getImgAttribute()
 	{
-		$imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
-		if(!$imagem){
-			return "/imgs/no-image.png";
-		}
-		return "/uploads/produtos/$imagem->imagem";
+		// @NOTE:
+		// Removendo o que existia, e buscando pela função nova imagens()
+		return $this->imagens()[0];
+
+		// $imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
+		// if(!$imagem){
+		// 	return "/imgs/no-image.png";
+		// }
+		// return "/uploads/produtos/$imagem->imagem";
 	}
 
 	public function imagens()
@@ -70,11 +78,10 @@ class Produto extends Model
 			return "/uploads/produtos/$img[imagem]";	
 		} ,$imagem->toArray()  );
 
-		return $imagens;
-
-		if(!$imagem){
+		if($imagem->isEmpty()){
 			return ["/imgs/no-image.png"];
 		}
+		return $imagens;
 	}
 
 	public function estoqueAtual(){

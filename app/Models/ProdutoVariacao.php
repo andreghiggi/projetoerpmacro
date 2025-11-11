@@ -28,17 +28,19 @@ class ProdutoVariacao extends Model
 
     public function getImgAppAttribute()
     {
-        if($this->imagem == ""){
-            return env("APP_URL") . "/imgs/no-image.png";
-        }
-        return env("APP_URL") . "/uploads/produtos/$this->imagem";
+        return $this->imagens()[0];
+        // if($this->imagem == ""){
+        //     return env("APP_URL") . "/imgs/no-image.png";
+        // }
+        // return env("APP_URL") . "/uploads/produtos/$this->imagem";
     }
     public function getImgAttribute()
     {
-        if($this->imagem == ""){
-            return "/imgs/no-image.png";
-        }
-        return "/uploads/produtos/$this->imagem";
+        return $this->imagens()[0];
+        // if($this->imagem == ""){
+        //     return "/imgs/no-image.png";
+        // }
+        // return "/uploads/produtos/$this->imagem";
     }
 
     public function imagens()
@@ -52,12 +54,12 @@ class ProdutoVariacao extends Model
 		$imagens = array_map( function($img){
 			return "/uploads/produtos/$img[imagem]";	
 		} ,$imagem->toArray()  );
-
-		return $imagens;
-
-		if(!$imagem){
-			return ["/imgs/no-image.png"];
+        
+		if($imagem->isEmpty()){
+            return ["/imgs/no-image.png"];
 		}
+
+        return $imagens;
 	}
 
     public static function removerVariacoesNaoPresentes( $produto_id, $variacoes_presentes = [] ) {
