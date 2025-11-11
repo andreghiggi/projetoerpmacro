@@ -66,20 +66,21 @@ class Produto extends Model
 		// return "/uploads/produtos/$imagem->imagem";
 	}
 
-	public function imagens()
+	public function imagens( $url_completa = false )
 	{
+		$url = $url_completa ? env("APP_URL") : '';
 		$imagem = ProdutoImagens::where([
 			["produto_id", $this->id],
 			["produto_variacao_id", 0],
 		])
 		->orderBy('ordem')->get();
 		
-		$imagens = array_map( function($img){
-			return "/uploads/produtos/$img[imagem]";	
+		$imagens = array_map( function($img) use($url) {
+			return "$url/uploads/produtos/$img[imagem]";	
 		} ,$imagem->toArray()  );
 
 		if($imagem->isEmpty()){
-			return ["/imgs/no-image.png"];
+			return ["$url/imgs/no-image.png"];
 		}
 		return $imagens;
 	}

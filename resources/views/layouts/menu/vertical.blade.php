@@ -1522,7 +1522,7 @@
             @endcan
             @endif
             @endif
-
+            
             @if(env("CONECTAVENDA") == 1)
                 @if(__isActivePlan(Auth::user()->empresa, 'Conecta Venda'))
                     @can('conecta_venda_view')

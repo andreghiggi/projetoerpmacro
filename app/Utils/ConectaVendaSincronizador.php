@@ -31,7 +31,8 @@ class ConectaVendaSincronizador
         if($produto->subcategoria){
             $produto_grupo = $produto_grupo . ' - ' . $produto->subcategoria->nome;
         }
-        $produto_fotos = $produto->imagens();
+        $url_completa = true;
+        $produto_fotos = $produto->imagens( $url_completa );
 
         $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
 
@@ -77,7 +78,7 @@ class ConectaVendaSincronizador
                     ]
                 ];
 
-                $variacao_imagens = $variacao->imagens();
+                $variacao_imagens = $variacao->imagens( $url_completa );
 
                 if( $produto_fotos ) {
                     array_push( $fotos_request, ...$produto_fotos );

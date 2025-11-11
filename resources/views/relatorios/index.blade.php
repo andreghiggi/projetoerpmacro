@@ -810,6 +810,13 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-2">
+                                
+                            <div class="col-md-6 col-12">
+                                {!!Form::select('tipo', 'Tipo', ['clientes' => 'Clientes', 'produtos' => 'Produtos'] )
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
+
                             <div class="col-md-3 col-12">
                                 {!!Form::date('start_date', 'Data inicial')
                                 !!}

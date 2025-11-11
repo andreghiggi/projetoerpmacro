@@ -43,25 +43,26 @@ class ProdutoVariacao extends Model
         // return "/uploads/produtos/$this->imagem";
     }
 
-    public function imagens()
+    public function imagens( $url_completa = false )
 	{
+        $url = $url_completa ? env("APP_URL") : '';
 		$imagem = ProdutoImagens::where([
 			["produto_id", $this->produto_id],
 			["produto_variacao_id", $this->id ],
 		])
 		->orderBy('ordem')->get();
 		
-		$imagens = array_map( function($img){
-			return "/uploads/produtos/$img[imagem]";	
+		$imagens = array_map( function($img) use($url){
+			return "$url/uploads/produtos/$img[imagem]";	
 		} ,$imagem->toArray()  );
         
 		if($imagem->isEmpty()){
-            return ["/imgs/no-image.png"];
+            return ["$url/imgs/no-image.png"];
 		}
 
         return $imagens;
 	}
-
+    
     public static function removerVariacoesNaoPresentes( $produto_id, $variacoes_presentes = [] ) {
         DB::transaction(function () use ($produto_id, $variacoes_presentes) {
             $variacoes = ProdutoVariacao::where( 'produto_id', $produto_id )

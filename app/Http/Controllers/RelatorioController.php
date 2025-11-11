@@ -1392,59 +1392,183 @@ class RelatorioController extends Controller
     public function curvaAbcClientes(Request $request){
         $start_date = $request->start_date;
         $end_date = $request->end_date;
+        $tipo = $request->tipo;
 
-        $nfe = Nfe::where('nves.empresa_id', $request->empresa_id)
-        ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('nves.created_at', '>=', $start_date);
-        })
-        ->when(!empty($end_date), function ($query) use ($end_date) {
-            return $query->whereDate('nves.created_at', '<=', $end_date);
-        })
-        ->join('clientes', 'clientes.id', '=', 'nves.cliente_id')
-        ->groupBy('cliente_id')
-        ->select('clientes.id as cliente_id', 'clientes.razao_social as nome', \DB::raw('sum(nves.total) as total'), \DB::raw('count(nves.id) as count'))
-        ->get();
+        if( $tipo == 'clientes' ) {
 
-        $nfce = Nfce::where('nfces.empresa_id', $request->empresa_id)
-        ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('nfces.created_at', '>=', $start_date);
-        })
-        ->when(!empty($end_date), function ($query) use ($end_date) {
-            return $query->whereDate('nfces.created_at', '<=', $end_date);
-        })
-        ->join('clientes', 'clientes.id', '=', 'nfces.cliente_id')
-        ->groupBy('cliente_id')
-        ->select('clientes.id as cliente_id', 'clientes.razao_social as nome', \DB::raw('sum(nfces.total) as total'), \DB::raw('count(nfces.id) as count'))
-        ->get();
+            $nfe = Nfe::where('nves.empresa_id', $request->empresa_id)
+            ->when(!empty($start_date), function ($query) use ($start_date) {
+                return $query->whereDate('nves.created_at', '>=', $start_date);
+            })
+            ->when(!empty($end_date), function ($query) use ($end_date) {
+                return $query->whereDate('nves.created_at', '<=', $end_date);
+            })
+            ->join('clientes', 'clientes.id', '=', 'nves.cliente_id')
+            ->groupBy('cliente_id')
+            ->select('clientes.id as cliente_id', 'clientes.razao_social as nome', \DB::raw('sum(nves.total) as total'), \DB::raw('count(nves.id) as count'))
+            ->get();
+
+            $nfce = Nfce::where('nfces.empresa_id', $request->empresa_id)
+            ->when(!empty($start_date), function ($query) use ($start_date) {
+                return $query->whereDate('nfces.created_at', '>=', $start_date);
+            })
+            ->when(!empty($end_date), function ($query) use ($end_date) {
+                return $query->whereDate('nfces.created_at', '<=', $end_date);
+            })
+            ->join('clientes', 'clientes.id', '=', 'nfces.cliente_id')
+            ->groupBy('cliente_id')
+            ->select('clientes.id as cliente_id', 'clientes.razao_social as nome', \DB::raw('sum(nfces.total) as total'), \DB::raw('count(nfces.id) as count'))
+            ->get();
 
 
-        $data = $this->agrupaArrayCurva($nfe, $nfce);
+            $fake = fake();
 
-        $soma = 0;
-        foreach($data as $a){
-            $soma += $a['total'];
+            $nfe_dummy = [];
+
+            foreach(range(0,100) as $_) {
+                $client_name = $fake->name();
+                $client_id   = $fake->unique()->randomNumber();
+                $count       = $fake->unique()->randomNumber();
+                $total       = $fake->unique()->randomNumber();
+
+                $nfe_dummy[] = (object) [
+                    'nome' => $client_name,
+                    'cliente_id' => $client_id,
+                    'count' => $count,
+                    'total' => $total,
+                ];
+            }
+
+            // $data = $this->agrupaArrayCurva($nfe, $nfce);
+            $data = $this->agrupaArrayCurva($nfe_dummy, $nfce);
+
+            $soma = 0;
+            foreach($data as $a){
+                $soma += $a['total'];
+            }
+
+            foreach($data as $key => $a){
+                $totalLinha = $data[$key]['total'];
+                $v = 100 - (((($totalLinha-$soma)/$soma)*100)*-1);
+                $data[$key]['percentual'] = number_format($v, 2);
+            }
+
+            usort( $data, function( $a, $b ) {
+                return $b['percentual'] <=> $a['percentual'];
+            });
+
+            $percentual_acumulado = 0;
+            foreach($data as $key => $a){
+                $percentual_acumulado += $a['percentual'];
+                $data[$key]['percentual_accum'] = $percentual_acumulado;
+
+                if( $percentual_acumulado > 95 ) {
+                    $data[$key]['categoria'] = 'C';
+                } elseif( $percentual_acumulado > 80 ) {
+                    $data[$key]['categoria'] = 'B';
+                } else {
+                    $data[$key]['categoria'] = 'A';
+                }
+            }
+
+            $p = view('relatorios/curva_abc_clientes')
+            ->with('data', $data)
+            ->with('soma', $soma)
+            ->with('title', 'Curva ABC Clientes');
+
+            $domPdf = new Dompdf(["enable_remote" => true]);
+            $domPdf->loadHtml($p);
+
+            $pdf = ob_get_clean();
+
+            $domPdf->setPaper("A4", "landscape");
+            $domPdf->render();
+            $domPdf->stream("Curva ABC Clientes.pdf", array("Attachment" => false));
+        } elseif( $tipo == 'produtos' ) {
+
+            $produtos = Nfe::where('nves.empresa_id', $request->empresa_id)
+            ->when(!empty($start_date), function ($query) use ($start_date) {
+                return $query->whereDate('nves.created_at', '>=', $start_date);
+            })
+            ->when(!empty($end_date), function ($query) use ($end_date) {
+                return $query->whereDate('nves.created_at', '<=', $end_date);
+            })
+            ->leftjoin('item_nves', 'nves.id', '=', 'item_nves.nfe_id')
+            ->leftjoin('produtos', 'produtos.id', '=', 'item_nves.produto_id')
+            ->leftjoin('produto_variacaos', 'produto_variacaos.id', '=', 'item_nves.variacao_id')
+            ->groupBy('item_nves.variacao_id')
+            ->select(
+                'produtos.nome as produto_nome', 
+                'produto_variacaos.descricao as produto_variacao_nome', 
+                \DB::raw('count(item_nves.quantidade) as count'),
+                \DB::raw('sum(item_nves.quantidade * item_nves.valor_unitario) as valor_total'),
+            )
+            ->get();
+
+            $data = $produtos->toArray();
+
+            $soma = 0;
+            foreach($data as $a){
+                $soma += $a['valor_total'];
+            }
+
+
+            foreach($data as $key => $a){
+                $totalLinha = $data[$key]['valor_total'];
+                $v = 100 - (((($totalLinha-$soma)/$soma)*100)*-1);
+                $data[$key]['percentual'] = number_format($v, 2);
+            }
+
+            usort( $data, function( $a, $b ) {
+                return $b['percentual'] <=> $a['percentual'];
+            });
+
+            $percentual_acumulado = 0;
+            foreach($data as $key => $a){
+                $percentual_acumulado += $a['percentual'];
+                $data[$key]['percentual_accum'] = $percentual_acumulado;
+
+                if( $percentual_acumulado > 95 ) {
+                    $data[$key]['categoria'] = 'C';
+                } elseif( $percentual_acumulado > 80 ) {
+                    $data[$key]['categoria'] = 'B';
+                } else {
+                    $data[$key]['categoria'] = 'A';
+                }
+            }
+
+            // dd($data);
+
+            // $nfce = Nfce::where('nfces.empresa_id', $request->empresa_id)
+            // ->when(!empty($start_date), function ($query) use ($start_date) {
+            //     return $query->whereDate('nfces.created_at', '>=', $start_date);
+            // })
+            // ->when(!empty($end_date), function ($query) use ($end_date) {
+            //     return $query->whereDate('nfces.created_at', '<=', $end_date);
+            // })
+            // ->join('clientes', 'clientes.id', '=', 'nfces.cliente_id')
+            // ->groupBy('cliente_id')
+            // ->select('clientes.id as cliente_id', 'clientes.razao_social as nome', \DB::raw('sum(nfces.total) as total'), \DB::raw('count(nfces.id) as count'))
+            // ->get();
+
+
+            // session()->flash('flash_error', 'Curva ABC Produtos não implementado!');
+            // return redirect()->back();
+
+            $p = view('relatorios/curva_abc_produtos')
+            ->with('data', $data)
+            ->with('soma', $soma)
+            ->with('title', 'Curva ABC Clientes');
+
+            $domPdf = new Dompdf(["enable_remote" => true]);
+            $domPdf->loadHtml($p);
+
+            $pdf = ob_get_clean();
+
+            $domPdf->setPaper("A4", "landscape");
+            $domPdf->render();
+            $domPdf->stream("Curva ABC Clientes.pdf", array("Attachment" => false));
         }
-
-        foreach($data as $key => $a){
-            $totalLinha = $data[$key]['total'];
-            $v = 100 - (((($totalLinha-$soma)/$soma)*100)*-1);
-
-            $data[$key]['percentual'] = number_format($v, 2);
-        }
-
-        $p = view('relatorios/curva_abc_clientes')
-        ->with('data', $data)
-        ->with('soma', $soma)
-        ->with('title', 'Curva ABC Clientes');
-
-        $domPdf = new Dompdf(["enable_remote" => true]);
-        $domPdf->loadHtml($p);
-
-        $pdf = ob_get_clean();
-
-        $domPdf->setPaper("A4", "landscape");
-        $domPdf->render();
-        $domPdf->stream("Curva ABC Clientes.pdf", array("Attachment" => false));
         
     }
 
