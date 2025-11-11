@@ -72,9 +72,19 @@ class SyncOrdersConectaVendaCron extends Command
                 $conecta_pedidos = json_decode($response);
                 foreach($conecta_pedidos->dados as $conecta_pedido){
                     $data = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
+
                     if(!$data){
                         $pedido = $this->util->createOrder($conecta_pedido, $config);
                     }
+
+                    $do_nothing_situacao = [
+                        "Finalizado"
+                    ];
+
+                    if( in_array( $data->situacao, $do_nothing_situacao ) ) {
+                        continue;
+                    }
+
                     if($conecta_pedido->situacao == 'Cancelado' || $conecta_pedido->situacao == 'cancelado'){
                         $this->util->returnStock($conecta_pedido, $config);
                     }else {
