@@ -308,6 +308,8 @@ class ProdutoController extends Controller
     public function store(Request $request)
     {
         $this->__validate($request);
+
+        
         $produto = null;
         try {
             $produto_imagens = [];
@@ -749,6 +751,7 @@ class ProdutoController extends Controller
                 'valor_atacado'           => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : 0,
                 'categorias_woocommerce'  => json_encode($categorias_woocommerce),
                 'woocommerce_descricao'   => $request->woocommerce_descricao ?? '',
+                'conecta_venda_id'        => $request->conectavenda ?? '',
             ]);
             
             if ($request->cardapio) {
@@ -988,7 +991,7 @@ class ProdutoController extends Controller
                         \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
                         session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
                     }
-                }
+                } 
 
                 
                 
