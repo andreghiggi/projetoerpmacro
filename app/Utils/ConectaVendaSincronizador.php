@@ -34,6 +34,7 @@ class ConectaVendaSincronizador
         $url_completa = true;
         $produto_fotos = $produto->imagens( $url_completa );
 
+
         $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
 
         $ativo = $desativar ? 0 : 1;
@@ -80,12 +81,11 @@ class ConectaVendaSincronizador
 
                 $variacao_imagens = $variacao->imagens( $url_completa );
 
-                if( $produto_fotos ) {
-                    array_push( $fotos_request, ...$produto_fotos );
-                }
-
                 if( $variacao_imagens ){
-                    array_push( $fotos_request, ...$variacao_imagens );
+                    foreach( $variacao_imagens as $var ) {
+                        if( str_contains( $var, "no-image.png") ) continue;
+                        $fotos_request[] = $var;
+                    }
                 } 
 
                 if(!$estoque_sob_encomenda) {
@@ -120,7 +120,10 @@ class ConectaVendaSincronizador
         }
 
         if( $produto_fotos ) {
-            array_push( $fotos_request, ...$produto_fotos );
+            foreach( $produto_fotos as $prod ) {
+                if( str_contains( $prod, "no-image.png") ) continue;
+                $fotos_request[] = $prod;
+            }
         }
         
         $produto_request['variacoes'] = $variacoes_request;
@@ -145,7 +148,7 @@ class ConectaVendaSincronizador
 
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
-        // HttpUtil::dd($response, $payload);
+        HttpUtil::dd($response, $payload);
 
         if (!$response->successful()) {
             throw new \Exception("Erro ao enviar produto ao Conecta Venda: " . $response->body());
