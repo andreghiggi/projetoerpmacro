@@ -1,63 +1,41 @@
 @extends('layouts.header_auth', ['title' => 'Login'])
 
 @section('content')
-
-@php
-$login = (isset($_COOKIE['ckLogin'])) ? base64_decode($_COOKIE['ckLogin']) : '';
-$pass = (isset($_COOKIE['ckPass'])) ? base64_decode($_COOKIE['ckPass']) : '';
-$remember = (isset($_COOKIE['ckRemember'])) ? ($_COOKIE['ckRemember']) : '';
-@endphp
+    @php
+        $login = isset($_COOKIE['ckLogin']) ? base64_decode($_COOKIE['ckLogin']) : '';
+        $pass = isset($_COOKIE['ckPass']) ? base64_decode($_COOKIE['ckPass']) : '';
+        $remember = isset($_COOKIE['ckRemember']) ? $_COOKIE['ckRemember'] : '';
+    @endphp
 
 @section('css')
-<style type="text/css">
-    img{
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 50%;
-    }
+    <style type="text/css">
 
-    @media screen and (min-width: 800px) {
-        .logo-mob{
-            margin-top: -40px;
-            height: 100px;
+        h3{
+            font-weight: 700; 
+            text-align: center;
         }
-    }
 
-    .logo-mob{
-        margin-top: -80px;
-        height: 170px;
-
-    }
-</style>
+        p{
+            text-align: center;
+            margin-bottom: 0px;
+        }
+    </style>
 @endsection
 <div class="auth-fluid">
-
-    <!-- Auth fluid right content -->
-    <div class="auth-fluid-right text-center">
-        <div class="auth-user-testimonial">
-            <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
-                <div class="carousel-inner">
-
-                </div>
-            </div>
-        </div> <!-- end auth-user-testimonial-->
+    <div class="image-auth">
+        <img style="width: 500px;" src="/porquinho.png" alt="dark logo">
     </div>
-    <!-- end Auth fluid right content -->
 
-    <!--Auth fluid left content -->
-    <div class="auth-fluid-form-box">
+    <div class="card-auth d-flex flex-column gap-3">
 
-        <div class="card-body d-flex flex-column h-100 gap-3">
+        <!-- Logo -->
+        <div class="auth-logo text-center text-lg-start logo-mob">
+            <span><img style="width: 180px;" src="/logo.png" alt="dark logo"></span>
+        </div>
 
-            <!-- Logo -->
-            <div class="auth-brand text-center text-lg-start logo-mob">
-                <span><img style="width: 300px" src="/logo.png" alt="dark logo"></span>
-            </div>
-
-            <div class="my-auto">
-                <!-- title-->
-                @if(env("APP_ENV") == "demo")
+        <div class="my-auto">
+            <!-- title-->
+            @if (env('APP_ENV') == 'demo')
                 <div class="card">
                     <div class="card-body">
                         <p>Clique nos botões abaixo para acessar os usuários pré configurados!</p>
@@ -76,66 +54,66 @@ $remember = (isset($_COOKIE['ckRemember'])) ? ($_COOKIE['ckRemember']) : '';
                         <br>
                         <a href="https://wa.me/5543920004769">WhatsApp <strong>43920004769</strong></a>
                     </div>
-                    @endif
-                    <h4 class="mt-0">Login</h4>
-                    <p class="text-muted mb-4">Digite seu endereço de email e senha para acessar a conta.</p>
+            @endif
+            <h3 class="m-0">Acesse sua conta</h3>
+            <p class="text-muted mb-2">Informe seu e-mail e senha para acessar a conta.</p>
+            <hr/>
 
-                    <!-- form -->
-                    <form method="POST" action="{{ route('login') }}" id="form-login">
-                        @csrf
+            <!-- form -->
+            <form method="POST" action="{{ route('login') }}" id="form-login">
 
-                        <div class="mb-3">
-                            <label for="emailaddress" class="form-label">Email</label>
-                            <input class="form-control" type="email" name="email" id="email" required value="{{ $login }}" placeholder="Digite seu email">
-                        </div>
-                        <div class="mb-3">
-                            <a href="{{ route('password.request') }}" class="text-muted float-end"><small>Esqueceu sua senha?</small></a>
-                            <label for="password" class="form-label">Senha</label>
-                            <input class="form-control" type="password" name="password" required value="{{ $pass }}" id="password" placeholder="Digite sua senha">
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input name="remember" type="checkbox" {{ $remember ? 'checked' : '' }} class="form-check-input" id="checkbox-signin">
-                                <label class="form-check-label" for="checkbox-signin">lembrar-me</label>
-                            </div>
-                        </div>
+                @csrf
 
-                        @if(Session::has('error'))
-                        <div class="alert alert-danger">{{ Session::get('error') }}</div>
-                        @endif
-
-                        @if(Session::has('success'))
-                        <div class="alert alert-success">{{ Session::get('success') }}</div>
-                        @endif
-                        <div class="d-grid mb-0 text-center">
-                            <button class="btn btn-primary" type="submit"><i class="ri-login-box-line"></i> Acessar </button>
-                        </div>
-                        <!-- social-->
-                        <br>
-                        <a target="_blank" href="https://wa.me/55{{env('APP_FONE')}}"><i class="ri-whatsapp-fill"></i> Suporte</a>
-                    </form>
-                    <!-- end form-->
+                <div class="mb-3">
+                    <label for="emailaddress" class="form-label">Email</label>
+                    <input class="form-control" type="email" name="email" id="email" required
+                        value="{{ $login }}" placeholder="Digite seu email">
+                </div>
+                <div class="mb-3">
+                    <a href="{{ route('password.request') }}" class="text-muted float-end"><small>Esqueceu sua
+                            senha?</small></a>
+                    <label for="password" class="form-label">Senha</label>
+                    <input class="form-control" type="password" name="password" required value="{{ $pass }}"
+                        id="password" placeholder="Digite sua senha">
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input name="remember" type="checkbox" {{ $remember ? 'checked' : '' }} class="form-check-input"
+                            id="checkbox-signin">
+                        <label class="form-check-label" for="checkbox-signin">lembrar-me</label>
+                    </div>
                 </div>
 
-                <!-- Footer-->
-                @if(request()->auto_cadastro)
-                <footer class="footer footer-alt">
-                    <p class="text-muted">Não tem uma conta? <a href="{{ route('register') }}" class="text-muted ms-1"><b>Inscrever-se</b></a></p>
-                </footer>
+                @if (Session::has('error'))
+                    <div class="alert alert-danger">{{ Session::get('error') }}</div>
                 @endif
 
-            </div> <!-- end .card-body -->
+                @if (Session::has('success'))
+                    <div class="alert alert-success">{{ Session::get('success') }}</div>
+                @endif
+                <div class="d-grid mb-0 text-center">
+                    <button class="btn btn-primary" type="submit">Acessar</button>
+                </div>
+            </form>
+            <!-- end form-->
         </div>
-        <!-- end auth-fluid-form-box-->
-    </div>
-    @endsection
 
-    @section('js')
-    <script type="text/javascript">
-        function login(email, senha){
-            $('#email').val(email)
-            $('#password').val(senha)
-            $('#form-login').submit()
-        }
-    </script>
-    @endsection
+        <!-- Footer-->
+        @if (request()->auto_cadastro)
+            <p class="text-muted">Não tem uma conta? <a href="{{ route('register') }}"
+                        class="text-muted ms-1"><b>Inscrever-se</b></a></p>
+        @endif
+
+    </div> <!-- end .card-body -->
+</div>
+@endsection
+
+@section('js')
+<script type="text/javascript">
+    function login(email, senha) {
+        $('#email').val(email)
+        $('#password').val(senha)
+        $('#form-login').submit()
+    }
+</script>
+@endsection

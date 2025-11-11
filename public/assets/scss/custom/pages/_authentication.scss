@@ -56,8 +56,8 @@ body.auth-fluid-pages[data-sidenav-size="condensed"] {
     min-height: 100vh;
     flex-direction: row;
     align-items: stretch;
-    background: url("../images/bg-auth.jpg") center;
-    background-size: cover;
+    background-color: #c3e5f0;
+    // background-size: cover;
 
     .auth-fluid-form-box {
         max-width: 480px;
