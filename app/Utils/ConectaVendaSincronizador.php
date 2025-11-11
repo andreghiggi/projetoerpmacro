@@ -148,7 +148,7 @@ class ConectaVendaSincronizador
 
         $response = Http::asJson()->post('https://api.conectavenda.com.br/produtos/criar', $payload);
 
-        HttpUtil::dd($response, $payload);
+        // HttpUtil::dd($response, $payload);
 
         if (!$response->successful()) {
             throw new \Exception("Erro ao enviar produto ao Conecta Venda: " . $response->body());
