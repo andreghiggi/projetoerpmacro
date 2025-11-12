@@ -498,8 +498,7 @@
                 </div>
 
                 <div class="col-12"></div>
-
-                @if($item->imagens())
+                @if( isset($item) && $item->imagens())
                 @foreach($item->imagens() as $index => $imagem)
                     <div id="image_frame_{{ $index }}" class="card col-md-3 mt-3 form-input">
                         <div class="preview">
