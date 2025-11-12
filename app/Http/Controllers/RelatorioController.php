@@ -1421,26 +1421,26 @@ class RelatorioController extends Controller
             ->get();
 
 
-            $fake = fake();
+            // $fake = fake();
 
-            $nfe_dummy = [];
+            // $nfe_dummy = [];
 
-            foreach(range(0,100) as $_) {
-                $client_name = $fake->name();
-                $client_id   = $fake->unique()->randomNumber();
-                $count       = $fake->unique()->randomNumber();
-                $total       = $fake->unique()->randomNumber();
+            // foreach(range(0,100) as $_) {
+            //     $client_name = $fake->name();
+            //     $client_id   = $fake->unique()->randomNumber();
+            //     $count       = $fake->unique()->randomNumber();
+            //     $total       = $fake->unique()->randomNumber();
 
-                $nfe_dummy[] = (object) [
-                    'nome' => $client_name,
-                    'cliente_id' => $client_id,
-                    'count' => $count,
-                    'total' => $total,
-                ];
-            }
+            //     $nfe_dummy[] = (object) [
+            //         'nome' => $client_name,
+            //         'cliente_id' => $client_id,
+            //         'count' => $count,
+            //         'total' => $total,
+            //     ];
+            // }
+            // $data = $this->agrupaArrayCurva($nfe_dummy, $nfce);
 
-            // $data = $this->agrupaArrayCurva($nfe, $nfce);
-            $data = $this->agrupaArrayCurva($nfe_dummy, $nfce);
+            $data = $this->agrupaArrayCurva($nfe, $nfce);
 
             $soma = 0;
             foreach($data as $a){
