@@ -95,7 +95,7 @@ class ConectaVendaSincronizador
                 $variacoes_request[] = $variacao_request;
             }
         }else {
-            $variacao_id = "{$produto->id}.1";
+            $variacao_id = "{$produto->id}.0";
             $estoque     = (int) $produto->estoque?->quantidade ?? 0;
             $variacao_request    = [
                 "id"        => $variacao_id,
@@ -340,31 +340,38 @@ class ConectaVendaSincronizador
 
     public function createItemOrder($item, $pedido)
     {
-        $produto               = Produto::find( $item->produto_id );
+        $produto = Produto::find( $item->produto_id );
 
         if( !str_contains( $item->variacao_id, "." ) ) {
             // Não faz parte do padrão de variação '{produto_id}.{variacao_id}'
             return null;
         }
-        
-        [ $_, $variacao_id_part ] = explode('.', $item->variacao_id );
-        $variacao              = ProdutoVariacao::find( $variacao_id_part );
 
         if( !$produto ) {
             throw new \Exception("Produto com ID: '$item->produto_id' não existe!");
         }
+        
+        [ $_, $variacao_id_part ] = explode('.', $item->variacao_id );
 
-        if( !$variacao ) {
-            throw new \Exception("Variação com ID: '$variacao_id_part' não existe!");
+        $variacao_id = (int) $variacao_id_part;
+
+        if( $variacao_id == 0 ) {
+            // OK, Produto sem variação
+            $variacao_id = null; // BECAUSE FORGEIN KEY ¬¬
+        } else {
+            // Tenta encontrar o ID
+            $variacao = ProdutoVariacao::find( $variacao_id );
+            if( !$variacao ) {
+                throw new \Exception("Variação com ID: '$variacao_id' não existe!");
+            }
         }
 
         $pedido_id   = (int) $pedido->id;
         $produto_id  = (int) $item->produto_id;
-        $variacao_id = (int) $variacao_id_part;
 
-        return ConectaVendaItemPedido::updateOrCreate(
+        $created_item = ConectaVendaItemPedido::updateOrCreate(
             [
-                'pedido_id' => $pedido_id,
+                'pedido_id'   => $pedido_id,
                 'produto_id'  => $produto_id,
                 'variacao_id' => $variacao_id,
             ],
@@ -380,17 +387,22 @@ class ConectaVendaSincronizador
                 'sub_total'       => $item->qtde * $item->valor_unitario,
             ]
         );
+
+        return $created_item;
+
     }
 
     public function returnStock($order, $config)
     {
         $pedido = ConectaVendaPedido::where('id', $order->id)->first();
+
         // if(!empty($pedido->nfe_id)){
         //     $nf = Nfe::where('id', $pedido->nfe_id)->first();
         //     if($nf){
         //         // $this->utilNfe->destroy($pedido->nfe_id);
         //     }
         // }
+
         foreach($order->produtos as $produto){
             $qtd = $produto->quantidade ?? $produto->qtde ?? 0;
             $transacao = Estoque::where('produto_id', $produto->produto_id)
@@ -500,7 +512,7 @@ class ConectaVendaSincronizador
             }
 
             $produto_id  = (string)$produto->id;
-            $variacao_id = "{$produto->id}.1";
+            $variacao_id = "{$produto->id}.0";
             $estoque     = (int) ($produto->estoque()->sum('quantidade'));
 
             $estoques_request[] = [

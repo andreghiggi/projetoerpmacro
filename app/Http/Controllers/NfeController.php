@@ -515,12 +515,14 @@ class NfeController extends Controller
                         'gerar_conta_receber' => 0,
                     ]);
                 }
-
+                
                 $nfe = Nfe::create($request->all());
                 for ($i = 0; $i < sizeof($request->produto_id); $i++) {
                     
                     $product = Produto::findOrFail($request->produto_id[$i]);
-                    $variacao_id = isset($request->variacao_id[$i]) ? $request->variacao_id[$i] : null;
+                    $variacao_id = (int)isset($request->variacao_id[$i]) ? $request->variacao_id[$i] : 0;
+                    $variacao_id = $variacao_id == 0 ? null : $variacao_id;
+                    
                     $itemNfe = ItemNfe::create([
                         'nfe_id'                  => $nfe->id,
                         'produto_id'              => (int)$request->produto_id[$i],

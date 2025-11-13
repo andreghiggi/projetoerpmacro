@@ -366,6 +366,8 @@ class Permission extends \Spatie\Permission\Models\Permission
 
             array('name' => 'plano_contas_view', 'description' => 'Visualiza plano de contas'),
 
+            array('name' => 'relatorios_sistema_view', 'description' => 'Visualiza Relatórios do sistema'),
+            array('name' => 'relatorios_comerciais_view', 'description' => 'Visualiza Relatórios do comerciais do sistema'),
         ];
     }
 }

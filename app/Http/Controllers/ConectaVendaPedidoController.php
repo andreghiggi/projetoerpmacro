@@ -80,7 +80,7 @@ class ConectaVendaPedidoController extends Controller
             session()->flash("flash_warning", "Primeiro cadastre um natureza de operação!");
             return redirect()->route('natureza-operacao.create');
         }
-        // $produtos = Produto::where('empresa_id', request()->empresa_id)->get();
+        $produtos = $item->produtos;
         $empresa = Empresa::findOrFail(request()->empresa_id);
         $caixa = __isCaixaAberto();
         if($caixa) {

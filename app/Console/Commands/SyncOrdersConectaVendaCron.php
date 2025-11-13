@@ -71,27 +71,28 @@ class SyncOrdersConectaVendaCron extends Command
             if($response->status() == 200){
                 $conecta_pedidos = json_decode($response);
                 foreach($conecta_pedidos->dados as $conecta_pedido){
-                    $data = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
+                    $pedido = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
 
-                    if(!$data){
+                    if(!$pedido){
                         $pedido = $this->util->createOrder($conecta_pedido, $config);
                     }
 
-                    $do_nothing_situacao = [
+                    $situacoes_skip_update = [
                         "Finalizado"
                     ];
 
-                    if( in_array( $data->situacao, $do_nothing_situacao ) ) {
+                    if( in_array( $pedido->situacao, $situacoes_skip_update ) ) {
                         continue;
                     }
 
-                    if($conecta_pedido->situacao == 'Cancelado' || $conecta_pedido->situacao == 'cancelado'){
-                        $this->util->returnStock($conecta_pedido, $config);
-                    }else {
-                        $data = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
-                        $data->situacao = $conecta_pedido->situacao;
-                        $data->save();
-                    }
+                    $pedido->situacao = $conecta_pedido->situacao;
+                    $pedido->save();
+
+                    // if($conecta_pedido->situacao == 'Cancelado' || $conecta_pedido->situacao == 'cancelado'){
+                    //     $this->util->returnStock($conecta_pedido, $config);
+                    // }else {
+                        
+                    // }
                 }
             }
         }

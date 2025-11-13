@@ -156,6 +156,8 @@ class EstoqueController extends Controller
                 for ($i = 0; $i < sizeof($request->local_id); $i++) {
                     $produto_variacao_id = $request->produto_variacao_id[$i] ?? null;
 
+                    $quantidade = str_replace('.','', $request->quantidade[$i] );
+
                     $item = Estoque::where('id', $id)
                         ->where('local_id', $request->local_id[$i])
                         ->when($produto_variacao_id, function ($q) use ($produto_variacao_id) {
@@ -168,13 +170,13 @@ class EstoqueController extends Controller
                         $diferenca = 0;
                         $tipo = 'incremento';
 
-                        if ($item->quantidade > $request->quantidade[$i]) {
-                            $diferenca = $item->quantidade - $request->quantidade[$i];
+                        if ($item->quantidade > $quantidade) {
+                            $diferenca = $item->quantidade - $quantidade;
                             $tipo = 'reducao';
                         } else {
-                            $diferenca = $request->quantidade[$i] - $item->quantidade;
+                            $diferenca = $quantidade - $item->quantidade;
                         }
-                        $item->quantidade = $request->quantidade[$i];
+                        $item->quantidade = $quantidade;
                         $item->save();
 
                         $codigo_transacao = $item->id;
@@ -213,7 +215,7 @@ class EstoqueController extends Controller
                                 'localizacao_id' => $request->local_id[$i]
                             ]);
 
-                            $this->util->incrementaEstoque($anterior->produto_id, $request->quantidade[$i], null, $request->local_id[$i]);
+                            $this->util->incrementaEstoque($anterior->produto_id, $quantidade, null, $request->local_id[$i]);
 
                             $transacao = Estoque::where('produto_id', $anterior->produto_id)
                                 ->where('produto_variacao_id', $produto_variacao_id)
@@ -225,7 +227,7 @@ class EstoqueController extends Controller
 
                             $anterior->delete();
 
-                            $this->util->movimentacaoProduto($anterior->produto_id, $request->quantidade[$i], $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $produto_variacao_id);
+                            $this->util->movimentacaoProduto($anterior->produto_id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $produto_variacao_id);
 
                         }
                     }
@@ -234,19 +236,21 @@ class EstoqueController extends Controller
 
             } else if(!$request->variacao_id){
 
+                $quantidade = str_replace('.','', $request->quantidade );
+
                 $item = Estoque::where('id', $id)->first();
 
                 $diferenca = 0;
                 $tipo = 'incremento';
 
-                if ($item->quantidade > $request->quantidade) {
-                    $diferenca = $item->quantidade - $request->quantidade;
+                if ($item->quantidade > $quantidade) {
+                    $diferenca = $item->quantidade - $quantidade;
                     $tipo = 'reducao';
                 } else {
-                    $diferenca = $request->quantidade - $item->quantidade;
+                    $diferenca = $quantidade - $item->quantidade;
                 }
 
-                $item->quantidade = $request->quantidade;
+                $item->quantidade = $quantidade;
                 $item->save();
 
                 $codigo_transacao = $item->id;
