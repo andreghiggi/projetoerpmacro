@@ -65,10 +65,7 @@ class ConectaVendaPedidoController extends Controller
         $cpfCnpj = !empty(trim($item->cpf)) ? $item->cpf : $item->cnpj;
         $item->cpfCnpj = $cpfCnpj;
         $customer = Cliente::where('cpf_cnpj', $cpfCnpj)->first();
-
-        if (!$customer) {
-            $customer = $this->cadastrarClienteConecta($item, $config->empresa_id);
-        }
+        $customer = $this->criar_ou_atualizar_cliente_conecta($item, $config->empresa_id);
 
         $item->cliente_id = $customer->id;
         $cliente = $item->cliente;
@@ -132,25 +129,31 @@ class ConectaVendaPedidoController extends Controller
         }
     }
 
-    protected function cadastrarClienteConecta($pedido, $empresa)
+    protected function criar_ou_atualizar_cliente_conecta($pedido, $empresa)
     {
+
+        $cliente_existente = Cliente::where( "cpf_cnpj", $pedido->cpfCnpj )->first();
+        $cliente_id = !$cliente_existente ? 0 : $cliente_existente->id;
+
         $cidade = Cidade::select('id')->where('nome', $pedido->cidade)->first();
-        $cliente = Cliente::create([
-            'empresa_id' => $empresa,
-            'razao_social' => $pedido->comprador,
-            'nome_fantasia' => $pedido->comprador ?? '',
-            'cpf_cnpj' => $pedido->cpfCnpj,
-            'ie' => $pedido->inscricao_estadual ?? '',
-            'contribuinte' => 0,
+        $cliente = Cliente::updateOrCreate([
+            'id' => $cliente_id,
+        ],[
+            'empresa_id'       => $empresa,
+            'razao_social'     => $pedido->comprador,
+            'nome_fantasia'    => $pedido->comprador ?? '',
+            'cpf_cnpj'         => $pedido->cpfCnpj,
+            'ie'               => $pedido->inscricao_estadual ?? '',
+            'contribuinte'     => 0,
             'consumidor_final' => 1,
-            'email' => $pedido->email ?? '',
-            'telefone' => $pedido->telefone ?? '',
-            'cidade_id' => $cidade->id,
-            'rua' => $pedido->endereco,
-            'cep' => $pedido->cep,
-            'numero' => $pedido->numero,
-            'bairro' => $pedido->bairro,
-            'complemento' => $pedido->complemento ?? ''
+            'email'            => $pedido->email ?? '',
+            'telefone'         => $pedido->telefone ?? '',
+            'cidade_id'        => $cidade->id,
+            'rua'              => $pedido->endereco,
+            'cep'              => $pedido->cep,
+            'numero'           => $pedido->numero,
+            'bairro'           => $pedido->bairro,
+            'complemento'      => $pedido->complemento ?? ''
         ]);
         return $cliente;
     }
