@@ -16,7 +16,7 @@
                     <div class="card-body">
 
                         <div class="col-12 mb-4">
-                            <h3>Pedido #{{ $pedido->id }}</h3>
+                            <h3>Pedido #{{ $pedido->id }} ( Conecta #{{ $pedido->conecta_pedido_id }} )  </h3>
                             <a href="{{ route('conecta-venda-pedidos.index') }}" class="btn btn-sm btn-danger float-end">
                                 <i class="ri-arrow-left-double-fill"></i> Voltar
                             </a>

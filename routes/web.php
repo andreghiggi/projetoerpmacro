@@ -918,6 +918,13 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
         Route::get('entrega-produtos', 'RelatorioController@entregaDeProdutos')->name('relatorios.entrega-produtos');
     });
 
+    Route::group(['prefix' => 'relatorios-sistema'], function () {
+        Route::get('comerciais', 'RelatoriosSistemaController@comerciais')->name('relatorios-comerciais.index');
+        Route::group(['prefix' => 'comerciais'], function () {
+            Route::get('vendas', 'RelatoriosSistemaController@comerciais_vendas')->name('relatorios-comerciais.vendas');
+        });
+    });
+
     Route::resource('config-geral', 'ConfigGeralController');
     Route::resource('config-api', 'ConfigApiController');
     Route::get('config-api-logs', 'ConfigApiController@logs')->name('config-api.logs');

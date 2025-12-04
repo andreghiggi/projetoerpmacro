@@ -36,7 +36,8 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>#</th>
-                                    <th>id</th>
+                                    <th>Id</th>
+                                    <th>Id Conecta</th>
                                     <th>Situção</th>
                                     <th>Comprador</th>
                                     <th>data</th>
@@ -51,6 +52,7 @@
                                 <tr>
                                     <td></td>
                                     <td>{{ $item->id }}</td>
+                                    <td>{{ $item->conecta_pedido_id }}</td>
                                     <td>{{ $item->situacao }}</td>
                                     <td>{{ $item->comprador }}</td>
                                     <td>{{ __data_pt($item->data_criacao) }}</td>

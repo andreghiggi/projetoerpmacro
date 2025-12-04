@@ -750,6 +750,26 @@
 
             @endif
 
+            @can('relatorios_sistema_view')
+                <li class="side-nav-item">
+                    <a data-bs-toggle="collapse" href="#relatorios_do_sistema" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
+                        <i class="ri-folder-user-line"></i>
+
+                        <span>Relatórios do Sistema</span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="relatorios_do_sistema">
+                        <ul class="side-nav-second-level">
+                            @can('relatorios_comerciais_view')
+                                <li>
+                                    <a href="{{ route('relatorios-comerciais.index') }}">Relatórios Comerciais</a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+            @endcan
+
             @if(__isActivePlan(Auth::user()->empresa, 'Compras'))
             @canany(['compras_view', 'manifesto_view', 'cotacao_view'])
             <li class="side-nav-item">
