@@ -22,7 +22,7 @@ class CategoriaAcomodacaoController extends Controller
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('categoria_acomodacao.index', compact('data'));
     }
 

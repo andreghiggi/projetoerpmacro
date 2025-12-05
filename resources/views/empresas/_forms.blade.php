@@ -68,7 +68,7 @@
         !!}
     </div>
     <div class="col-md-2">
-        {!!Form::tel('numero', 'Número')
+        {!!Form::text('numero', 'Número')
         ->attrs(['class' => ''])
         ->required()
         !!}

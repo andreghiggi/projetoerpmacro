@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Transferências de estoque'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -17,7 +17,7 @@
                     {!!Form::open()->fill(request()->all())
                     ->get()
                     !!}
-                    <div class="row mt-3">
+                    <div class="row mt-3 g-1">
                         <div class="col-md-3">
                             {!!Form::text('produto', 'Pesquisar por produto')
                             !!}
@@ -44,7 +44,6 @@
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    
                                     <th>#</th>
                                     <th>Local de saída</th>
                                     <th>Local de entrada</th>
@@ -54,16 +53,16 @@
                                     <th width="10%">Ações</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                   
-                                    <td>{{ $item->codigo_transacao }}</td>
-                                    <td>{{ $item->local_saida->descricao }}</td>
-                                    <td>{{ $item->local_entrada->descricao }}</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>{{ $item->usuario->name }}</td>
-                                    <td>{{ $item->observacao }}</td>
+                                    <td data-label="#"> {{ $item->codigo_transacao }}</td>
+                                    <td data-label="Local de saída">{{ $item->local_saida->descricao }}</td>
+                                    <td data-label="Local de entrada">{{ $item->local_entrada->descricao }}</td>
+                                    <td data-label="Data">{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Usuário">{{ $item->usuario->name }}</td>
+                                    <td data-label="Observação">{{ $item->observacao }}</td>
 
                                     <td>
                                         <form action="{{ route('transferencia-estoque.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
@@ -82,6 +81,7 @@
                                         </form>
                                     </td>
                                 </tr>
+
                                 @empty
                                 <tr>
                                     <td colspan="7" class="text-center">Nada encontrado</td>
@@ -89,6 +89,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
                         
                     </div>

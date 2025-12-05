@@ -12,7 +12,7 @@
 @endsection
 @section('content')
 
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -23,33 +23,55 @@
                 </button>
                 <div class="row mt-3">
                     @foreach($data as $item)
-                    <a class="col-12 col-lg-3" href="{{ route('pedidos-cardapio.show', [$item->id]) }}">
+                    <a class="col-12 col-xl-3 col-md-6 col-lg-4" href="{{ route('pedidos-cardapio.show', [$item->id]) }}">
                         <div class="card">
 
-                            <div class="card-body" style="height: 180px">
-                                <h3 class="card-title">Comanda: <strong>{{ $item->comanda }}</strong></h3>
+                            <div class="card-body" style="height: 200px">
+                                <h3 class="card-title">Comanda: <strong>{{ strlen($item->comanda) > 0 ? $item->comanda : '--' }}</strong></h3>
 
-                                <h4>Total: <strong>{{ __moeda($item->total) }}</strong></h4>
-                                <h4>Cliente: <strong>{{ $item->cliente_nome != "" ? $item->cliente_nome : 'não identificado' }}</strong></h4>
-                                <h4>Mesa: <strong>{{ $item->mesa ? $item->mesa : '--' }}</strong></h4>
+                                <h4>Total de produtos: <strong>{{ sizeof($item->itens) }}</strong></h4>
+                                <h4>Valor total de produtos: <strong>R$ {{ __moeda($item->total) }}</strong></h4>
+                                <h4>Cliente: 
+
+                                    @if($item->totalClientes() > 1)
+                                    <strong>Possui mais de 1</strong>
+                                    @else
+                                    <strong>{{ $item->cliente_nome != "" ? $item->cliente_nome : 'não identificado' }}</strong>
+                                    @endif
+                                </h4>
+                                @if($item->_mesa)
+                                <h4><strong>{{ $item->_mesa->nome }}</strong></h4>
+                                @endif
 
                                 @if(!$item->em_atendimento)
                                 <span class="text-danger">Pedindo para fechar</span>
                                 @endif
 
+                                @if(!$item->confirma_mesa)
+                                <form action="{{ route('pedidos-cardapio.liberar', $item->id) }}" method="get" id="form-{{$item->id}}">
+                                    @method('delete')
+                                    @csrf
+                                    <button class="btn btn-success btn-liberar w-100">
+                                        <i class="ri-check-line"></i> Liberar mesa
+                                    </button>
+                                </form>
+                                @endif
+
                             </div>
-                            @if(__isAdmin() || sizeof($item->itens) == 0)
                             <div class="card-footer">
+
+                                @if(__isAdmin())
                                 <form action="{{ route('pedidos-cardapio.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                     @method('delete')
                                     @csrf
                                     <button class="btn btn-danger btn-delete w-100">
-                                        Remover comanda
+                                        <i class="ri-delete-bin-line"></i> Remover comanda
                                     </button>
                                 </form>
                                 @endif
-                                
+
                             </div>
+
                         </div>
                     </a>
                     @endforeach
@@ -70,7 +92,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
+                    <div class="row g-2">
 
                         <div class="col-md-2">
                             {!!Form::text('comanda', 'Número comanda')
@@ -79,8 +101,9 @@
                             !!}
                         </div>
 
-                        <div class="col-md-2">
-                            {!!Form::tel('mesa', 'Mesa')
+                        <div class="col-md-3">
+                            {!!Form::select('mesa_id', 'Mesa', ['' => 'Selecione'] + $mesas->pluck('nome', 'id')->all())
+                            ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
 
@@ -114,10 +137,30 @@
 
 @section('js')
 <script type="text/javascript">
+
+    $(".btn-liberar").on("click", function (e) {
+        e.preventDefault();
+        var form = $(this).parents("form").attr("id");
+        swal({
+            title: "Liberar mesa?",
+            text: "O cliente vai contiar fazendo pedidos por seu aparelho!",
+            icon: "warning",
+            buttons: true,
+            buttons: ["Cancelar", "OK"],
+            dangerMode: true,
+        }).then((isConfirm) => {
+            if (isConfirm) {
+                document.getElementById(form).submit();
+            } else {
+                swal("", "Este pedido não foi alterado", "info");
+            }
+        });
+    });
     $(function(){
 
         setTimeout(() => {
-            $('.modal .select2').each(function () {
+
+            $('.modal #inp-cliente_id').each(function () {
                 $(this).select2({
                     minimumInputLength: 2,
                     dropdownParent: $(this).parent(),

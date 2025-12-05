@@ -11,6 +11,10 @@ use App\Models\Permission;
 use App\Models\Localizacao;
 use App\Models\ProdutoLocalizacao;
 use App\Models\UsuarioLocalizacao;
+use App\Models\NaturezaOperacaoSuper;
+use App\Models\NaturezaOperacao;
+use App\Models\PadraoTributacaoProdutoSuper;
+use App\Models\PadraoTributacaoProduto;
 
 class EmpresaUtil
 {
@@ -20,7 +24,14 @@ class EmpresaUtil
 		$usuarios = $empresa->usuarios;
 		
 		$roles = Role::where('empresa_id', null)->get();
-		\Artisan::call('cache:forget spatie.permission.cache ');
+
+		// if(sizeof($roles) == 0){
+		// 	$roles = Role::where('empresa_id', '!=', null)
+		// 	->limit(1)
+		// 	->get();
+		// }
+
+		\Artisan::call('cache:forget spatie.permission.cache');
 		foreach($roles as $role){
 
 			if($role->name != 'gestor_plataforma'){
@@ -129,6 +140,23 @@ class EmpresaUtil
 		$this->initRegisters($empresa->id);
 	}
 
+	public function initNaturezaTributacao($empresa){
+
+		$data = NaturezaOperacaoSuper::where('status', 1)->get();
+		foreach($data as $item){
+			$obj = $item->toArray();
+			$obj['empresa_id'] = $empresa->id;
+			NaturezaOperacao::create($obj);
+		}
+
+		$data = PadraoTributacaoProdutoSuper::where('status', 1)->get();
+		foreach($data as $item){
+			$obj = $item->toArray();
+			$obj['empresa_id'] = $empresa->id;
+			PadraoTributacaoProduto::create($obj);
+		}
+	}
+
 	private function initProducts($empresa_id){
 		$produtos = Produto::where('empresa_id', $empresa_id)->get();
 		$localizacao = Localizacao::where('empresa_id', $empresa_id)->first();
@@ -168,7 +196,7 @@ class EmpresaUtil
 	}
 
 	public function initUserLocations($user){
-		if($user->empresa){
+		if($user->empresa && sizeof($user->locais) == 0){
 			$empresa_id = $user->empresa->empresa_id;
 			$localizacao = Localizacao::where('empresa_id', $empresa_id)->first();
 			UsuarioLocalizacao::updateOrCreate([

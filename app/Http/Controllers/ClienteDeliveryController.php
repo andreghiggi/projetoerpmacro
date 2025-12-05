@@ -16,7 +16,7 @@ class ClienteDeliveryController extends Controller
             return $q->where('telefone', 'LIKE', "%$request->telefone%");
         })
         ->where('uid', '!=', '')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('delivery.clientes.index', compact('data'));
     }
 
@@ -40,6 +40,12 @@ class ClienteDeliveryController extends Controller
             $request->merge([
                 'razao_social' => $request->nome . " " . $request->sobre_nome
             ]);
+
+            if($request->senha){
+                $request->merge([
+                    'senha' => md5($request->senha)
+                ]);
+            }
             $item->fill($request->all())->save();
 
             session()->flash("flash_success", "Cliente atualizado!");

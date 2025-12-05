@@ -28,4 +28,25 @@ class Caixa extends Model
     {
         return $this->belongsTo(Localizacao::class, 'local_id');
     }
+
+    public function suprimentos()
+    {
+        return $this->hasMany(SuprimentoCaixa::class, 'caixa_id');
+    }
+
+    public function sangrias()
+    {
+        return $this->hasMany(SangriaCaixa::class, 'caixa_id');
+    }
+
+    public function vendas()
+    {
+        return $this->hasMany(Nfe::class, 'caixa_id')->where('tpNF', 1)->where('estado', '!=', 'cancelado');
+    }
+
+    public function vendasPdv()
+    {
+        return $this->hasMany(Nfce::class, 'caixa_id')->where('estado', '!=', 'cancelado');
+    }
+
 }

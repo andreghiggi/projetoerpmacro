@@ -4,10 +4,14 @@
     <td>
         <img src="{{ $product->img }}" style="width: 30px; height: 40px; border-radius: 10px;">
         <input class="variacao_id" type="hidden" name="variacao_id[]" class="form-control" value="{{ $variacao_id }}">
-        
     </td>
     <td>
         <input style="width: 350px" readonly type="text" name="produto_nome[]" class="form-control" value="{{ $product->nome }}@if($variacao != null) - {{ $variacao->descricao }} @endif">
+
+        @if($product->precoComPromocao())
+        <p>Promoção: <strong class="text-primary">{{ __data_pt($product->precoComPromocao()->data_inicio, 0) }}</strong> até <strong class="text-primary">{{ __data_pt($product->precoComPromocao()->data_fim, 0) }}</strong></p>
+        @endif
+
     </td>
     <td class="datatable-cell">
         <div class="form-group mb-2" style="width: 200px">
@@ -29,6 +33,7 @@
         <input style="width: 100px" readonly type="tel" name="subtotal_item[]" class="form-control subtotal-item" value="{{ __moeda($sub_total) }}">
     </td>
     <td>
+        <input type="hidden" class="adicionais" name="adicionais[]">
         <button type="button" class="btn btn-danger btn-sm btn-delete-row"><i class="ri-delete-bin-line"></i></button>
     </td>
 </tr>

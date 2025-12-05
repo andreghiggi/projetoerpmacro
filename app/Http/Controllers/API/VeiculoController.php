@@ -19,4 +19,10 @@ class VeiculoController extends Controller
 
         return response()->json($data, 200);
     }
+
+    public function store(Request $request){
+        
+        $item = Veiculo::create($request->all());
+        return response()->json($item, 200);
+    }
 }

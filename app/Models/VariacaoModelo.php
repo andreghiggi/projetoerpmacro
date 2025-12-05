@@ -10,7 +10,7 @@ class VariacaoModelo extends Model
     use HasFactory;
 
     protected $fillable = [
-        'descricao', 'status', 'empresa_id'
+        'descricao', 'status', 'empresa_id', 'vendizap_id'
     ];
 
     public function itens()

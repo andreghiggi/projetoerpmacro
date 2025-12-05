@@ -100,7 +100,9 @@ class NuvemShopProdutoController extends Controller
             $padraoTributacao = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->where('padrao', 1)
             ->first();
             $padroes = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->get();
-            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->get();
+            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)
+            ->where('categoria_id', null)
+            ->get();
             $unidades = UnidadeMedida::where('empresa_id', request()->empresa_id)
             ->where('status', 1)->get();
             return view('nuvem_shop_produtos.create_produtos', 
@@ -376,7 +378,7 @@ public function update(Request $request, $id){
                         $estoque->save();
                     }
 
-                    $transacao = Estoque::where('produto_id', $item->id)->first();
+                    $transacao = Estoque::where('produto_id', $item->id)->orderBy('id', 'desc')->first();
                     $tipo = 'incremento';
                     $codigo_transacao = $transacao->id;
                     $tipo_transacao = 'alteracao_estoque';

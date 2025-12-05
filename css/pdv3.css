@@ -1,0 +1,200 @@
+.main {
+
+}
+
+.ribbon {
+  position: absolute;
+  top: 0px;
+  width: 80px;
+  text-align: center;
+  background: #e63946;
+  color: #fff;
+  font-weight: 600;
+  padding: 2px 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  letter-spacing: 1px;
+  border-radius: 5px;
+  pointer-events: none;
+  text-transform: uppercase;
+  font-size: 8px;
+  height: 16px;
+}
+
+body{
+    background: #fff;
+}
+
+.header {
+    background: #558FF2;
+    height: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.header h5 {
+    color: #fff;
+    margin-top: 5px;
+    font-size: 18px;
+}
+.grid1 {
+    border-right: 1px solid #EEEEF1;
+    padding: 15px;
+}
+
+
+.btn-suspender{
+    margin-top: 5px;
+}
+
+.header-itens {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.btn-logoff{
+    margin-right: 2px;
+}
+
+.header-itens .col-2 {
+    margin-left: -3px;
+}
+
+.active-categoria {
+    background: #558FF2;
+    color: #fff;
+}
+
+.totalizador:hover {
+    cursor: pointer;
+}
+
+.totalizador-desconto:hover {
+    cursor: pointer;
+}
+.acoes-pdv:hover {
+    cursor: pointer;
+}
+
+.atalhos{
+    color: #47C6CC;
+}
+
+.btns {
+    margin: 4px;
+    margin-top: 10px;
+}
+
+.btns button {
+    border-radius: 0px;
+    margin-left: 1px !important;
+}
+
+.div-footer button {
+    width: 99.6% !important;
+    border-radius: 4px;
+}
+
+.total-venda{
+    font-size: 32px;
+    color: red;
+    position: absolute;
+    margin-top: -13px;
+    margin-left: 5px;
+}
+
+@media screen and (min-width: 1001px){
+    .div-itens {
+        height: 360px;
+        overflow: auto;
+    }
+    .produtos-lateral {
+        margin: 3px;
+        height: 620px;
+        overflow: scroll;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .div-itens {
+        height: 360px;
+        overflow: auto;
+    }
+    .produtos-lateral {
+        margin: 3px;
+        height: 490px;
+        overflow: scroll;
+    }
+}
+
+.totalizador {
+    background: #EEEEF1;
+    padding: 10px;
+    width: 48%;
+    margin-left: 10px;
+}
+
+.pagar {
+    background: #47C6CC !important;
+    color: #fff;
+}
+
+.totalizador strong {
+    float: right;
+}
+
+.categorias {
+    margin-top: 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding-bottom: 5px;
+}
+
+.categorias .btn-categoria {
+    display: inline-block;
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+
+.categorias button {
+    /* width: 150px; */
+    margin-left: 3px;
+}
+
+.card img {
+    height: 90px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.prod .card-body {
+    height: 100px !important;
+}
+
+.produtos-lateral .card-body {
+    text-align: center;
+}
+
+.produtos-lateral h5 {
+    font-size: 11px;
+}
+
+.produtos-lateral h6 {
+    font-size: 14px;
+}
+
+.prod:hover {
+    cursor: pointer;
+}
+
+.footer-text{
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    right: 0;
+    margin: 0;
+}

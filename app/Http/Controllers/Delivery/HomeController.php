@@ -27,7 +27,6 @@ class HomeController extends Controller
         ->where('empresa_id', $config->empresa_id)
         ->orderBy('nome', 'asc')
         ->where('hash_delivery', null)
-        ->where('status', 1)
         ->get();
 
         foreach($categorias as $c){
@@ -46,7 +45,7 @@ class HomeController extends Controller
         }
 
         $produtos = Produto::where('empresa_id', $config->empresa_id)
-        ->where('status', 1)
+        // ->where('status', 1)
         ->where('delivery', 1)
         ->where('hash_delivery', null)
         ->get();
@@ -57,7 +56,7 @@ class HomeController extends Controller
         }
 
         $servicos = Servico::where('empresa_id', $config->empresa_id)
-        ->where('status', 1)
+        // ->where('status', 1)
         ->where('marketplace', 1)
         ->where('hash_delivery', null)
         ->get();
@@ -80,6 +79,7 @@ class HomeController extends Controller
         }
         if(__isSegmentoServico($empresa_id)){
             $categoriasServico = CategoriaServico::where('marketplace', 1)
+            ->whereHas('servicosMarketplace')
             ->where('empresa_id', $empresa_id)->get();
         }
 
@@ -98,7 +98,6 @@ class HomeController extends Controller
         $config = MarketPlaceConfig::findOrfail($request->loja_id);
 
         $this->_validaHash($config);
-
         $categorias = $this->getCategorias($config->empresa_id);
 
         $produtosEmDestaque = $this->produtosEmDestaque($config->empresa_id);
@@ -183,6 +182,19 @@ class HomeController extends Controller
 
                 if($item->estoque && $item->estoque->quantidade > 0){
                     array_push($produtos, $item);
+                }else{
+                    if($item->combo){
+                        $adiciona = true;
+                        foreach($item->itensDoCombo as $c){
+                            if(!$c->produtoDoCombo->estoque || $c->produtoDoCombo->estoque->quantidade <= 0){
+                                $adiciona = false;
+                            }
+                        }
+                        if($adiciona){
+                            array_push($produtos, $item);
+                        }
+
+                    }
                 }
             }else{
                 array_push($produtos, $item);

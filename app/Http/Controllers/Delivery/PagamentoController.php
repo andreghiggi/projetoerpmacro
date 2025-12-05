@@ -20,6 +20,7 @@ use App\Models\CupomDescontoCliente;
 use App\Models\ItemPedidoDelivery;
 use App\Models\ItemPizzaPedido;
 use App\Models\CupomDesconto;
+use App\Models\ConfiguracaoAgendamento;
 use App\Models\Agendamento;
 use App\Models\ItemPizzaPedidoDelivery;
 use App\Models\ItemAdicionalDelivery;
@@ -124,7 +125,7 @@ class PagamentoController extends Controller
 
         if($carrinho->endereco_id == null){
             // dd($cliente->enderecoPrincipal);
-            
+
             $carrinho->endereco_id = $cliente->enderecoPrincipal ? $cliente->enderecoPrincipal->id : null;
             if($cliente->enderecoPrincipal && $cliente->enderecoPrincipal->bairro){
                 $carrinho->valor_frete = $cliente->enderecoPrincipal->bairro->valor_entrega;
@@ -167,10 +168,14 @@ class PagamentoController extends Controller
         $funcionamento = $this->getFuncionamento($config);
         $notInfoHeader = 1;
 
+        $pedidoHoje = PedidoDelivery::where('empresa_id', $config->empresa_id)
+        ->whereDate('created_at', date('Y-m-d'))
+        ->where('cliente_id', $cliente->id)->first();
+
         //atualiza valor carrinho
 
         return view('food.pagamento', compact('carrinho', 'config', 'categorias', 'notSearch', 'bairros', 
-            'cliente', 'entregaGratis', 'funcionamento', 'notInfoHeader', 'enderecos'));
+            'cliente', 'entregaGratis', 'funcionamento', 'notInfoHeader', 'enderecos', 'pedidoHoje'));
     }
 
     public function setaAgendamento(Request $request){
@@ -215,6 +220,15 @@ class PagamentoController extends Controller
         return null;
     }
 
+    private function getLastNumero($empresa_id){
+        $last = PedidoDelivery::where('empresa_id', $empresa_id)
+        ->orderBy('numero_sequencial', 'desc')
+        ->where('numero_sequencial', '>', 0)->first();
+        $numero = $last != null ? $last->numero_sequencial : 0;
+        $numero++;
+        return $numero;
+    }
+
     public function finalizar(Request $request){
 
         $carrinho = $this->_getCarrinho();
@@ -245,7 +259,8 @@ class PagamentoController extends Controller
                     'funcionario_id_agendamento' => $carrinho->funcionario_id_agendamento,
                     'inicio_agendamento' => $carrinho->inicio_agendamento,
                     'fim_agendamento' => $carrinho->fim_agendamento,
-                    'data_agendamento' => $carrinho->data_agendamento
+                    'data_agendamento' => $carrinho->data_agendamento,
+                    'numero_sequencial' => $this->getLastNumero($config->empresa_id)
                 ]);
 
                 if($cupom){
@@ -312,6 +327,7 @@ class PagamentoController extends Controller
                         }
                     }
                 }
+
                 return $pedido;
             });
 
@@ -328,8 +344,8 @@ if($config->confirmacao_pedido_cliente == 1){
 }
 
 }catch(\Exception $e){
-    echo $e->getMessage();
-    die;
+    // echo $e->getMessage();
+    // die;
     session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
     return redirect()->back();
 }
@@ -337,21 +353,35 @@ if($config->confirmacao_pedido_cliente == 1){
 
 public function enviarMensagemWpp($id){
     $pedido = PedidoDelivery::findOrfail($id);
-    $texto = $this->montaTextoPedido($pedido);
-    $telefone = "55".preg_replace('/[^0-9]/', '', $pedido->cliente->telefone);
-    $retorno = $this->util->sendMessage($telefone, $texto, $pedido->empresa_id);
 
-    $config = MarketPlaceConfig::where('empresa_id', $pedido->empresa_id)
-    ->first();
-    $telefone = "55".preg_replace('/[^0-9]/', '', $config->telefone);
-    $retorno = $this->util->sendMessage($telefone, $texto, $pedido->empresa_id);
-    return redirect()->back();
+    if($pedido->funcionario_id_agendamento){
+        $config = ConfiguracaoAgendamento::where('empresa_id', $pedido->empresa_id)
+        ->first();
+        if($config && $config->token_whatsapp){
+            $texto = $this->montaTextoPedido($pedido);
+            $telefone = "55".preg_replace('/[^0-9]/', '', $pedido->cliente->telefone);
+            $retorno = $this->util->sendMessageWithToken($telefone, $texto, $pedido->empresa_id, $config->token_whatsapp);
+        }
+
+    }else{
+        $texto = $this->montaTextoPedido($pedido);
+        $telefone = "55".preg_replace('/[^0-9]/', '', $pedido->cliente->telefone);
+        // $retorno = $this->util->sendMessage($telefone, $texto, $pedido->empresa_id);
+
+        $config = MarketPlaceConfig::where('empresa_id', $pedido->empresa_id)
+        ->first();
+        if($config->token_whatsapp != null && strlen($config->token_whatsapp) > 1){
+            $retorno = $this->util->sendMessageWithToken($telefone, $texto, $pedido->empresa_id, $config->token_whatsapp);
+        }else{
+            $retorno = $this->util->sendMessage($telefone, $texto, $pedido->empresa_id);
+        }
+    }
 }
 
 private function montaTextoPedido($pedido){
     $texto = "Olá, ". $pedido->cliente->razao_social . ", já recebemos seu pedido, muito obrigado!\n\n";
 
-    $texto .= "PEDIDO #$pedido->id\n\n";
+    $texto .= "PEDIDO #$pedido->numero_sequencial\n\n";
     if(sizeof($pedido->itensProdutos) > 0){
         $texto .= "PRODUTOS\n";
         foreach($pedido->itens as $i){
@@ -496,7 +526,8 @@ public function pagamentoPix(Request $request){
                 'cupom_id' => $cupom ? $cupom->id : null,
                 'desconto' => $carrinho->valor_desconto,
                 'valor_entrega' => $carrinho->valor_frete,
-                'horario_cricao' => date('H:i')
+                'horario_cricao' => date('H:i'),
+                'numero_sequencial' => $this->getLastNumero($config->empresa_id)
             ]);
             if($cupom){
                 CupomDescontoCliente::create([
@@ -533,13 +564,27 @@ public function pagamentoPix(Request $request){
             }
             return $pedido;
         });
-
+        $p = $pedido;
         $pedido = $this->createQrCode($pedido, $request->cpf);
-        $_SESSION["session_cart_delivery"] = null;
+
         if(isset($pedido['erro'])){
-            session()->flash("flash_error", $pedido['erro']);
+
+            foreach($p->itens as $item){
+                $item->adicionais()->delete();
+                $item->pizzas()->delete();
+                $item->delete();
+
+                if($item->agendamento){
+                    $item->agendamento()->delete();
+                }
+            }
+            $p->delete();
+            session()->flash("flash_error", "Erro ao gerar qrCode de pagamento, revise o seu cpf");
             return redirect()->back();
         }
+
+        $_SESSION["session_cart_delivery"] = null;
+
         session()->flash("flash_success", "Pedido realizado com sucesso");
         return redirect()->route('food.qr_code', [$pedido->transacao_id, 'link='.$config->loja_id]);
 

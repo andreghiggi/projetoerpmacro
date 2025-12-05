@@ -9,8 +9,13 @@ class FaturaReserva extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'reserva_id', 'tipo_pagamento', 'data_vencimento', 'valor' ];
+    protected $fillable = [ 
+        'reserva_id', 'tipo_pagamento', 'data_vencimento', 'valor', 'conta_receber_id'
+    ];
 
+    public function contaReceber(){
+        return $this->belongsTo(ContaReceber::class, 'conta_receber_id');
+    }
 
     public static function tiposPagamento()
     {

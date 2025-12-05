@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'TEF Registros'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -26,7 +26,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -34,35 +34,54 @@
                                     <th>Hora</th>
                                     <th>Venda</th>
                                     <th>Valor</th>
+                                    <th>Estado</th>
                                     <th>NSU</th>
-                                    <th width="10%">Ações</th>
+                                    <th>Finalização</th>
+                                    <th width="15%">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->getDataTransacao() }}</td>
-                                    <td>{{ $item->getHoraTransacao() }}</td>
-                                    <td>{{ $item->nfce_id }}</td>
-                                    <td>{{ __moeda($item->valor_total/100) }}</td>
-                                    <td>{{ $item->nsu }}</td>
+                                    <td data-label="Data">{{ $item->getDataTransacao() }}</td>
+                                    <td data-label="Hora">{{ $item->getHoraTransacao() }}</td>
+                                    <td data-label="Venda">{{ $item->nfce_id }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->valor_total/100) }}</td>
+
+                                    <td data-label="Estado">
+                                        @if($item->estado == 'aprovado')
+                                        <span class="badge bg-success">APROVADO</span>
+                                        @elseif($item->estado == 'cancelado')
+                                        <span class="badge bg-danger">CANCELADO</span>
+                                        @else
+                                        <span class="badge bg-warning">PENDENTE</span>
+                                        @endif
+                                    </td>
+
+                                    <td data-label="NSU">{{ $item->nsu }}</td>
+                                    <td data-label="Finalização">{{ $item->finalizacao }}</td>
 
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="cancelar('{{ $item->id }}')">
-                                            <i class="ri-close-line"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-dark" onclick="imprimir('{{ $item->id }}')">
-                                            <i class="ri-printer-line"></i>
-                                        </button>
+                                        <div style="width: 100px;">
+                                            @if($item->estado == 'aprovado')
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="cancelar('{{ $item->id }}')">
+                                                <i class="ri-close-line"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-dark" onclick="imprimir('{{ $item->id }}')">
+                                                <i class="ri-printer-line"></i>
+                                            </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">Nada encontrado</td>
+                                    <td colspan="8" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                 </div>
                 {!! $data->appends(request()->all())->links() !!}
@@ -94,7 +113,7 @@
         })
         .fail((e) => {
             console.log(e)
-            swal("Erro", "Algo deu errado!", "error")
+            swal("Erro", e.responseJSON.erro, "error")
         });
     }
 
@@ -115,11 +134,12 @@
                     id: id,
                 })
                 .done((data) => {
-                    console.log(data)
-                    consultaCancelamento(data)
+                    console.log("log cancela", data)
+                    consultaCancelamento(data.hash, id)
                 })
                 .fail((e) => {
                     console.log(e)
+                    swal("Erro", e.responseJSON.erro, "error")
                 });
             } else {
                 swal("", "Este item está salvo!", "info");
@@ -127,7 +147,7 @@
         });
     }
 
-    function consultaCancelamento(hash){
+    function consultaCancelamento(hash, id){
         $('#modal_tef_consulta').modal('show')
         $('.status-tef').text('Processando')
         $('.loading-tef').removeClass('d-none')
@@ -135,25 +155,36 @@
         let data = {
             hash: hash,
             usuario_id: $('#usuario_id').val(),
-            empresa_id: $('#empresa_id').val()
+            empresa_id: $('#empresa_id').val(),
+            id: id
         }
+        console.log(data)
         $('.modal-loading').remove()
         let intervalo = null;
         intervalo = setInterval(() => {
+            // console.log("consultando cancelamento...")
             $.post(path_url + 'api/tef/consulta-cancelamento', data)
             .done((success) => {
                 console.log(success)
-                
+                if(success == 'Cancelado'){
+                    swal("Sucesso", "Operação cancelada!", "success")
+                    .then(() => {
+                        location.reload()
+                        clearInterval(intervalo)
+                    })
+                }
             })
             .fail((err) => {
                 console.log(err)
                 clearInterval(intervalo)
+                swal("Erro", err.responseJSON, "error")
+
                 $('.status-tef').text(err.responseJSON)
                 setTimeout(() => {
                     $('#modal_tef_consulta').modal('hide')
                 }, 2000)
             })
-        }, 3000)
+        }, 10000)
     }
 </script>
 @endsection

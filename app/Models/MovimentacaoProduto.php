@@ -9,8 +9,8 @@ class MovimentacaoProduto extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'produto_id', 'quantidade', 'tipo', 'codigo_transacao', 'tipo_transacao', 'produto_variacao_id', 'user_id',
+    protected $fillable = [ 
+        'produto_id', 'quantidade', 'tipo', 'codigo_transacao', 'tipo_transacao', 'produto_variacao_id', 'user_id', 
         'estoque_atual'
     ];
 
@@ -33,10 +33,7 @@ class MovimentacaoProduto extends Model
             return 'Venda NFCe';
         }else if($this->tipo_transacao == 'compra'){
             return 'Compra';
-        }else if($this->tipo_transacao == 'pedido_conecta'){
-            return 'Venda Conecta Venda';
-        }
-        else{
+        }else{
             return 'Alteração de estoque';
         }
     }

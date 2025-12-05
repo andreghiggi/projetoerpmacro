@@ -11,7 +11,7 @@
 </style>
 @endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -98,6 +98,11 @@
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
+
+
+                                            <a href="{{ route('impersonate.start', $item->id) }}" class="btn btn-info btn-sm" title="Entrar como este usuário">
+                                                <i class="ri-login-circle-line"></i>
+                                            </a>
                                         </form>
                                         @endif
                                     </td>

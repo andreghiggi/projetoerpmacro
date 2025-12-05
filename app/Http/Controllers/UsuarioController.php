@@ -35,7 +35,7 @@ class UsuarioController extends Controller
                 return $quer->where('name', 'LIKE', "%$request->name%");
             });
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('usuarios.index', compact('data'));
     }
@@ -60,6 +60,10 @@ class UsuarioController extends Controller
     public function edit(Request $request, $id)
     {
         $item = User::findOrFail($id);
+
+        if($item->empresa == null){
+            abort(403);
+        }
 
         $roles = Role::orderBy('name', 'desc')
         ->where('empresa_id', $request->empresa_id)
@@ -120,7 +124,7 @@ class UsuarioController extends Controller
         ];
 
         $messages = [
-            'email.unique' => 'Email já utilizado!',
+            'email.unique' => 'Este email já esta em uso!',
         ];
         $this->validate($request, $rules, $messages);
     }
@@ -211,6 +215,9 @@ class UsuarioController extends Controller
     public function profile($id)
     {
         $item = User::findOrFail($id);
+        if($item->empresa == null){
+            abort(403);
+        }
         __validaObjetoEmpresa($item->empresa);
         return view('usuarios.profile', compact('item'));
     }

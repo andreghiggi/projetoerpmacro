@@ -1,4 +1,16 @@
-
+@if(__countLocalAtivo() > 1 && __escolheLocalidade())
+<div class="row mb-2">
+    <div class="col-md-3">
+        <label for="">Local</label>
+        <select id="inp-local_id" required class="select2 class-required" data-toggle="select2" name="local_id">
+            <option value="">Selecione</option>
+            @foreach(__getLocaisAtivoUsuario() as $local)
+            <option @isset($item) @if($item->local_id == $local->id) selected @endif @endif value="{{ $local->id }}">{{ $local->descricao }}</option>
+            @endforeach
+        </select>
+    </div>
+</div>
+@endif
 <div class="row">
     <div class="col-md-12">
         @isset($isCompra)
@@ -60,6 +72,10 @@
 
         @isset($dadosXml)
         <input type="hidden" name="chave_dfe" value="{{ $dadosXml['chave'] }}">
+
+        @isset($dadosXml['tpNF'])
+        <input type="hidden" name="tpNF_importada" value="{{ $dadosXml['tpNF'] }}">
+        @endif
         @endif
         <div class="tab-content">
             <div class="tab-pane fade show active" id="fornecedor" role="tabpanel">
@@ -79,7 +95,7 @@
                                 !!}
                             </div>
                             <div class="col-md-3">
-                                {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => ''])->required()
+                                {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => ''])
                                 ->value(isset($item) ? $item->cliente->nome_fantasia : '')
                                 !!}
                             </div>
@@ -156,178 +172,231 @@
                 <div class="card">
 
                     <div class="row m-3">
+
+                        <div class="col-md-3 mt-3">
+                            {!!Form::select('padrao_id', 'Padrão de tributação', ['' => 'Selecione'] + $padroes->pluck('descricao', 'id')->all())
+                            ->attrs(['class' => 'form-select tooltipp'])
+                            !!}
+                            <div class="text-tooltip d-none">
+                                Se selecionar irá sobrescrever os percentuais e CST do xml
+                            </div>
+                        </div>
+
+                        <div class="col-md-2 mt-3">
+                            <br>
+                            <button type="button" class="btn btn-primary btn-padrao-item">Alter padrão por item</button>
+                        </div>
+
                         <div class="col-md-2 mt-3">
                             {!!Form::select('gerenciar_estoque', 'Gerenciar estoque', [1 => 'Sim', 0 => 'Não'])->attrs(['class' => 'form-select'])
                             ->value($configGerenciaEstoque)
                             !!}
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-dynamic table-produtos">
-                                <thead>
-                                    <tr>
-                                        <th class="sticky-col first-col">Produto</th>
-                                        <th>Unidade</th>
-                                        <th>Quantidade</th>
-                                        <th>Valor de compra</th>
-                                        <th>Subtotal</th>
-                                        <th>Valor de venda</th>
-                                        <th>Conversão para estoque
-                                            <button type="button" tabindex="0" class="btn btn-success btn-sm" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Utilize se for vender em unidade diferente de compra, exemplo caixa com 12 e vender em unidade" title="Conversão para estoque e valor">
-                                                <i class="ri-file-info-fill"></i>
-                                            </button>
-                                        </th>
-                                        <th>%ICMS</th>
-                                        <th>%PIS</th>
-                                        <th>%COFINS</th>
-                                        <th>%IPI</th>
-                                        <th>%RED BC</th>
-                                        <th>CFOP</th>
-                                        <th>NCM</th>
-                                        <th>Código benefício</th>
-                                        <th>CST CSOSN</th>
-                                        <th>CST PIS</th>
-                                        <th>CST COFINS</th>
-                                        <th>CST IPI</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
 
-                                    @foreach ($dadosXml['itens'] as $key => $prod)
-                                    <tr class="dynamic-form line_{{$key}}">
-
-                                        <td class="sticky-col first-col">
-                                            <input class="cadastrar_produto" type="hidden" name="cadastrar_produto[]" value="{{ $prod->id == 0 ? 1 : 0 }}"> 
-                                            <input class="produto_nome" type="hidden" name="nome_produto[]" value="{{ $prod->xProd }}">
-                                            <input type="hidden" class="_codigo_barras" name="codigo_barras[]" value="{{ $prod->codigo_barras }}">
-                                            <input type="hidden" name="cProd[]" value="{{ $prod->codigo }}">
-                                            <input type="hidden" name="cest[]" value="{{ $prod->cest }}">
-
-                                            <input type="hidden" class="_produto_id" name="_produto_id[]" value="{{ $prod->id }}">
-
-                                            <input type="hidden" class="_categoria_id" name="_categoria_id[]" value="{{ $prod->categoria_id }}">
-                                            <input type="hidden" class="_margem" name="_margem[]" value="{{ $prod->margem }}">
-
-                                            <input type="hidden" class="_referencia" name="_referencia[]" value="{{ $prod->refernecia }}">
-                                            <input type="hidden" class="_referencia_balanca" name="_referencia_balanca[]" value="{{ $prod->referencia_balanca }}">
-
-                                            <input type="hidden" class="_exportar_balanca" name="_exportar_balanca[]" value="{{ $prod->exportar_balanca }}">
-
-                                            <input type="hidden" class="_observacao" name="_observacao[]" value="{{ $prod->observacao }}">
-                                            <input type="hidden" class="_observacao2" name="_observacao2[]" value="{{ $prod->observacao2 }}">
-                                            <input type="hidden" class="_observacao3" name="_observacao3[]" value="{{ $prod->observacao3 }}">
-                                            <input type="hidden" class="_observacao4" name="_observacao4[]" value="{{ $prod->observacao4 }}">
-                                            <input type="hidden" class="_disponibilidade" name="_disponibilidade[]" value="{{ $prod->disponibilidade }}">
-
-
-                                            <input type="hidden" class="_marca_id" name="_marca_id[]" value="{{ $prod->marca_id }}">
-
-                                            <input type="hidden" class="_estoque_minimo" name="_estoque_minimo[]" value="{{ $prod->estoque_minimo }}">
-                                            <input type="hidden" class="_gerenciar_estoque" name="_gerenciar_estoque[]" value="{{ $prod->gerenciar_estoque }}">
-
-                                            <input type="hidden" class="_check" value="0">
-                                            
-                                            <select class="form-select produto_id" name="produto_id[]">
-                                                <option value="{{ $prod->id }}">
-                                                    {{ $prod->xProd }}
-                                                </option>
-                                            </select>
-                                            <input type="hidden" value="{{ $key }}" class="_key">
-                                            <button data-key="{{ $key }}" title="Alterar dados do produto" style="margin-top: 3px;" class="btn btn-primary btn-sm btn-modal-altera" type="button">
-                                                <i class="ri-box-1-fill"></i>
-                                            </button>
-
-                                            @if($prod->id == 0)
-                                            <span class="text-danger">*Produto será cadastrado no sistema</span>
-                                            @else
-                                            <span class="text-primary">*Produto já esta cadastrado no sistema</span>
-                                            @endif
-                                            <i class="ri-information-line" onclick="modalXml('{{ $prod->nomeXml }}', '{{ $prod->valorXml }}', '{{ $prod->cfopXml }}')"></i>
-                                            <div style="width: 400px"></div>
-                                        </td>
-                                        <td>
-                                            <input readonly style="width: 120px" value="{{ $prod->unidade }}" class="form-control unidade" type="text" name="unidade[]">
-                                        </td> 
-                                        <td>
-                                            <input readonly style="width: 120px" value="{{ __moedaInput($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
-                                        </td>
-                                        <td>
-                                            <input readonly style="width: 120px" value="{{ __moedaInput($prod->valor_unitario) }}" class="form-control moeda valor_unit valor_compra" type="tel" name="valor_unitario[]" id="inp-valor_unitario">
-                                        </td>
-                                        <td>
-                                            <input readonly style="width: 120px" value="{{ __moedaInput($prod->sub_total) }}" class="form-control moeda sub_total" type="tel" name="sub_total[]" id="inp-subtotal">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ __moedaInput($prod->valor_unitario + ($prod->valor_unitario * $lucroPadraoProduto)/100) }}" class="form-control moeda valor_unit valor_venda" type="tel" name="valor_venda[]" id="inp-valor_unitario">
-                                        </td>
-                                        <td>
-                                            <input required style="width: 150px" value="1" class="form-control" data-mask="000" type="tel" name="conversao_estoque[]">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->perc_icms }}" class="form-control percentual" type="tel" name="perc_icms[]" id="inp-perc_icms">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->perc_pis }}" class="form-control percentual" type="tel" name="perc_pis[]" id="inp-perc_pis">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->perc_cofins }}" class="form-control percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
-                                        </td>
-                                        <td width="120">
-                                            <input style="width: 120px" value="{{ $prod->perc_ipi }}" class="form-control percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->perc_red_bc }}" class="form-control percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->cfop }}" class="form-control cfop" type="tel" name="cfop[]" id="inp-cfop_estadual">
-                                        </td>
-
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->ncm }}" class="form-control ncm" type="tel" name="ncm[]" id="inp-ncm2">
-                                        </td>
-                                        <td>
-                                            <input style="width: 120px" value="{{ $prod->codigo_beneficio_fiscal }}" class="form-control codigo_beneficio_fiscal" type="text" name="codigo_beneficio_fiscal[]">
-                                        </td>
-
-                                        <td>
-                                            <select style="width: 400px" name="cst_csosn[]" class="form-select">
-                                                @foreach(App\Models\Produto::listaCSTCSOSN() as $key => $c)
-                                                <option @if($prod->cst_csosn == $key) selected @endif value="{{$key}}">{{$c}}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <select style="width: 300px" name="cst_pis[]" class="form-select">
-                                                @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
-                                                <option @if($prod->cst_pis == $key) selected @endif value="{{$key}}">{{$c}}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <select style="width: 300px" name="cst_cofins[]" class="form-select">
-                                                @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
-                                                <option @if($prod->cst_cofins == $key) selected @endif value="{{$key}}">{{$c}}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <select style="width: 300px" name="cst_ipi[]" class="form-select">
-                                                @foreach(App\Models\Produto::listaCST_IPI() as $key => $c)
-                                                <option @if($prod->cst_ipi == $key) selected @endif value="{{$key}}">{{$c}}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td width="30">
-                                            <button class="btn btn-danger btn-remove-tr">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                    
-                                </tbody>
-                            </table>
+                        <div class="col-md-2 mt-3">
+                            <br>
+                            <button type="button" class="btn btn-dark btn-desvincular-todos">Desvincular todos</button>
                         </div>
+
+                        <div class="table-responsive">
+                            <div class="tabela-scroll" style="overflow-x:auto;">
+                                <table class="table table-dynamic table-produtos">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th class="sticky-col first-col">Produto</th>
+                                            <th class="td-padrao d-none">Padrão de tributação</th>
+                                            <th>Unidade</th>
+                                            <th>Quantidade</th>
+                                            <th>Valor de compra</th>
+                                            <th>Subtotal</th>
+                                            <th>Valor de venda</th>
+                                            <th>Conversão para estoque
+                                                <button type="button" tabindex="0" style="padding: 1px;" class="btn" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Utilize se for vender em unidade diferente de compra, exemplo caixa com 12 e vender em unidade" title="Conversão para estoque e valor">
+                                                    <i class="ri-file-info-fill text-info" style="font-size: 15px;"></i>
+                                                </button>
+                                            </th>
+                                            <th>%ICMS</th>
+                                            <th>%PIS</th>
+                                            <th>%COFINS</th>
+                                            <th>%IPI</th>
+                                            <th>%RED BC</th>
+                                            <th>CFOP</th>
+                                            <th>NCM</th>
+                                            <th>Código benefício</th>
+                                            <th>CST CSOSN</th>
+                                            <th>CST PIS</th>
+                                            <th>CST COFINS</th>
+                                            <th>CST IPI</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        @foreach ($dadosXml['itens'] as $key => $prod)
+                                        <tr class="dynamic-form line_{{$key}}">
+
+                                            <td class="sticky-col first-col">
+                                                <input class="cadastrar_produto" type="hidden" name="cadastrar_produto[]" value="{{ $prod->id == 0 ? 1 : 0 }}"> 
+                                                <input class="produto_nome" type="hidden" name="nome_produto[]" value="{{ $prod->xProd }}">
+                                                <input type="hidden" class="_codigo_barras" name="codigo_barras[]" value="{{ $prod->codigo_barras }}">
+                                                <input type="hidden" class="_codigo_barras2" name="_codigo_barras2[]" value="{{ $prod->codigo_barras2 }}">
+                                                <input type="hidden" name="cProd[]" value="{{ $prod->codigo }}">
+                                                <input type="hidden" name="cest[]" value="{{ $prod->cest }}">
+
+                                                <input type="hidden" class="_produto_id" name="_produto_id[]" value="{{ $prod->id }}">
+
+                                                <input type="hidden" class="_categoria_id" name="_categoria_id[]" value="{{ $prod->categoria_id }}">
+                                                <input type="hidden" class="_sub_categoria_id" name="_sub_categoria_id[]" value="{{ $prod->sub_categoria_id }}">
+                                                <input type="hidden" class="_sub_categoria_nome" value="{{ $prod->sub_categoria_nome }}">
+                                                <input type="hidden" class="_margem" name="_margem[]" value="{{ $prod->margem }}">
+
+                                                <input type="hidden" class="_referencia" name="_referencia[]" value="{{ $prod->referencia }}">
+                                                <input type="hidden" class="_referencia_balanca" name="_referencia_balanca[]" value="{{ $prod->referencia_balanca }}">
+
+                                                <input type="hidden" class="_exportar_balanca" name="_exportar_balanca[]" value="{{ $prod->exportar_balanca }}">
+
+                                                <input type="hidden" class="_observacao" name="_observacao[]" value="{{ $prod->observacao }}">
+                                                <input type="hidden" class="_observacao2" name="_observacao2[]" value="{{ $prod->observacao2 }}">
+                                                <input type="hidden" class="_observacao3" name="_observacao3[]" value="{{ $prod->observacao3 }}">
+                                                <input type="hidden" class="_observacao4" name="_observacao4[]" value="{{ $prod->observacao4 }}">
+                                                <input type="hidden" class="_disponibilidade" name="_disponibilidade[]" value="{{ $prod->disponibilidade }}">
+
+                                                <input type="hidden" class="_valor_atacado" name="_valor_atacado[]" value="{{ $prod->valor_atacado }}">
+                                                <input type="hidden" class="_marca_id" name="_marca_id[]" value="{{ $prod->marca_id }}">
+
+                                                <input type="hidden" class="_estoque_minimo" name="_estoque_minimo[]" value="{{ $prod->estoque_minimo }}">
+
+                                                <input type="hidden" class="_quantidade_atacado" name="_quantidade_atacado[]" value="{{ $prod->quantidade_atacado }}">
+                                                <input type="hidden" class="_valor_minimo_venda" name="_valor_minimo_venda[]" value="{{ $prod->valor_minimo_venda }}">
+
+                                                <input type="hidden" class="_gerenciar_estoque" name="_gerenciar_estoque[]" value="{{ $prod->gerenciar_estoque }}">
+
+                                                <input type="hidden" class="_qtd_original" value="{{ $prod->quantidade }}">
+                                                <input type="hidden" class="_valor_unitario_original" value="{{ $prod->valor_unitario }}">
+                                                <input type="hidden" class="_valor_sub_total_original" value="{{ $prod->sub_total }}">
+
+                                                <input type="hidden" class="_check" value="0">
+
+
+                                                <div class="d-flex align-items-center grupo-produto">
+                                                    <div class="flex-grow-1" style="max-width: 350px;">
+                                                        <select class="form-select produto_id select2-produto" name="produto_id[]">
+                                                            <option value="{{ $prod->id }}">{{ $prod->xProd }}</option>
+                                                        </select>
+                                                        <input type="hidden" value="{{ $key }}" class="_key">
+                                                    </div>
+
+                                                    <button data-key="{{ $key }}" title="Alterar dados do produto" type="button"class="btn btn-primary ms-2 btn-modal-altera btn-produto-icone">
+                                                        <i class="ri-box-1-fill"></i>
+                                                    </button>
+                                                </div>
+
+                                                @if($prod->id == 0)
+                                                <span class="text-danger">*Produto será cadastrado no sistema</span>
+                                                @else
+                                                <span class="text-primary">*Produto já esta cadastrado no sistema</span>
+                                                @endif
+                                                <i class="ri-information-line" style="font-size: 18px" onclick="modalXml('{{ $prod->nomeXml }}', '{{ $prod->valorXml }}', '{{ $prod->cfopXml }}')"></i>
+                                                <div style="width: 450px"></div>
+                                            </td>
+
+                                            <td class="td-padrao d-none">
+                                                <select style="width: 200px" class="form-select form-select padrao_item_id" name="padrao_item_id[]">
+                                                    <option value="">Selecione</option>
+                                                    @foreach($padroes as $padrao)
+                                                    <option value="{{ $padrao->id }}">{{ $padrao->descricao }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td> 
+
+                                            <td>
+                                                <input readonly style="width: 120px;" value="{{ $prod->unidade }}" class="form-control unidade" type="text" name="unidade[]">
+                                            </td> 
+                                            <td>
+                                                <input readonly style="width: 120px" value="{{ __moedaInput($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
+                                            </td>
+                                            <td>
+                                                <input readonly style="width: 120px" value="{{ __moedaInput($prod->valor_unitario) }}" class="form-control moeda valor_unit valor_compra" type="tel" name="valor_unitario[]" id="inp-valor_unitario">
+                                            </td>
+                                            <td>
+                                                <input readonly style="width: 120px" value="{{ __moedaInput($prod->sub_total) }}" class="form-control moeda sub_total" type="tel" name="sub_total[]" id="inp-subtotal">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ __moedaInput($prod->valor_venda) }}" class="form-control moeda valor_venda" type="tel" name="valor_venda[]" id="inp-valor_unitario">
+                                            </td>
+                                            <td>
+                                                <input required style="width: 150px" value="1" class="form-control" data-mask="00000" type="tel" name="conversao_estoque[]">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->perc_icms }}" class="form-control perc_icms percentual" type="tel" name="perc_icms[]" id="inp-perc_icms">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->perc_pis }}" class="form-control perc_pis percentual" type="tel" name="perc_pis[]" id="inp-perc_pis">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->perc_cofins }}" class="form-control perc_cofins percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
+                                            </td>
+                                            <td width="120">
+                                                <input style="width: 120px" value="{{ $prod->perc_ipi }}" class="form-control perc_ipi percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->perc_red_bc }}" class="form-control perc_red_bc percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->cfop }}" class="form-control cfop" type="tel" name="cfop[]" id="inp-cfop_estadual">
+                                            </td>
+
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->ncm }}" class="form-control ncm" type="tel" name="ncm[]" id="inp-ncm2">
+                                            </td>
+                                            <td>
+                                                <input style="width: 120px" value="{{ $prod->codigo_beneficio_fiscal }}" class="form-control codigo_beneficio_fiscal" type="text" name="codigo_beneficio_fiscal[]">
+                                            </td>
+
+                                            <td>
+                                                <select style="width: 400px" name="cst_csosn[]" class="form-select cst_csosn">
+                                                    @foreach(App\Models\Produto::listaCSTCSOSN() as $key => $c)
+                                                    <option @if($prod->cst_csosn == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select style="width: 300px" name="cst_pis[]" class="form-select cst_pis">
+                                                    @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
+                                                    <option @if($prod->cst_pis == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select style="width: 300px" name="cst_cofins[]" class="form-select cst_cofins">
+                                                    @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
+                                                    <option @if($prod->cst_cofins == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select style="width: 300px" name="cst_ipi[]" class="form-select cst_ipi">
+                                                    @foreach(App\Models\Produto::listaCST_IPI() as $key => $c)
+                                                    <option @if($prod->cst_ipi == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td width="30">
+                                                <button class="btn btn-danger btn-remove-tr">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <button type="button" id="scrollToggle2" class="scroll-btn-jidox hidden">
+                            <i class="ri-arrow-right-circle-line"></i>
+                        </button>
                         <!-- <div class="row col-12 col-lg-2 mt-3">
                             <br>
                             <button type="button" class="btn btn-dark btn-add-tr px-2">
@@ -536,6 +605,7 @@
                             0 => 'Não',
                             1 => 'Sim'])
                             ->attrs(['class' => 'form-select'])
+                            ->value($config ? $config->gerar_conta_receber_padrao : 1)
                             !!}
                         </div>
 
@@ -561,7 +631,7 @@
                     <div class="row m-3">
                         <div class="table-responsive">
                             <table class="table table-dynamic table-fatura" style="width: 800px">
-                                <thead>
+                                <thead class="table-dark">
                                     <tr>
                                         <th>Tipo de Pagamento</th>
                                         <th>Data Vencimento</th>
@@ -676,6 +746,6 @@
     </div>
     <hr class="mt-4">
     <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success btn-salvar-nfe px-5 m-3">Salvar</button>
+        <button type="button" class="btn btn-success btn-salvar-nfe px-5 m-3">Salvar</button>
     </div>
 </div>

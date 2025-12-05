@@ -69,15 +69,31 @@
 		padding-bottom: 10px;
 	}
 
+	@if($config != null)
+	td, th{
+		line-height: {{$config->distancia_entre_linhas}}px;
+	}
+	@endif
+
 </style>
 <body>
 	<button class="noPrint" onclick="window.print()">Imprimir</button>
-	<div class="print">
+	<div class="print" @if($config != null) style="margin-top: {{$config->margem_topo}}px;" @endif>
 		@foreach($item->itens as $i)
 		@for($x=0; $x<$i->quantidade; $x++)
-			<table class="printer-ticket">
+			<table class="printer-ticket" @if($config != null) style="margin-left: {{$config->margem_lateral}}px;" @endif>
 				<thead>
 					<tr>
+						@if($config != null)
+
+						<th class="title" colspan="3">
+							@if($empresa->logo)
+							<img style="width: {{ $config->largura_imagem }}; height: {{ $config->altura_imagem }}; border-radius: 5px" src="{{ env('APP_URL').'/uploads/logos/'. $empresa->logo }}">
+							@else
+							<img style="width: {{ $config->largura_imagem }}; height: {{ $config->altura_imagem }}; border-radius: 5px" src="{{ env('APP_URL').'/imgs/no-image.png' }}">
+							@endif
+						</th>
+						@else
 						<th class="title" colspan="3">
 							@if($empresa->logo)
 							<img style="width: 140px; border-radius: 5px" src="{{ env('APP_URL').'/uploads/logos/'. $empresa->logo }}">
@@ -85,6 +101,7 @@
 							<img style="width: 140px; border-radius: 5px" src="{{ env('APP_URL').'/imgs/no-image.png' }}">
 							@endif
 						</th>
+						@endif
 					</tr>
 					<tr>
 						<th colspan="3">
@@ -94,7 +111,7 @@
 
 					<tr>
 						<th class="ttu" colspan="3">
-							Nº do Pedido {{ $i->itemProducao->itemNfe->nfe->numero_sequencial }}
+							Nº do Pedido {{ $i->itemProducao ? $i->itemProducao->itemNfe->nfe->numero_sequencial : $i->numero_pedido }}
 						</th>
 					</tr>
 				</thead>
@@ -107,14 +124,18 @@
 					<tr>
 						<td>
 							Cliente/Razão Soscial:<br>
-							<strong>{{ $i->itemProducao->itemNfe->nfe->cliente->razao_social }}</strong>
+							<strong>{{ $i->itemProducao ? $i->itemProducao->itemNfe->nfe->cliente->razao_social : $i->cliente->info }}</strong>
 						</td>
 					</tr>
 					<tr>
 						<td>
 							Item Produto:<br>
 							<strong>{{ $i->produto->nome }}
-							{{ $i->itemProducao->dimensao }}</strong>
+								@if($i->itemProducao)
+								{{ $i->itemProducao->dimensao }}
+								@endif
+							</strong>
+
 						</td>
 					</tr>
 					<tr>
@@ -126,6 +147,10 @@
 				</tbody>
 
 			</table>
+			@if($config != null)
+			<div style="height: {{$config->distancia_entre_etiquetas}}px;"></div>
+			@endif
+
 			@endfor
 			@endforeach
 		</div>

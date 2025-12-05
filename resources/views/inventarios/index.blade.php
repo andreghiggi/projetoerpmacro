@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Inventários'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -37,7 +37,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -56,20 +56,20 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->numero_sequencial }}</td>
-                                    <td>{{ __data_pt($item->inicio, 0) }}</td>
-                                    <td>{{ __data_pt($item->fim, 0) }}</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>
+                                    <td data-label="Código">{{ $item->numero_sequencial }}</td>
+                                    <td data-label="Início">{{ __data_pt($item->inicio, 0) }}</td>
+                                    <td data-label="Fim">{{ __data_pt($item->fim, 0) }}</td>
+                                    <td data-label="Data de cadastro">{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Status">
                                         @if($item->status)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td>{{ $item->tipo }}</td>
-                                    <td>{{ $item->usuario ? $item->usuario->name : '' }}</td>
-                                    <td>
+                                    <td data-label="Tipo">{{ $item->tipo }}</td>
+                                    <td data-label="Usuário">{{ $item->usuario ? $item->usuario->name : '' }}</td>
+                                    <td data-label="Itens apontados">
                                         {{ sizeof($item->itens) }}
                                     </td>
                                     <td>
@@ -91,6 +91,15 @@
                                             <a title="Apontar" class="btn btn-dark btn-sm" href="{{ route('inventarios.apontar', [$item->id]) }}">
                                                 <i class="ri-barcode-box-line"></i>
                                             </a>
+
+                                            <a title="Imprimir" class="btn btn-light btn-sm" href="{{ route('inventarios.imprimir', [$item->id]) }}">
+                                                <i class="ri-printer-line"></i>
+                                            </a>
+
+                                            <a class="btn btn-primary btn-sm" href="{{ route('inventarios.duplicar', [$item->id]) }}" title="Duplicar inventário">
+                                                <i class="ri-file-copy-line"></i>
+                                            </a>
+
                                         </form>
                                     </td>
                                 </tr>

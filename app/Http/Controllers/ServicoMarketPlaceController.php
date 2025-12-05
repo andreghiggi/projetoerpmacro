@@ -15,7 +15,7 @@ class ServicoMarketPlaceController extends Controller
             return $q->where('nome', 'LIKE', "%$nome%");
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('delivery.servicos.categorias', compact('data'));
     }
 
@@ -31,7 +31,7 @@ class ServicoMarketPlaceController extends Controller
             return $q->where('status', $status);
         })
         ->where('marketplace', 1)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('delivery.servicos.index', compact('data'));
 

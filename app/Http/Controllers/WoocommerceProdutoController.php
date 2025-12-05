@@ -57,6 +57,7 @@ class WoocommerceProdutoController extends Controller
                 $produtosIsert[] = $res;
             }
         }
+        // dd($produtosIsert);
 
         if(sizeof($produtosIsert) > 0){
             $empresa = Empresa::findOrFail($request->empresa_id);
@@ -67,7 +68,9 @@ class WoocommerceProdutoController extends Controller
             $padraoTributacao = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->where('padrao', 1)
             ->first();
             $padroes = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->get();
-            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)->get();
+            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)
+            ->where('categoria_id', null)
+            ->get();
             $unidades = UnidadeMedida::where('empresa_id', request()->empresa_id)
             ->where('status', 1)->get();
             
@@ -79,7 +82,7 @@ class WoocommerceProdutoController extends Controller
                 return $q->where('nome', 'LIKE', "%$request->nome%");
             })
             ->where('woocommerce_id', '!=', null)
-            ->paginate(env("PAGINACAO"));
+            ->paginate(__itensPagina());
 
             foreach($wooProdutos as $wp){
                 foreach($data as $p){
@@ -92,6 +95,116 @@ class WoocommerceProdutoController extends Controller
             }
             return view('woocommerce_produtos.index', compact('data')); 
 
+        }
+    }
+
+    public function semCadastro(){
+        $produtos = Produto::where('empresa_id', request()->empresa_id)
+        ->where('woocommerce_id', null)
+        ->where('status', 1)
+        ->get();
+
+        return view('woocommerce_produtos.sem_cadastro', compact('produtos')); 
+    }
+
+    public function sincronizar(Request $request){
+        try{
+            $cont = 0;
+
+            $woocommerceClient = $this->util->getConfig($request->empresa_id);
+            for($i=0; $i<sizeof($request->produto_check); $i++){
+                $produto = Produto::find($request->produto_check[$i]);
+                if($produto != null){
+                    $categorias_woocommerce = json_decode($produto->categorias_woocommerce);
+                    $categorias = [];
+
+                    $type = 'simple';
+                    foreach($categorias_woocommerce as $id){
+                        $c = CategoriaWoocommerce::findOrFail($id);
+                        $categorias[] = ['id'=> $c->_id];
+                    }
+
+                    if(sizeof($produto->variacoes) > 0){
+                        $type = 'variable';
+                    }
+                    $data = [
+                        'name' => $produto->nome,
+                        'type' => $type,
+                        'slug' => $request->woocommerce_slug,
+                        'status' => 'publish',
+                        'stock_status' => 'instock',
+                        'price' => $produto->valor_unitario,
+                        'description' => $produto->woocommerce_descricao,
+                        'categories' => $categorias,
+                        'weight' => $produto->peso
+                    ];
+
+                    if($produto->comprimento){
+                        $data['dimensions']['length'] = $produto->comprimento;
+                    }
+                    if($produto->largura){
+                        $data['dimensions']['width'] = $produto->largura;
+                    }
+                    if($produto->altura){
+                        $data['dimensions']['height'] = $produto->altura;
+                    }
+
+                    if($produto->imagem){
+                        $data['images'][] = 
+                        [   
+                            'src' => env('APP_URL') . '/uploads/produtos/'.$produto->imagem
+                        ];
+                    }
+
+                    if(sizeof($produto->variacoes) > 0){
+                        $data['attributes'] = [
+                            [
+                                'name' => 'Variação',
+                                'position' => 0,
+                                'visible' => true,
+                                'variation' => true,
+                            ]
+                        ];
+                        foreach($produto->variacoes as $v){
+                            $data['attributes'][0]['options'][] = $v->descricao;
+                        }
+
+                        $data['default_attributes'] = [
+
+                            [
+                                'name' => 'Variação',
+                                'option' => $produto->variacoes[0]->descricao
+                            ]
+                        ];
+
+                    }
+                    // dd($data);
+
+                    $product = $woocommerceClient->post("products", $data);
+                    if(sizeof($produto->variacoes) > 0){
+                        foreach($produto->variacoes as $v){
+
+                            $dataVariacao = [
+                                'regular_price' => $v->valor,
+                                'attributes' => [[
+                                    'name' => 'Variação',
+                                    'option' => $v->descricao
+                                ]]
+                            ];
+
+                            $product_id = $product->id;
+                            $variation = $woocommerceClient->post("products/$product_id/variations", $dataVariacao);
+                        }
+                    }
+
+                }
+            }
+            session()->flash("flash_success", "Total de produtos sincronizados $cont!");
+            return redirect()->route('woocommerce-produtos.index');
+
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
+            return redirect()->back();
         }
     }
 
@@ -132,9 +245,9 @@ class WoocommerceProdutoController extends Controller
         $dataProduto = [
             'empresa_id' => $empresa_id,
             'nome' => $wooProduto->name,
-            'valor_venda' => $wooProduto->price,
+            'valor_venda' => (float)$wooProduto->price,
             'woocommerce_id' => $wooProduto->id,
-            'woocommerce_valor' => $wooProduto->price,
+            'woocommerce_valor' => (float)$wooProduto->price,
             'woocommerce_slug' => $wooProduto->slug,
             'woocommerce_link' => $wooProduto->permalink,
             'woocommerce_type' => $wooProduto->type,
@@ -153,7 +266,7 @@ class WoocommerceProdutoController extends Controller
                 $dataVariacao = [
                     '_id' => $wooVariation->id,
                     'quantidade' => $wooVariation->stock_quantity,
-                    'valor' => $wooVariation->price,
+                    'valor' => (float)$wooVariation->price,
                     'nome' => isset($wooVariation->attributes[0]) ? $wooVariation->attributes[0]->name : '',
                     'valor_nome' => $wooVariation->name,
                     'codigo_barras' => $wooVariation->global_unique_id

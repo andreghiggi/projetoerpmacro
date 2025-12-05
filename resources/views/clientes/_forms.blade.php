@@ -26,6 +26,19 @@
                     </div>
                 </a>
             </li>
+
+            <li class="nav-item" role="presentation" style="width: 200px">
+                <a class="nav-link" data-bs-toggle="tab" href="#fatura" role="tab" aria-selected="true">
+                    <div class="d-flex align-items-center">
+                        <div class="tab-icon"><i class='fa fa-user me-2'></i>
+                        </div>
+                        <div class="tab-title">
+                            <i class="ri-coins-fill"></i>
+                            Fatura
+                        </div>
+                    </div>
+                </a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -33,19 +46,22 @@
                 <div class="card">
                     <div class="row m-2 g-2">
                         <div class="col-md-1">
-                            {!!Form::text('numero_sequencial', 'Código', __getUltimoNumeroSequencial(request()->empresa_id, 'clientes')+1)->readonly()
+                            {!!Form::text('numero_sequencial', 'Código', isset($item) ? $item->numero_sequencial : __getUltimoNumeroSequencial(request()->empresa_id, 'clientes')+1)->readonly()
                             !!}
                         </div>
                         <div class="col-md-2">
-                            {!!Form::text('cpf_cnpj', 'CPF/CNPJ')->attrs(['class' => 'cpf_cnpj'])->required()
+                            {!!Form::tel('cpf_cnpj', 'CPF/CNPJ')->attrs(['class' => 'cpf_cnpj'])
+                            ->required()
                             !!}
                         </div>
                         <div class="col-md-3">
-                            {!!Form::text('razao_social', 'Razão Social')->attrs(['class' => ''])->required()
+                            {!!Form::text('razao_social', 'Razão Social')->required()
+                            ->attrs(['data-contador' => true, 'maxlength' => 60])
                             !!}
                         </div>
                         <div class="col-md-3">
-                            {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => ''])
+                            {!!Form::text('nome_fantasia', 'Nome Fantasia')
+                            ->attrs(['data-contador' => true, 'maxlength' => 60])
                             !!}
                         </div>
                         <div class="col-md-2">
@@ -76,6 +92,30 @@
                         <div class="col-md-4">
                             {!! Form::text('email', 'Email')->attrs(['class' => ''])->type('email') !!}
                         </div>
+                        <div class="col-md-2">
+                            {!!Form::text('cep', 'CEP')->attrs(['class' => 'cep'])->required()
+                            !!}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            {!!Form::text('rua', 'Rua')->required()
+                            ->attrs(['maxlength' => '60'])
+                            !!}
+                        </div>
+                        <div class="col-md-1">
+                            {!!Form::text('numero', 'Número')->required()
+                            !!}
+                        </div>
+                        
+                        <div class="col-md-2">
+                            {!!Form::text('bairro', 'Bairro')->attrs(['class' => ''])->required()
+                            !!}
+                        </div>
+                        <div class="col-md-4">
+                            {!!Form::text('complemento', 'Complemento')->attrs(['class' => ''])
+                            !!}
+                        </div>
+
                         <div class="col-md-3">
                             @isset($item)
                             {!!Form::select('cidade_id', 'Cidade')
@@ -88,27 +128,6 @@
                             ->required()
                             !!}
                             @endisset
-                        </div>
-                        <div class="col-md-4">
-                            {!!Form::text('rua', 'Rua')->required()
-                            ->attrs(['maxlength' => '60'])
-                            !!}
-                        </div>
-                        <div class="col-md-1">
-                            {!!Form::text('numero', 'Número')->required()
-                            !!}
-                        </div>
-                        <div class="col-md-2">
-                            {!!Form::text('cep', 'CEP')->attrs(['class' => 'cep'])->required()
-                            !!}
-                        </div>
-                        <div class="col-md-2">
-                            {!!Form::text('bairro', 'Bairro')->attrs(['class' => ''])->required()
-                            !!}
-                        </div>
-                        <div class="col-md-4">
-                            {!!Form::text('complemento', 'Complemento')->attrs(['class' => ''])
-                            !!}
                         </div>
 
                         <div class="col-md-2">
@@ -129,6 +148,11 @@
                         </div>
 
                         <div class="col-md-2">
+                            {!!Form::date('data_nascimento', 'Data de nascimento')
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
                             {!!Form::text('limite_credito', 'Limite de crédito')->attrs(['class' => 'moeda tooltipp'])
                             ->value(isset($item) ? __moeda($item->limite_credito) : '')
                             !!}
@@ -144,11 +168,32 @@
                         </div>
 
                         @if(!isset($item))
-                        <div class="col-md-3 mt-3">
+                        <div class="col-md-3 mt-4">
                             {!!Form::checkbox('insere_fornecedor', 'Cadastrar também como fornecedor')
                             !!}
                         </div>
                         @endif
+
+                        <div class="col-12"></div>
+
+                        <div class="card col-md-3 mt-3 form-input" style="width: 210px">
+                            <div class="preview">
+                                <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
+                                @isset($item)
+                                <img id="file-ip-1-preview" src="{{ $item->img }}">
+                                @else
+                                <img id="file-ip-1-preview" src="/imgs/no-client.png">
+                                @endif
+                            </div>
+                            <label for="file-ip-1">Foto</label>
+                            @isset($item)
+                            <a class="btn btn-danger btn-sm mt-2 mb-1" href="{{ route('clientes.remove-image', [$item->id])}}">
+                                <i class="ri-close-line"></i>
+                                Remover foto
+                            </a>
+                            @endif
+                            <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -240,6 +285,77 @@
                     </div>
                 </div>
             </div>
+
+            <div class="tab-pane fade show" id="fatura" role="tabpanel">
+                <div class="card">
+                    <div class="col-md-4 m-2">
+                        <div class="row">
+                            <table class="table mb-0 table-striped table-dynamic">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo de pagamento</th>
+                                        <th>Dias para vencimento</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(isset($item) && sizeof($item->fatura) > 0)
+                                    @foreach($item->fatura as $f)
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            <select name="tipo_pagamento[]" class="form-control form-select ignore">
+                                                <option value="">Selecione</option>
+                                                @foreach($tiposPagamento as $key => $t)
+                                                <option @if($key == $f->tipo_pagamento) selected @endif value="{{ $key }}">{{ $t }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input value="{{ $f->dias_vencimento }}" type="tel" name="dias_vencimento[]" class="form-control" data-mask="000">
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @else
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            <select name="tipo_pagamento[]" class="form-control form-select ignore">
+                                                <option value="">Selecione</option>
+                                                @foreach($tiposPagamento as $key => $t)
+                                                <option value="{{ $key }}">{{ $t }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="tel" name="dias_vencimento[]" class="form-control" data-mask="000">
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <br>
+                                <button type="button" class="btn btn-dark btn-add-tr">
+                                    <i class="ri-add-line"></i>
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <hr class="mt-4">
@@ -249,6 +365,7 @@
     </div>
 
     @section('js')
+    <script type="text/javascript" src="/js/busca_cep.js"></script>
     <script>
 
         $(document).on("blur", "#inp-cpf_cnpj", function () {

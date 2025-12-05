@@ -36,6 +36,10 @@
                     <i class="ri-wallet-line"></i>
                     Fatura
                 </button>
+
+                @if(sizeof($item->fatura) > 0)
+                <a class="btn btn-light btn-sm" href="{{ route('conta-receber.index', ['reserva_id='.$item->id]) }}">Contas a receber da reserva</a>
+                @endif
                 @endif
             </div>
             @endif

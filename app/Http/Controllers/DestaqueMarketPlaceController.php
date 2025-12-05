@@ -23,7 +23,7 @@ class DestaqueMarketPlaceController extends Controller
         ->when(!empty($request->servico_id), function ($q) use ($request) {
             return $q->where('servico_id', $request->servico_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('destaques.index', compact('data'));
     }

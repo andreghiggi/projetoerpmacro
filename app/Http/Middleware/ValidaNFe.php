@@ -24,7 +24,7 @@ class ValidaNFe
 		->where(function($q) {
 			$q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
 		})
-		->whereMonth('created_at', date('m'))
+		->whereMonth('data_emissao', date('m'))
 		->count('id');
 
 		if($totalNfe >= $plano->plano->maximo_nfes){

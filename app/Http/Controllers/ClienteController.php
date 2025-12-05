@@ -4,24 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Cidade;
+use App\Models\ConfigGeral;
+use App\Models\FaturaCliente;
 use App\Models\Nfe;
 use App\Models\Nfce;
 use App\Models\ItemNfe;
 use App\Models\ItemNfce;
 use App\Models\ContaReceber;
 use App\Models\Fornecedor;
+use App\Models\CreditoCliente;
 use App\Models\TributacaoCliente;
 use App\Models\ListaPrecoUsuario;
 use Illuminate\Http\Request;
 use App\Imports\ProdutoImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\ValidaDocumentoCliente;
+use App\Utils\UploadUtil;
 
 class ClienteController extends Controller
 {
-
-    public function __construct()
+    protected $util;
+    public function __construct(UploadUtil $util)
     {
+        $this->util = $util;
         $this->middleware('permission:clientes_create', ['only' => ['create', 'store']]);
         $this->middleware('permission:clientes_edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:clientes_view', ['only' => ['show', 'index']]);
@@ -43,6 +48,11 @@ class ClienteController extends Controller
         }
 
         __setUltimoNumeroSequencial(request()->empresa_id, 'clientes', $numero);
+    }
+
+    public function modal($id){
+        $item = Cliente::findOrFail($id);
+        return view('clientes.partials.modal_body', compact('item'))->render();
     }
 
     public function index(Request $request)
@@ -76,9 +86,15 @@ class ClienteController extends Controller
         ->when($ordem, function ($query) use ($ordem) {
             return $query->orderBy($ordem, $ordem == 'created_at' ? 'desc' : 'asc');
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
+
+        $configGeral = ConfigGeral::where('empresa_id', $request->empresa_id)
+        ->first();
+        $tipoExibe = $configGeral && $configGeral->clientes_exibe_tabela == 0 
+        ? 'card' 
+        : 'tabela';
         
-        return view('clientes.index', compact('data'));
+        return view('clientes.index', compact('data', 'tipoExibe'));
     }
 
     public function create()
@@ -87,7 +103,23 @@ class ClienteController extends Controller
         ->join('lista_precos', 'lista_precos.id', '=', 'lista_preco_usuarios.lista_preco_id')
         ->where('lista_preco_usuarios.usuario_id', get_id_user())
         ->get();
-        return view('clientes.create', compact('listasPreco'));
+
+        $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+        $tiposPagamento = Nfce::tiposPagamento();
+        if($config != null){
+            $config->tipos_pagamento_pdv = $config != null && $config->tipos_pagamento_pdv ? json_decode($config->tipos_pagamento_pdv) : [];
+            $temp = [];
+            if(sizeof($config->tipos_pagamento_pdv) > 0){
+                foreach($tiposPagamento as $key => $t){
+                    if(in_array($t, $config->tipos_pagamento_pdv)){
+                        $temp[$key] = $t;
+                    }
+                }
+                $tiposPagamento = $temp;
+            }
+        }
+
+        return view('clientes.create', compact('listasPreco', 'tiposPagamento'));
     }
 
     public function edit($id)
@@ -99,18 +131,41 @@ class ClienteController extends Controller
         ->join('lista_precos', 'lista_precos.id', '=', 'lista_preco_usuarios.lista_preco_id')
         ->where('lista_preco_usuarios.usuario_id', get_id_user())
         ->get();
-        return view('clientes.edit', compact('item', 'listasPreco'));
+
+        $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+        $tiposPagamento = Nfce::tiposPagamento();
+        if($config != null){
+            $config->tipos_pagamento_pdv = $config != null && $config->tipos_pagamento_pdv ? json_decode($config->tipos_pagamento_pdv) : [];
+            $temp = [];
+            if(sizeof($config->tipos_pagamento_pdv) > 0){
+                foreach($tiposPagamento as $key => $t){
+                    if(in_array($t, $config->tipos_pagamento_pdv)){
+                        $temp[$key] = $t;
+                    }
+                }
+                $tiposPagamento = $temp;
+            }
+        }
+
+        return view('clientes.edit', compact('item', 'listasPreco', 'tiposPagamento'));
     }
 
     public function store(Request $request)
     {
         // $this->__validate($request);
         try {
+
+            $file_name = '';
+            if ($request->hasFile('image')) {
+                $file_name = $this->util->uploadImage($request, '/clientes');
+            }
+
             $request->merge([
                 'ie' => $request->ie ?? '',
                 'nome_fantasia' => $request->nome_fantasia ?? '',
                 'valor_cashback' => $request->valor_cashback ? __convert_value_bd($request->valor_cashback) : 0,
-                'valor_credito' => $request->valor_credito ? __convert_value_bd($request->valor_credito) : 0
+                'valor_credito' => $request->valor_credito ? __convert_value_bd($request->valor_credito) : 0,
+                'imagem' => $file_name,
             ]);
 
             $cliente = Cliente::where('empresa_id', $request->empresa_id)
@@ -133,6 +188,17 @@ class ClienteController extends Controller
                 Fornecedor::create($request->all());
                 __setUltimoNumeroSequencial(request()->empresa_id, 'fornecedors', $numero+1);
             }
+
+            if($request->dias_vencimento[0] != ''){
+                for($i=0; $i<sizeof($request->dias_vencimento); $i++){
+                    FaturaCliente::create([
+                        'cliente_id' => $cliente->id,
+                        'tipo_pagamento' => $request->tipo_pagamento[$i] ?? null,
+                        'dias_vencimento' => $request->dias_vencimento[$i]
+                    ]);
+                }
+            }
+
             __createLog($request->empresa_id, 'Cliente', 'cadastrar', $request->razao_social);
             session()->flash("flash_success", "Cliente cadastrado!");
         } catch (\Exception $e) {
@@ -156,19 +222,52 @@ class ClienteController extends Controller
         TributacaoCliente::create($request->all());
     }
 
+    public function removeImagem($id){
+        $item = Cliente::findOrFail($id);
+        try{
+            $this->util->unlinkImage($item, '/clientes');
+            $item->imagem = '';
+            $item->save();
+            session()->flash("flash_success", "Imagem removida");
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
+        }
+        return redirect()->back();
+    }
+
     public function update(Request $request, $id)
     {
         $this->__validate($request, $id);
         $item = Cliente::findOrFail($id);
         try {
+
+            $file_name = $item->imagem;
+
+            if ($request->hasFile('image')) {
+                $this->util->unlinkImage($item, '/clientes');
+                $file_name = $this->util->uploadImage($request, '/clientes');
+            }
             $request->merge([
                 'ie' => $request->ie ?? '',
                 'valor_cashback' => $request->valor_cashback ? __convert_value_bd($request->valor_cashback) : 0,
-                'valor_credito' => $request->valor_credito ? __convert_value_bd($request->valor_credito) : 0
+                'valor_credito' => $request->valor_credito ? __convert_value_bd($request->valor_credito) : 0,
+                'imagem' => $file_name,
             ]);
             $item->fill($request->all())->save();
 
             $this->cadastraTributacao($item, $request);
+
+
+            if($request->dias_vencimento[0] != ''){
+                $item->fatura()->delete();
+                for($i=0; $i<sizeof($request->dias_vencimento); $i++){
+                    FaturaCliente::create([
+                        'cliente_id' => $item->id,
+                        'tipo_pagamento' => $request->tipo_pagamento[$i] ?? null,
+                        'dias_vencimento' => $request->dias_vencimento[$i]
+                    ]);
+                }
+            }
 
             __createLog($request->empresa_id, 'Cliente', 'editar', $request->razao_social);
             session()->flash("flash_success", "Cliente atualizado!");
@@ -296,6 +395,7 @@ class ClienteController extends Controller
         }
         __validaObjetoEmpresa($item);
         
+        $item->tributacao()->delete();
         try {
             $descricaoLog = $item->razao_social;
 
@@ -439,10 +539,24 @@ class ClienteController extends Controller
         return $msgErro;
     }
 
+    public function alterarStatusCredito(Request $request)
+    {
+        $credito = CreditoCliente::find($request->id);
+
+        if (!$credito) {
+            return response()->json(['status' => false, 'msg' => 'Crédito não encontrado']);
+        }
+
+        $credito->status = false;
+        $credito->save();
+
+        return response()->json($credito, 200);
+    }
+
+
     public function cashBack($id){
         $item = Cliente::findOrFail($id);
         return view('clientes.cash_back', compact('item'));
-
     }
 
     public function destroySelecet(Request $request)
@@ -468,7 +582,7 @@ class ClienteController extends Controller
         }
 
         session()->flash("flash_success", "Total de itens removidos: $removidos!");
-        return redirect()->route('clientes.index');
+        return redirect()->back();
     }
 
 }

@@ -15,16 +15,24 @@
 </style>
 @endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
-                <div class="col-md-12">
-                    <a href="{{ route('produtos.create', ['woocommerce=1']) }}" class="btn btn-success">
-                        <i class="ri-add-circle-fill"></i>
-                        Novo Produto
-                    </a>
-
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ route('produtos.create', ['woocommerce=1']) }}" class="btn btn-success">
+                            <i class="ri-add-circle-fill"></i>
+                            Novo Produto
+                        </a>
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-3 text-end">
+                        <a href="{{ route('woocommerce-produtos.sem-cadastro') }}" class="btn btn-primary">
+                            <i class="ri-arrow-left-right-line "></i>
+                            Produtos não sincronizados
+                        </a>
+                    </div>
                 </div>
                 <hr class="mt-3">
                 <div class="col-lg-12">

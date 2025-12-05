@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Planos'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -16,8 +16,14 @@
                     ->get()
                     !!}
                     <div class="row mt-3">
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             {!!Form::text('nome', 'Pesquisar por nome')
+                            !!}
+                        </div>
+
+                        <div class="col-md-3">
+                            {!!Form::select('contador_id', 'Representante/Contador', ['' => 'Selecione'] + $contadores->pluck('nome', 'id')->all())
+                            ->attrs(['class' => 'form-select select2'])
                             !!}
                         </div>
                         <div class="col-md-3 text-left">
@@ -29,7 +35,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-centered">
                             <thead class="table-dark">
                                 <tr>
@@ -41,6 +47,8 @@
                                     <th>Auto cadastro</th>
                                     <th>Fiscal</th>
                                     <th>Segmento</th>
+                                    <th>Intervalo de dias</th>
+                                    <th>Dias de teste</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -75,7 +83,13 @@
                                     </td>
                                     <td>{{ $item->segmento ? $item->segmento->nome : '' }}</td>
                                     <td>
-                                        <form action="{{ route('planos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        {{ $item->intervalo_dias }}
+                                    </td>
+                                    <td>
+                                        {{ $item->dias_teste }}
+                                    </td>
+                                    <td>
+                                        <form action="{{ route('planos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 100px">
                                             @method('delete')
                                             <a class="btn btn-warning btn-sm" href="{{ route('planos.edit', [$item->id]) }}">
                                                 <i class="ri-pencil-fill"></i>

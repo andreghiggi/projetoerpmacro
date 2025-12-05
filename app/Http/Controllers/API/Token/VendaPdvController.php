@@ -29,7 +29,6 @@ class VendaPdvController extends Controller
             return response()->json("Permissão negada!", 403);
         }
 
-
         $data = Nfce::where('empresa_id', $request->empresa_id)
         ->with(['itens', 'fatura'])
         ->get()

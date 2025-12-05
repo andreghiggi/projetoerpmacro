@@ -21,9 +21,14 @@ class ApontamentoController extends Controller
     }
 
 
-    public function create()
+    public function create(Request $request)
     {
-        $data = Apontamento::orderBy('created_at', 'desc')->paginate(40);
+        $data = Apontamento::orderBy('created_at', 'desc')
+        ->select('apontamentos.*')
+        ->join('produtos', 'produtos.id', '=', 'apontamentos.produto_id')
+        ->where('produtos.empresa_id', $request->empresa_id)
+        ->paginate(40);
+
         return view('estoque.apontamento', compact('data'));
     }
 
@@ -56,13 +61,13 @@ class ApontamentoController extends Controller
             die;
             session()->flash('flash_error', 'Algo deu errado:' . $e->getMessage());
         }
-        return redirect()->route('estoque.index');
+        return redirect()->back();
     }
 
     public function imprimir($id)
     {
         $item = Apontamento::findOrFail($id);
-
+        __validaObjetoEmpresa($item->produto);
         $config = Empresa::where('id', request()->empresa_id)->first();
 
         $p = view('estoque.impressao_apontamento', compact('config', 'item'));

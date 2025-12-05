@@ -19,6 +19,11 @@ class VendaSuspensa extends Model
         return $this->belongsTo(Cliente::class, 'cliente_id');
     }
 
+    public function funcionario()
+    {
+        return $this->belongsTo(Funcionario::class, 'funcionario_id');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

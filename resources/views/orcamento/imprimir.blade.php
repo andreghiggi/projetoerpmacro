@@ -806,7 +806,7 @@
     <table>
         <tr>
             <td class="" style="width: 350px;">
-                Nº Doc: <strong>{{$item->id}}</strong>
+                Nº Doc: <strong>{{$item->numero_sequencial}}</strong>
             </td>
 
         </tr>
@@ -859,12 +859,7 @@
                 </th> --}}
                 <th class="b-top">{{$i->produto->id}}</th>
                 <th class="b-top">
-                    {{$i->produto->nome}}
-                    {{$i->produto->grade ? " (" . $i->produto->str_grade . ")" : ""}}
-                    @if($i->produto->lote != "")
-                    | Lote: {{$i->produto->lote}},
-                    Vencimento: {{$i->produto->vencimento}}
-                    @endif
+                    {{$i->descricao()}}
                 </th>
                 <th class="b-top">{{__moeda($i->quantidade)}}</th>
                 <th class="b-top">{{__moeda($i->valor_unitario) }}</th>
@@ -1028,7 +1023,7 @@
             <td class="" style="width: 200px;">
                 Valor Líquido:
                 <strong>
-                    {{__moeda($item->valor_total - $item->desconto + $item->acrescimo)}}
+                    {{__moeda($item->total)}}
                 </strong>
             </td>
 

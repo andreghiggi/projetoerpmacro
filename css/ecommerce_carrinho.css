@@ -1,0 +1,319 @@
+/* ==============================
+   LAYOUT GERAL
+============================== */
+.section-title .title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  border-left: 5px solid var(--color-main, #c62828);
+  padding-left: 10px;
+  text-transform: uppercase;
+}
+label {
+  font-weight: 500;
+  color: #333;
+}
+
+/* ==============================
+   ITENS DO CARRINHO (CART CARD)
+============================== */
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  padding: 20px 25px;
+  margin-bottom: 20px;
+  transition: transform .25s, box-shadow .25s;
+}
+.cart-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,.1);
+}
+
+.cart-item img {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: contain;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  transition: transform .3s;
+}
+.cart-item img:hover {
+  transform: scale(1.05);
+}
+
+.nome-produto {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-main, #b71c1c);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+  position: relative;
+  transition: color .2s, transform .2s;
+}
+
+.nome-produto::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 25%;
+  height: 2px;
+  background: var(--color-main, #b71c1c);
+  border-radius: 3px;
+  opacity: 0.6;
+  transition: width .3s ease;
+}
+
+.nome-produto:hover {
+  color: #8b0000;
+  transform: translateY(-1px);
+}
+
+.nome-produto:hover::after {
+  width: 50%;
+  opacity: 1;
+}
+
+
+/* ==============================
+   QUANTIDADE
+============================== */
+.input-number {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
+  width: 95px;
+  height: 38px;
+}
+.input-number input {
+  width: 55px;
+  border: none;
+  text-align: center;
+  font-size: 15px;
+  padding: 6px;
+  background: transparent;
+}
+.qty-up, .qty-down {
+  background: #f4f4f4;
+  color: #333;
+  width: 28px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.qty-up:hover, .qty-down:hover {
+  background: var(--color-main, #c62828);
+  color: #fff;
+}
+
+/* ==============================
+   PREÇOS
+============================== */
+.sub_total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-main, #c62828);
+}
+h4 {
+  margin-top: 25px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #b71c1c;
+}
+.section-title label strong {
+  color: var(--color-main, #c62828);
+}
+
+/* ==============================
+   BOTÕES
+============================== */
+.btn {
+  border-radius: 50px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  transition: all .2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn-primary {
+  background: var(--color-main, #c62828);
+  border-color: var(--color-main, #c62828);
+}
+.btn-primary:hover {
+  background: #a00000;
+}
+.btn-danger {
+  background: #c62828;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background .2s;
+}
+.btn-danger:hover {
+  background: #a00000;
+}
+.btn-success {
+  background: #28a745;
+  border-color: #28a745;
+}
+.btn-success:hover {
+  background: #218838;
+}
+.btn-continuar-comprando {
+  background: #f1f1f1;
+  color: var(--color-main, #c62828);
+  border: none;
+}
+.btn-continuar-comprando:hover {
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+.btn-pagamento {
+  margin-top: 30px;
+  padding: 14px 28px;
+  font-size: 15px;
+}
+
+/* ==============================
+   FORM FRETE
+============================== */
+form label[for="cep"] {
+  display: block;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 4px;
+}
+input#cep {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  width: 180px;
+  font-size: 14px;
+}
+
+/* ==============================
+   BLOCO DE CEP E FRETE
+============================== */
+.input-cep {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-cep label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 3px;
+}
+
+.input-cep input {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.input-cep input:focus {
+  border-color: var(--color-main, #c62828);
+  box-shadow: 0 0 0 3px rgba(198,40,40,0.15);
+  outline: none;
+}
+
+/* ==============================
+   BOTÃO CALCULAR FRETE
+============================== */
+.btn-frete {
+  width: 100%;
+  height: 42px;
+  margin-top: 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--color-main, #c62828);
+  border: none;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-frete i {
+  font-size: 15px;
+}
+
+.btn-frete:hover {
+  background: #a00000;
+  transform: translateY(-1px);
+}
+
+/* ==============================
+   MOBILE AJUSTES
+============================== */
+@media (max-width: 768px) {
+  .btn-frete {
+    margin-top: 10px;
+    height: 45px;
+  }
+}
+
+.btn-frete {
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 14px;
+  margin-left: 6px;
+}
+.data-frete {
+  margin-top: 15px;
+  font-size: 14px;
+}
+.radio-frete {
+  margin-right: 6px;
+}
+
+/* ==============================
+   MOBILE AJUSTES
+============================== */
+@media (max-width: 768px) {
+  .cart-item {
+    text-align: center;
+    flex-direction: column;
+    padding: 15px;
+  }
+  .cart-item img {
+    margin-bottom: 10px;
+  }
+  .btn-pagamento {
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+  }
+  input#cep {
+    width: 100%;
+  }
+}

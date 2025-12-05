@@ -12,7 +12,7 @@ class SegmentoController extends Controller
     public function index(Request $request)
     {
         $data = Segmento::orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('segmentos.index', compact('data'));
     }
 

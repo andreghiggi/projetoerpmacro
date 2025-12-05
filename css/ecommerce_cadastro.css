@@ -1,0 +1,183 @@
+.order-submit{
+	width: 100%;
+}
+
+.select2-selection__rendered {
+	line-height: 38px !important;
+}
+.select2-container .select2-selection--single {
+	height: 40px !important;
+	border: 1px solid #E4E7ED;
+}
+.select2-selection__arrow {
+	height: 38px !important;
+}
+
+.invalid-feedback{
+	font-size: 12px;
+	color: red;
+	position: fixed;
+}
+
+.form-group{
+	margin-top: 5px;
+}
+
+.title{
+	margin-left: 15px!important;
+}
+
+
+/* ==============================
+   ESTRUTURA GERAL
+============================== */
+.section {
+  background: #fafafa;
+  padding: 40px 0;
+}
+
+form.row {
+  gap: 10px;
+}
+
+.section-title .title {
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-left: 5px solid var(--color-main, #c62828);
+  padding-left: 10px;
+  color: #111;
+  margin-bottom: 20px;
+}
+
+/* ==============================
+   CAMPOS DE FORMULÁRIO
+============================== */
+.input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: #333;
+  background: #fff;
+  transition: all 0.25s ease-in-out;
+}
+
+.input:focus {
+  border-color: var(--color-main, #c62828);
+  box-shadow: 0 0 0 3px rgba(198,40,40,0.15);
+  outline: none;
+}
+
+.invalid-feedback {
+  color: #c62828;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ==============================
+   CHECKBOX / TERMOS
+============================== */
+.input-checkbox {
+  margin-top: 15px;
+}
+
+.input-checkbox label {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+.input-checkbox input[type="checkbox"] {
+  accent-color: var(--color-main, #c62828);
+  transform: scale(1.2);
+  margin-right: 8px;
+}
+
+/* ==============================
+   BOTÃO DE CONFIRMAÇÃO
+============================== */
+.primary-btn.order-submit {
+  width: 100%;
+  background: var(--color-main, #c62828);
+  color: #fff;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 0;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}
+
+.primary-btn.order-submit:hover {
+  background: #a00000;
+  transform: translateY(-1px);
+}
+
+/* ==============================
+   BLOCO RESUMO DO PEDIDO
+============================== */
+.billing-details {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+  padding: 25px;
+}
+
+.order-details .section-title .title {
+  text-align: center;
+}
+
+.order-summary {
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.order-col {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 15px;
+  color: #444;
+}
+
+.order-col strong {
+  font-weight: 700;
+  color: #111;
+}
+
+.order-total {
+  color: var(--color-main, #c62828);
+  font-weight: 800;
+  font-size: 22px;
+}
+
+label a {
+  color: var(--color-main, #c62828);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+label a:hover {
+  text-decoration: underline;
+}
+
+/* ==============================
+   RESPONSIVO
+============================== */
+@media (max-width: 768px) {
+  .order-details {
+    margin-top: 25px;
+  }
+  .primary-btn.order-submit {
+    font-size: 14px;
+  }
+}
+

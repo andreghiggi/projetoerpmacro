@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Metas de Venda'])
 
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
 	<div class="row">
 		<div class="card">
 			<div class="card-body">

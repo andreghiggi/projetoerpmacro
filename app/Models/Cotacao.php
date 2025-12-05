@@ -11,7 +11,7 @@ class Cotacao extends Model
 
     protected $fillable = [
         'empresa_id', 'fornecedor_id', 'responsavel', 'hash_link', 'referencia', 'observacao', 'estado',
-        'status', 'valor_total', 'desconto'
+        'status', 'valor_total', 'desconto', 'planejamento_id'
     ];
 
     public function empresa(){
@@ -20,6 +20,10 @@ class Cotacao extends Model
 
     public function fornecedor(){
         return $this->belongsTo(Fornecedor::class, 'fornecedor_id');
+    }
+
+    public function planejamento(){
+        return $this->belongsTo(PlanejamentoCusto::class, 'planejamento_id');
     }
 
     public function itens(){

@@ -4,7 +4,7 @@
 	<input type="hidden" id="inp-code-item" value="{{ $code }}">
 	<div class="col-md-6">
 		<label>Quantidade</label>
-		<input type="tel" class="form-control moeda" id="inp-qtd-item" value="{{ $quantidade }}">
+		<input type="tel" class="form-control quantidade" id="inp-qtd-item" value="{{ $quantidade }}">
 	</div>
 	<div class="col-md-6">
 		<label>Valor unitário</label>

@@ -109,7 +109,14 @@
                                             <tr>
                                                 <td><img class="img-60" src="{{ $p->produto->img }}"></td>
                                                 <td>{{ $p->produto->nome }}</td>
-                                                <td>{{ number_format($p->quantidade, 2) }}</td>
+                                                <td>
+                                                    @if(!$p->produto->unidadeDecimal())
+                                                    {{ number_format($p->quantidade, 0, '.', '') }}
+                                                    @else
+                                                    {{ number_format($p->quantidade, 3, '.', '') }}
+                                                    @endif
+
+                                                </td>
                                                 <td>{{ __moeda($p->valor_unitario) }}</td>
                                                 <td>{{ __moeda($p->quantidade*$p->valor_unitario) }}</td>
                                             </tr>

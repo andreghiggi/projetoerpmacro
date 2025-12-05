@@ -15,10 +15,10 @@ class LocalizacaoController extends Controller
             $item = $item->empresa;
         }
         $data = [
-            'numero_nfe' => $item->ambiente == 2 ? $item->numero_ultima_nfe_homologacao : $item->numero_ultima_nfe_producao,
-            'numero_nfce' => $item->ambiente == 2 ? $item->numero_ultima_nfce_homologacao : $item->numero_ultima_nfce_producao,
-            'numero_cte' => $item->ambiente == 2 ? $item->numero_ultima_cte_homologacao : $item->numero_ultima_cte_producao,
-            'numero_mdfe' => $item->ambiente == 2 ? $item->numero_ultima_mdfe_homologacao : $item->numero_ultima_mdfe_producao,
+            'numero_nfe' => $item->ambiente == 2 ? $item->numero_ultima_nfe_homologacao+1 : $item->numero_ultima_nfe_producao+1,
+            'numero_nfce' => $item->ambiente == 2 ? $item->numero_ultima_nfce_homologacao+1 : $item->numero_ultima_nfce_producao+1,
+            'numero_cte' => $item->ambiente == 2 ? $item->numero_ultima_cte_homologacao+1 : $item->numero_ultima_cte_producao+1,
+            'numero_mdfe' => $item->ambiente == 2 ? $item->numero_ultima_mdfe_homologacao+1 : $item->numero_ultima_mdfe_producao+1,
         ];
         return response()->json($data, 200);
     }

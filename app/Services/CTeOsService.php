@@ -42,6 +42,7 @@ class CTeOsService
 		} else {
 			$numeroCTE = $emitente->numero_ultima_cte_producao;
 		}
+		$numeroCTE+=1;
 
 		$cnpj = preg_replace('/[^0-9]/', '', $emitente->cpf_cnpj);
 
@@ -145,7 +146,7 @@ class CTeOsService
 
 		$toma->IE = $ie;
 		$toma->xNome = $cteEmit->tomador_cli->razao_social;
-		$toma->xFant = $cteEmit->tomador_cli->razao_social;
+		$toma->xFant = $cteEmit->tomador_cli->nome_fantasia;
 		
 		$fone = preg_replace('/[^0-9]/', '', $cteEmit->tomador_cli->telefone);
 

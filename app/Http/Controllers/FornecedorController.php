@@ -72,7 +72,7 @@ class FornecedorController extends Controller
         ->when($ordem, function ($query) use ($ordem) {
             return $query->orderBy($ordem, $ordem == 'created_at' ? 'desc' : 'asc');
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('fornecedores.index', compact('data'));
     }
 

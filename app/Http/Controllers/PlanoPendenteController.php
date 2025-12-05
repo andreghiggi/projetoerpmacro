@@ -12,7 +12,7 @@ class PlanoPendenteController extends Controller
     public function index(Request $request){
         $data = PlanoPendente::orderBy('id', 'desc')
         ->where('status', 0)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('planos_pendentes.index', compact('data'));
     }
 

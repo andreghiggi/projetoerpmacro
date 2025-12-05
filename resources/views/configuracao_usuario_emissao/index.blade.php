@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Configuração Usuário Emissão'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -32,27 +32,25 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
-
                                     <th>Usuário</th>
                                     <th>Número de série NFCe</th>
                                     <th>Último número de NFCe</th>
-                                    
-                                    <th width="10%">Ações</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->usuario->name }}</td>
-                                    <td>{{ $item->numero_serie_nfce }}</td>
-                                    <td>{{ $item->numero_ultima_nfce }}</td>
-                                    
+                                    <td data-label="Usuário">{{ $item->usuario->name }}</td>
+                                    <td data-label="Número de série NFCe">{{ $item->numero_serie_nfce }}</td>
+                                    <td data-label="Último número de NFCe">{{ $item->numero_ultima_nfce }}</td>
+
                                     <td>
-                                        <form action="{{ route('config-fiscal-usuario.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 100px;" action="{{ route('config-fiscal-usuario.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @can('config_fiscal_usuario_edit')
                                             <a class="btn btn-warning btn-sm text-white" href="{{ route('config-fiscal-usuario.edit', [$item->id]) }}">
@@ -60,7 +58,6 @@
                                             </a>
                                             @endcan
                                             @csrf
-
                                             @can('config_fiscal_usuario_delete')
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
                                                 <i class="ri-delete-bin-line"></i>
@@ -69,9 +66,10 @@
                                         </form>
                                     </td>
                                 </tr>
+
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="text-center">Nada encontrado</td>
+                                    <td colspan="4" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>

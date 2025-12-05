@@ -8,10 +8,14 @@
 
             <div class="row m-3">
                 <div class="col-md-3">
-                    {!! Form::date('start_date', 'Data Inicial')->attrs(['class' => 'ignore']) !!}
+                    {!! Form::date('start_date_filtro', 'Data Inicial')->attrs(['class' => 'ignore']) !!}
                 </div>
                 <div class="col-md-3">
-                    {!! Form::date('end_date', 'Data Final')->attrs(['class' => 'ignore']) !!}
+                    {!! Form::date('end_date_filtro', 'Data Final')->attrs(['class' => 'ignore']) !!}
+                </div>
+
+                <div class="col-md-3">
+                    {!! Form::select('tipo_filtro', 'Tipo', [1 => 'Saída', 0 => 'Entrada'])->attrs(['class' => 'form-select']) !!}
                 </div>
                 <div class="col-md-3">
                     <br>

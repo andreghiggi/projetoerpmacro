@@ -16,8 +16,9 @@ class TefRegistroController extends Controller
         ->when($request->usuario_id, function ($q) use ($request) {
             return $q->where('usuario_id', $request->usuario_id);
         })
+        ->where('nfce_id', '!=', null)
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $usuarios = User::where('usuario_empresas.empresa_id', $request->empresa_id)
         ->select('users.*')

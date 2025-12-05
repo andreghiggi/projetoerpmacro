@@ -19,7 +19,7 @@
 		<div class="d-flex" style="float: right;">
 			<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">-</span> 
 			<input min="0" value="1" class="fw-semibold cart-qty m-0 px-2 qtd-row"> 
-			<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">+</span>
+			<span class="increment-decrement btn btn-light rounded-circle btn-incrementa" data-code="{{$code}}">+</span>
 		</div>
 	</div>
 </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Natureza de Operação'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -31,44 +31,50 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-centered">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Descrição</th>
                                     <th>Padrão</th>
-                                    <th>Sobrescrerver CFOP</th>
+                                    <th>Sobrescrever CFOP</th>
+                                    <th>Movimentar Estoque</th>
                                     <th width="20%">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($data as $item)
                                 <tr>
-                                    <td>{{ $item->descricao }}</td>
-                                    <td>
+                                    <td data-label="Descrição">{{ $item->descricao }}</td>
+                                    <td data-label="Padrão">
                                         @if($item->padrao)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td data-label="Sobrescrever CFOP">
                                         @if($item->sobrescrever_cfop)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
+                                    <td data-label="Movimentar Estoque">
+                                        @if($item->movimentar_estoque)
+                                        <i class="ri-checkbox-circle-fill text-success"></i>
+                                        @else
+                                        <i class="ri-close-circle-fill text-danger"></i>
+                                        @endif
+                                    </td>
                                     <td>
-                                        <form action="{{ route('natureza-operacao.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 100px;" action="{{ route('natureza-operacao.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
-
                                             @can('natureza_operacao_edit')
                                             <a class="btn btn-warning btn-sm text-white" href="{{ route('natureza-operacao.edit', [$item->id]) }}">
                                                 <i class="ri-pencil-fill"></i>
                                             </a>
                                             @endcan
-                                            
                                             @csrf
                                             @can('natureza_operacao_delete')
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
@@ -81,6 +87,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+
                     </div>
                 </div>
                 {!! $data->appends(request()->all())->links() !!}

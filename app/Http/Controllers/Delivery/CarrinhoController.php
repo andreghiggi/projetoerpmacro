@@ -110,9 +110,19 @@ class CarrinhoController extends Controller
 
         if($produto->gerenciar_estoque){
 
-            if(!$produto->estoque || $produto->estoque->quantidade < $quantidade){
-                session()->flash("flash_error", "Estoque insuficiente!");
-                return redirect()->back();
+            if($produto->combo){
+                foreach($produto->itensDoCombo as $c){
+                    if(!$c->produtoDoCombo->estoque || $c->produtoDoCombo->estoque->quantidade <= 0){
+                        session()->flash("flash_error", "Estoque insuficiente!");
+                        return redirect()->back();
+                    }
+                }
+
+            }else{
+                if(!$produto->estoque || $produto->estoque->quantidade < $quantidade){
+                    session()->flash("flash_error", "Estoque insuficiente!");
+                    return redirect()->back();
+                }
             }
         }
 

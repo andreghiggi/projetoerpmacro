@@ -57,8 +57,8 @@
                             {{ $item->codigo_barras }}
                         </div>
                     </div> <!-- end col-->
-                </div>
-                <!-- end row -->
+                </div>    
+                <!-- end row -->        
 
                 <div class="row">
                     <div class="col-12">
@@ -81,8 +81,24 @@
                                     @foreach($data as $i)
                                     <tr>
                                         <td>{{ $i->id }}</td>
-                                        <td>{{ number_format($i->quantidade, 2) }}</td>
-                                        <td>{{ $i->estoque_atual ? number_format($i->estoque_atual, 2) : '--' }}</td>
+                                        <td>
+                                            @if(!$i->produto->unidadeDecimal())
+                                            {{ number_format($i->quantidade, 0, '.', '') }}
+                                            @else
+                                            {{ number_format($i->quantidade, 3) }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($i->estoque_atual)
+                                            @if(!$i->produto->unidadeDecimal())
+                                            {{ number_format($i->estoque_atual, 0, '.', '') }}
+                                            @else
+                                            {{ number_format($i->estoque_atual, 3) }}
+                                            @endif
+                                            @else
+                                            --
+                                            @endif
+                                        </td>
                                         <td>{{ $i->tipoTransacao() }}</td>
                                         <td>{{ $i->user ? $i->user->name : '' }}</td>
                                         <td>{{ __data_pt($i->created_at) }}</td>
@@ -110,9 +126,13 @@
                     </div> <!-- end col -->
                     <div class="col-sm-6">
                         <div class="float-end mt-3">
-                            <p><b>Soma quantidade: </b>
-                                <span class="float-end ml-1" style="margin-left: 3px">
-                                    {{ number_format($data->sum('quantidade'), 2) }}
+                            <p><b>Soma quantidade modificada: </b> 
+                                <span class="float-end text-primary" style="margin-left: 3px">
+                                    @if(!$item->unidadeDecimal())
+                                    {{ number_format($data->sum('quantidade'), 0, '.', '') }}
+                                    @else
+                                    {{ number_format($data->sum('quantidade'), 3) }}
+                                    @endif
                                 </span>
                             </p>
                         </div>
@@ -120,10 +140,10 @@
                     </div> <!-- end col -->
                 </div>
                 <!-- end row-->
-
+                <hr>
                 <div class="row">
                     <div class="col-12">
-                        <h5>Fornecedores do produto</h5>
+                        <h5 class="text-primary">Fornecedores do produto</h5>
 
                         <div class="table-responsive">
                             <table class="table table-sm table-centered table-hover table-borderless mb-0 mt-3">
@@ -151,8 +171,65 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div> <!-- end table-responsive-->
-                    </div> <!-- end col -->
+                        </div>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="text-primary">Serial de entrada</h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-centered table-hover table-borderless mb-0 mt-3">
+                                <thead class="border-top border-bottom bg-light-subtle border-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Observação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($produtoUnico as $i)
+                                    @if($i->tipo == 'entrada')
+                                    <tr>
+                                        <td>{{ $i->codigo }}</td>
+                                        <td>{{ $i->observacao ?? '--' }}</td>
+
+                                    </tr>
+                                    @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="text-primary">Serial de saída</h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-centered table-hover table-borderless mb-0 mt-3">
+                                <thead class="border-top border-bottom bg-light-subtle border-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Observação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($produtoUnico as $i)
+                                    @if($i->tipo == 'saida')
+                                    <tr>
+                                        <td>{{ $i->codigo }}</td>
+                                        <td>{{ $i->observacao ?? '--' }}</td>
+
+                                    </tr>
+                                    @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="d-print-none mt-4">
@@ -160,7 +237,7 @@
                         <a href="javascript:window.print()" class="btn btn-primary"><i class="ri-printer-line"></i> Imprimir</a>
 
                     </div>
-                </div>
+                </div>   
                 <!-- end buttons -->
 
             </div>

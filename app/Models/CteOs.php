@@ -199,11 +199,11 @@ class CteOs extends Model
 
     public function estadoEmissao()
     {
-        if ($this->estado == 'aprovado') {
+        if ($this->estado_emissao == 'aprovado') {
             return "<span class='btn btn-sm btn-success'>Aprovado</span>";
-        } else if ($this->estado == 'cancelado') {
+        } else if ($this->estado_emissao == 'cancelado') {
             return "<span class='btn btn-sm btn-danger'>Cancelado</span>";
-        } else if ($this->estado == 'rejeitado') {
+        } else if ($this->estado_emissao == 'rejeitado') {
             return "<span class='btn btn-sm btn-warning'>Rejeitado</span>";
         }
         return "<span class='btn btn-sm btn-info'>Novo</span>";

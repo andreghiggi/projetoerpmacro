@@ -82,7 +82,7 @@ class DevolucaoController extends Controller
             return $query->whereIn('local_id', $locais);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('devolucao.index', compact('data'));
 
@@ -198,6 +198,7 @@ class DevolucaoController extends Controller
                     $prod->vBCFCPST = '';
                     $prod->pFCPST = '';
                     $prod->vFCPST = '';
+                    $prod->vICMSSubstituto = '';
                     if(isset($arr[0]->modBCST)){
                         $prod->modBCST = (int)$arr[0]->modBCST;  
                     }
@@ -221,6 +222,9 @@ class DevolucaoController extends Controller
                     }
                     if(isset($arr[0]->vFCPST)){
                         $prod->vFCPST = (float)$arr[0]->vFCPST;  
+                    }
+                    if(isset($arr[0]->vICMSSubstituto)){
+                        $prod->vICMSSubstituto = (float)$arr[0]->vICMSSubstituto;  
                     }
 
                 }
@@ -361,8 +365,28 @@ class DevolucaoController extends Controller
 
             $numeroNfe = Nfe::lastNumero($empresa);
 
+            $transporta = null;
+            // dd($xml->NFe->infNFe->transp->transporta);
+            if($xml->NFe->infNFe->transp->transporta){
+                $transporta['nome'] = (string)$xml->NFe->infNFe->transp->transporta->xNome;
+                $transporta['cnpj'] = (string)$xml->NFe->infNFe->transp->transporta->CNPJ;
+                $transporta['ie'] = (string)$xml->NFe->infNFe->transp->transporta->IE;
+                $endereco = (string)$xml->NFe->infNFe->transp->transporta->xEnder;
+                $endereco = explode(",", $endereco);
+
+                $transporta['rua'] = $endereco[0];
+                $transporta['numero'] = isset($endereco[1]) ? $endereco[1] : '';
+
+                $cidade = Cidade::where('nome', (string)$xml->NFe->infNFe->transp->transporta->xMun)
+                ->where('uf', (string)$xml->NFe->infNFe->transp->transporta->UF)
+                ->first();
+                $transporta['cidade'] = $cidade != null ? [$cidade->id => $cidade->info] : null;
+
+            }
+            // dd($transporta);
+
             return view('devolucao.import_xml', compact('dadosXml', 'transportadoras', 'cidades', 'naturezas', 'fornecedor', 
-                'numeroNfe', 'caixa'));
+                'numeroNfe', 'caixa', 'transporta'));
         } else {
             session()->flash('flash_error', 'XML inválido!');
             return redirect()->back();
@@ -442,7 +466,7 @@ class DevolucaoController extends Controller
                     } else {
                         $product = Produto::findOrFail($request->produto_id[$i]);
                     }
-
+                    // dd($request->all());
                     ItemNfe::create([
                         'nfe_id' => $nfe->id,
                         'produto_id' => $product->id,
@@ -477,7 +501,7 @@ class DevolucaoController extends Controller
                         'pFCPST' => $request->pFCPST[$i] ?? '',
                         'vFCPST' => $request->vFCPST[$i] ?? '',
                         'modBCST' => $request->modBCST[$i] ?? '',
-
+                        'vICMSSubstituto' => $request->vICMSSubstituto[$i] ?? '',
 
                     ]);
 
@@ -540,7 +564,7 @@ private function cadastrarTransportadora($request)
         $transportadora = Transportadora::create([
             'empresa_id' => $request->empresa_id,
             'razao_social' => $request->razao_social_transp,
-            'nome_fantasia' => $request->nome_fantasia_transp,
+            'nome_fantasia' => $request->nome_fantasia_transp ?? '',
             'cpf_cnpj' => $request->cpf_cnpj_transp,
             'ie' => $request->ie_transp,
             'antt' => $request->antt,
@@ -548,9 +572,9 @@ private function cadastrarTransportadora($request)
             'telefone' => $request->telefone,
             'cidade_id' => $request->cidade_id,
             'rua' => $request->rua_transp,
-            'cep' => $request->cep_transp,
-            'numero' => $request->numero_transp,
-            'bairro' => $request->bairro_transp,
+            'cep' => $request->cep_transp ?? '',
+            'numero' => $request->numero_transp ?? '',
+            'bairro' => $request->bairro_transp ?? '',
             'complemento' => $request->complemento_transp
         ]);
         return $transportadora->id;
@@ -573,9 +597,9 @@ private function atualizaTransportadora($request)
             'telefone' => $request->telefone,
             'cidade_id' => $request->cidade_id,
             'rua' => $request->rua_transp,
-            'cep' => $request->cep_transp,
+            'cep' => $request->cep_transp ?? '',
             'numero' => $request->numero_transp,
-            'bairro' => $request->bairro_transp,
+            'bairro' => $request->bairro_transp ?? '',
             'complemento' => $request->complemento_transp
         ]);
         return $transportadora->id;
@@ -657,7 +681,9 @@ public function edit($id)
     if($item->cliente){
         return redirect()->route('nfe.edit', [$id]);
     }
-    return view('devolucao.edit', compact('item', 'cidades', 'transportadoras', 'naturezas'));
+
+    $transporta = null;
+    return view('devolucao.edit', compact('item', 'cidades', 'transportadoras', 'naturezas', 'transporta'));
 }
 
 public function update(Request $request, $id)
@@ -712,6 +738,16 @@ public function update(Request $request, $id)
                     'vbc_cofins' => __convert_value_bd($request->vbc_cofins[$i]),
                     'vbc_ipi' => __convert_value_bd($request->vbc_ipi[$i]),
                     'cEnq' => $request->cEnq[$i],
+
+                    'pMVAST' => $request->pMVAST[$i] ?? '',
+                    'vBCST' => $request->vBCST[$i] ?? '',
+                    'pICMSST' => $request->pICMSST[$i] ?? '',
+                    'vICMSST' => $request->vICMSST[$i] ?? '',
+                    'vBCFCPST' => $request->vBCFCPST[$i] ?? '',
+                    'pFCPST' => $request->pFCPST[$i] ?? '',
+                    'vFCPST' => $request->vFCPST[$i] ?? '',
+                    'modBCST' => $request->modBCST[$i] ?? '',
+                    'vICMSSubstituto' => $request->vICMSSubstituto[$i] ?? '',
                 ]);
 
             }
@@ -733,16 +769,16 @@ public function update(Request $request, $id)
             }
             return $nfe;
         });
-        $descricaoLog = $nfe->fornecedor->info . " R$ " . __moeda($nfe->total);
-        __createLog($request->empresa_id, 'Devolução XML', 'editar', $descricaoLog);
-        session()->flash("flash_success", "Devolução atualizada!");
-    } catch (\Exception $e) {
+$descricaoLog = $nfe->fornecedor->info . " R$ " . __moeda($nfe->total);
+__createLog($request->empresa_id, 'Devolução XML', 'editar', $descricaoLog);
+session()->flash("flash_success", "Devolução atualizada!");
+} catch (\Exception $e) {
         // echo $e->getMessage() . '<br>' . $e->getLine();
         // die;
-        __createLog(request()->empresa_id, 'Devolução XML', 'erro', $e->getMessage());
-        session()->flash("flash_error", 'Algo deu errado ' . $e->getMessage());
-    }
-    return redirect()->route('devolucao.index');
+    __createLog(request()->empresa_id, 'Devolução XML', 'erro', $e->getMessage());
+    session()->flash("flash_error", 'Algo deu errado ' . $e->getMessage());
+}
+return redirect()->route('devolucao.index');
 }
 
 }

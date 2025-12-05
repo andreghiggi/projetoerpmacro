@@ -141,7 +141,7 @@
 				</tr>
 				<tr class="ttu">
 					<td colspan="2">Sub-total</td>
-					<td align="right">R${{ __moeda($item->total + $item->desconto - $item->acrescimo) }}</td>
+					<td align="right">R${{ __moeda($item->total) }}</td>
 				</tr>
 				<tr class="ttu">
 					<td colspan="2">Acréscimo</td>
@@ -153,7 +153,8 @@
 				</tr>
 				<tr class="ttu">
 					<td colspan="2">Total</td>
-					<td align="right">R${{ __moeda($item->total) }}</td>
+					<td align="right">R${{ __moeda($item->total + $item->acrescimo - $item->desconto) }}</td>
+
 				</tr>
 				<tr class="sup ttu p--0">
 					<td colspan="3">

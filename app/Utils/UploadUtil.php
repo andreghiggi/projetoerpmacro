@@ -11,29 +11,15 @@ class UploadUtil
         if (!is_dir(public_path('uploads') . $dir)) {
             mkdir(public_path('uploads') . $dir, 0777, true);
         }
-        
-        $files = $request->file($attr);
+        $file = $request->file($attr);
+        $ext = $file->getClientOriginalExtension();
 
-        if( is_array($files) ) {
-            $uploaded_files = [];
-            foreach($files as $file) {
-                $ext = $file->getClientOriginalExtension();
-
-                if ($file_name == '') {
-                    $file_name = Str::random(20) . ".$ext";
-                }
-                $file->move(public_path('uploads') . $dir, $file_name);
-                $uploaded_files[] = $file_name;
-            }
-            return $uploaded_files;
-        } else {
-            $ext = $files->getClientOriginalExtension();
-            if ($file_name == '') {
-                $file_name = Str::random(20) . ".$ext";
-            }
-            $files->move(public_path('uploads') . $dir, $file_name);
-            return $file_name;
+        if ($file_name == '') {
+            $file_name = Str::random(20) . ".$ext";
         }
+
+        $file->move(public_path('uploads') . $dir, $file_name);
+        return $file_name;
     }
 
     public function uploadFile($file, $dir)
@@ -42,22 +28,12 @@ class UploadUtil
             mkdir(public_path('uploads') . $dir, 0777, true);
         }
 
-        if( is_array($file) ) {
-            $uploaded_files = [];
-            foreach($file as $f) {
-                $ext       = $f->getClientOriginalExtension();
-                $file_name = Str::random(20) . ".$ext";
-                $f->move(public_path('uploads') . $dir, $file_name);
-                $uploaded_files[] = $file_name;
-            }
-            return $uploaded_files;
-        } else {
+        $ext = $file->getClientOriginalExtension();
 
-            $ext = $file->getClientOriginalExtension();
-            $file_name = Str::random(20) . ".$ext";
-            $file->move(public_path('uploads') . $dir, $file_name);
-            return $file_name;
-        }
+        $file_name = Str::random(20) . ".$ext";
+
+        $file->move(public_path('uploads') . $dir, $file_name);
+        return $file_name;
     }
 
     public function unlinkImage($item, $dir, $attr = 'image')

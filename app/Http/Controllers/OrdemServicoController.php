@@ -8,6 +8,7 @@ use App\Models\Empresa;
 use App\Models\FuncionarioOs;
 use App\Models\OrdemServico;
 use App\Models\OticaOs;
+use App\Models\FaturaOrdemServico;
 use App\Models\MedicaoReceitaOs;
 use App\Models\Produto;
 use App\Models\ProdutoOs;
@@ -19,9 +20,11 @@ use App\Models\Servico;
 use App\Models\Funcionario;
 use App\Models\MetaResultado;
 use App\Models\NaturezaOperacao;
+use App\Models\ContaReceber;
 use App\Models\Nfe;
 use App\Models\TratamentoOtica;
 use App\Models\Convenio;
+use App\Models\Veiculo;
 use App\Models\TipoArmacao;
 use App\Models\Transportadora;
 use Illuminate\Http\Request;
@@ -30,6 +33,7 @@ use Psy\CodeCleaner\ReturnTypePass;
 use Dompdf\Dompdf;
 use App\Utils\UploadUtil;
 use Illuminate\Support\Str;
+use App\Models\Garantia;
 
 class OrdemServicoController extends Controller
 {
@@ -48,10 +52,13 @@ class OrdemServicoController extends Controller
     {
         $cliente_id = $request->get('cliente_id');
         $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
         $codigo = $request->get('codigo');
         $convenio_id = $request->get('convenio_id');
         $situacao_entrega = $request->get('situacao_entrega');
         $adiantamento = $request->get('adiantamento');
+        $veiculo_id = $request->get('veiculo_id');
+        $estado = $request->get('estado');
 
         $data = OrdemServico::where('empresa_id', request()->empresa_id)
         ->select('ordem_servicos.*')
@@ -59,10 +66,19 @@ class OrdemServicoController extends Controller
             return $query->where('cliente_id', $cliente_id);
         })
         ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('ordem_servicos.created_at', $start_date);
+            return $query->whereDate('ordem_servicos.data_inicio', '>=', $start_date);
+        })
+        ->when(!empty($end_date), function ($query) use ($end_date) {
+            return $query->whereDate('ordem_servicos.data_inicio', '<=', $end_date);
         })
         ->when(!empty($codigo), function ($query) use ($codigo) {
             return $query->where('ordem_servicos.codigo_sequencial', $codigo);
+        })
+        ->when(!empty($estado), function ($query) use ($estado) {
+            return $query->where('ordem_servicos.estado', $estado);
+        })
+        ->when(!empty($veiculo_id), function ($query) use ($veiculo_id) {
+            return $query->where('ordem_servicos.veiculo_id', $veiculo_id);
         })
         ->when(!empty($convenio_id), function ($query) use ($convenio_id) {
             return $query->join('otica_os', 'otica_os.ordem_servico_id', '=', 'ordem_servicos.id')
@@ -83,12 +99,17 @@ class OrdemServicoController extends Controller
             }
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $convenios = Convenio::where('empresa_id', request()->empresa_id)
         ->where('status', 1)->get();
 
-        return view('ordem_servico.index', compact('data', 'convenios'));
+        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
+        return view('ordem_servico.index', compact('data', 'convenios', 'veiculos', 'configGeral'));
     }
 
     public function create()
@@ -128,8 +149,14 @@ class OrdemServicoController extends Controller
         ->where('status', 1)->get();
         $tratamentos = TratamentoOtica::where('empresa_id', request()->empresa_id)
         ->where('status', 1)->get();
+
+        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
         return view('ordem_servico.create', compact('hoje', 'funcionario', 'usuario', 'servicos', 'convenios', 
-            'formatosArmacao', 'tiposArmacao', 'tratamentos'));
+            'formatosArmacao', 'tiposArmacao', 'tratamentos', 'veiculos', 'configGeral'));
     }
 
     public function edit($id)
@@ -156,13 +183,50 @@ class OrdemServicoController extends Controller
             $item->oticaOs->tratamentos = json_decode($item->oticaOs->tratamentos ? $item->oticaOs->tratamentos : '[]');
         }
 
+        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
         return view('ordem_servico.edit', compact('funcionario', 'usuario', 'servicos', 'item', 'convenios', 
-            'formatosArmacao', 'tiposArmacao', 'tratamentos'));
+            'formatosArmacao', 'tiposArmacao', 'tratamentos', 'veiculos', 'configGeral'));
+    }
+
+    public function duplicar($id)
+    {
+        $funcionario = Funcionario::where('empresa_id', request()->empresa_id)->first();
+        $clientes = Cliente::where('empresa_id', request()->empresa_id)->first();
+        $usuario = Auth::user();
+
+        $servicos = Servico::where('empresa_id', request()->empresa_id)->first();
+
+        $item = OrdemServico::findOrFail($id);
+        __validaObjetoEmpresa($item);
+        
+        $convenios = Convenio::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+        $formatosArmacao = FormatoArmacaoOtica::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+        $tiposArmacao = TipoArmacao::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+        $tratamentos = TratamentoOtica::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        if($item->oticaOs){
+            $item->oticaOs->tratamentos = json_decode($item->oticaOs->tratamentos ? $item->oticaOs->tratamentos : '[]');
+        }
+
+        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
+        return view('ordem_servico.duplicar', compact('funcionario', 'usuario', 'servicos', 'item', 'convenios', 
+            'formatosArmacao', 'tiposArmacao', 'tratamentos', 'veiculos', 'configGeral'));
     }
 
     public function store(Request $request)
     {
-
         $this->_validate($request);
         try {
 
@@ -180,7 +244,14 @@ class OrdemServicoController extends Controller
                 'codigo_sequencial' => $codigo_sequencial,
                 'data_inicio' => $request->data_inicio,
                 'data_entrega' => $request->data_entrega,
-                'funcionario_id' => $request->funcionario_id
+                'funcionario_id' => $request->funcionario_id,
+                'veiculo_id' => $request->veiculo_id ?? null,
+                'hash_link' => Str::random(30),
+                'tipo_servico' => $request->tipo_servico ?? null,
+                'diagnostico_cliente' => $request->diagnostico_cliente ?? '',
+                'equipamento' => $request->equipamento ?? null,
+                'numero_serie' => $request->numero_serie ?? null,
+                'cor' => $request->cor ?? null,
             ]);
 
             // verifica ótica
@@ -331,10 +402,20 @@ class OrdemServicoController extends Controller
             return redirect()->route('caixa.create');
         }
         $ordem = OrdemServico::findOrFail($id);
+
+        if($ordem->hash_link == null){
+            $ordem->hash_link = Str::random(30);
+            $ordem->save();
+        }
         $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
         $servicos = Servico::where('empresa_id', request()->empresa_id)->get();
-        // $relatorio = RelatorioOs::all();
-        return view('ordem_servico.show', compact('funcionarios', 'ordem', 'servicos'));
+
+        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
+        return view('ordem_servico.show', compact('funcionarios', 'ordem', 'servicos', 'veiculos', 'configGeral'));
     }
 
     public function storeServico(Request $request)
@@ -496,6 +577,8 @@ class OrdemServicoController extends Controller
         $ordem = OrdemServico::findOrFail($id);
         try {
             $ordem->estado = $request->novo_estado;
+            $ordem->faturada = $request->faturar;
+
             if($ordem->estado == 'fz' && $request->faturar){
                 $caixa = __isCaixaAberto();
                 if($caixa == null){
@@ -503,6 +586,61 @@ class OrdemServicoController extends Controller
                     return redirect()->back();
                 }
                 $ordem->caixa_id = $caixa->id;
+
+
+                if($request->tipo_pagamento && $request->tipo_pagamento[0]){
+                    for($i=0; $i<sizeof($request->tipo_pagamento); $i++){
+                        FaturaOrdemServico::create([
+                            'ordem_servico_id' => $ordem->id, 
+                            'tipo_pagamento' => $request->tipo_pagamento[$i], 
+                            'data_vencimento' => $request->data_vencimento[$i], 
+                            'valor' => __convert_value_bd($request->valor_fatura[$i])
+                        ]);
+
+                        if(strtotime($request->data_vencimento[$i]) >= strtotime(date('Y-m-d'))){
+                            ContaReceber::create([
+                                'empresa_id' => $ordem->empresa_id,
+                                'ordem_servico_id' => $ordem->id,
+                                'cliente_id' => $ordem->cliente->id,
+                                'valor_integral' => __convert_value_bd($request->valor_fatura[$i]),
+                                'tipo_pagamento' => $request->tipo_pagamento[$i],
+                                'data_vencimento' => $request->data_vencimento[$i],
+                                'local_id' => $caixa->local_id,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            if($ordem->estado == 'fz'){
+                // apontar as garantias
+                foreach($ordem->itens as $produto){
+                    if($produto->produto->prazo_garantia > 0){
+                        Garantia::create([
+                            'empresa_id' => $ordem->empresa_id,
+                            'cliente_id' => $ordem->cliente_id,
+                            'produto_id' => $produto->produto_id,
+                            'ordem_servico_id' => $ordem->id,
+                            'usuario_id' => \Auth::user()->id,
+                            'prazo_garantia' => $produto->produto->prazo_garantia,
+                            'data_venda' => date('Y-m-d')
+                        ]);
+                    }
+                }
+
+                foreach($ordem->servicos as $servico){
+                    if($servico->servico->prazo_garantia > 0){
+                        Garantia::create([
+                            'empresa_id' => $ordem->empresa_id,
+                            'cliente_id' => $ordem->cliente_id,
+                            'servico_id' => $servico->servico_id,
+                            'ordem_servico_id' => $ordem->id,
+                            'usuario_id' => \Auth::user()->id,
+                            'prazo_garantia' => $servico->servico->prazo_garantia,
+                            'data_venda' => date('Y-m-d')
+                        ]);
+                    }
+                }
             }
 
             $ordem->save();
@@ -524,7 +662,7 @@ class OrdemServicoController extends Controller
             return redirect()->route('config.index');
         }
 
-    $configGeral = ConfigGeral::where('empresa_id', $ordem->empresa_id)->first();
+        $configGeral = ConfigGeral::where('empresa_id', $ordem->empresa_id)->first();
 
         $p = view('ordem_servico.imprimir', compact('config', 'ordem', 'configGeral'));
 
@@ -579,14 +717,15 @@ class OrdemServicoController extends Controller
             $descricaoLog = "#$item->codigo_sequencial - Cliente " . $item->cliente->info;
             $item->servicos()->delete();
             $item->relatorios()->delete();
+            $item->fatura()->delete();
             $item->itens()->delete();
 
             $item->delete();
             __createLog(request()->empresa_id, 'Ordem de Serviço', 'excluir', $descricaoLog);
-            session()->flash("flash_success", "Ordem de Serviçoremovida");
+            session()->flash("flash_success", "Ordem de Serviço removida");
         } catch (\Exception $e) {
             __createLog(request()->empresa_id, 'Ordem de Serviço', 'erro', $e->getMessage());
-            session()->flash("flash_error", "Algo deu errado" . $e->getMessage());
+            session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
         return redirect()->back();
     }   
@@ -607,7 +746,13 @@ class OrdemServicoController extends Controller
         $numeroNfe = Nfe::lastNumero($empresa);
 
         $isOrdemServico = 1;
-        return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isOrdemServico', 'numeroNfe'));
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
+
+        $naturezaPadrao = NaturezaOperacao::where('empresa_id', request()->empresa_id)
+        ->where('padrao', 1)->first();
+
+        return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isOrdemServico', 'numeroNfe', 'funcionarios',
+            'naturezaPadrao'));
     }
 
     public function destroySelecet(Request $request)
@@ -661,11 +806,40 @@ class OrdemServicoController extends Controller
 
             $item->adiantamento = __convert_value_bd($request->adiantamento);
             $item->data_entrega = $request->data_entrega;
+            $item->veiculo_id = $request->veiculo_id ?? null;
             $item->save();
 
             session()->flash("flash_success", "Ordem de Serviço alterada com sucesso");
         } catch (\Exception $e) {
-            session()->flash("flash_error", "Algo deu Errado" . $e->getMessage());
+            session()->flash("flash_error", "Algo deu Errado: " . $e->getMessage());
+        }
+        return redirect()->back();
+    }
+
+    public function updateDescricao(Request $request, $id){
+        $item = OrdemServico::findOrFail($id);
+        try{
+
+            $item->descricao = $request->descricao ?? '';
+            $item->save();
+
+            session()->flash("flash_success", "Ordem de Serviço alterada com sucesso");
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Algo deu Errado: " . $e->getMessage());
+        }
+        return redirect()->back();
+    }
+
+    public function updateDiagnostico(Request $request, $id){
+        $item = OrdemServico::findOrFail($id);
+        try{
+
+            $item->diagnostico_tecnico = $request->diagnostico_tecnico ?? '';
+            $item->save();
+
+            session()->flash("flash_success", "Ordem de Serviço alterada com sucesso");
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Algo deu Errado: " . $e->getMessage());
         }
         return redirect()->back();
     }

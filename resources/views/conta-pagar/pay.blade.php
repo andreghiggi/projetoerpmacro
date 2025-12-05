@@ -24,7 +24,9 @@
 					<div class="col-md-6">
 						<h5>Data de cadastro: <strong class="">{{ __data_pt($item->created_at) }}</strong></h5>
 						<h5>Valor: <strong class="">R$ {{ __moeda($item->valor_integral) }}</strong></h5>
-
+						@if($item->categoria)
+						<h5>Categoria: <strong class="">{{ $item->categoria->nome }}</strong></h5>
+						@endif
 					</div>
 					<div class="col-md-6">
 						<h5>Data de vencimento: <strong class="">{{ __data_pt($item->data_vencimento, false) }}</strong></h5>

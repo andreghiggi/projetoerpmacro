@@ -17,7 +17,7 @@ class Localizacao extends Model
         'numero_ultima_cte_producao', 'numero_ultima_cte_homologacao', 'numero_serie_cte',
         'numero_ultima_mdfe_producao', 'numero_ultima_mdfe_homologacao', 'numero_serie_mdfe', 'logo',
         'token_nfse', 'numero_ultima_nfse', 'numero_serie_nfse', 'aut_xml', 'empresa_id', 'perc_ap_cred',
-        'token_whatsapp'
+        'token_whatsapp', 'substituto_tributario'
     ];
 
     public function getImgAttribute()

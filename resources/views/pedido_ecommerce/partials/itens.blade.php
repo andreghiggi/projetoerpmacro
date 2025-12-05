@@ -5,39 +5,39 @@
             
         </select>
     </td>
-    <td width="80">
-        <input value="{{ __moeda($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
+    <td>
+        <input style="width: 150px" value="{{ __moeda($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
     </td>
     <td width="100">
-        <input value="{{ __moeda($prod->valor_unitario) }}" class="form-control moeda valor_unit" type="tel" name="valor_unitario[]" id="inp-valor_unitario">
+        <input style="width: 150px" value="{{ __moeda($prod->valor_unitario) }}" class="form-control moeda valor_unit" type="tel" name="valor_unitario[]" id="inp-valor_unitario">
     </td>
     <td width="150">
-        <input value="{{ __moeda($prod->sub_total) }}" class="form-control moeda sub_total" type="tel" name="sub_total[]" id="inp-subtotal">
+        <input style="width: 150px" value="{{ __moeda($prod->sub_total) }}" class="form-control moeda sub_total" type="tel" name="sub_total[]" id="inp-subtotal">
     </td>
     <td width="80">
-        <input value="{{ $prod->produto->perc_icms }}" class="form-control percentual" type="tel" name="perc_icms[]" id="inp-perc_icms">
+        <input style="width: 120px" value="{{ $prod->produto->perc_icms }}" class="form-control percentual" type="tel" name="perc_icms[]" id="inp-perc_icms">
     </td>
     <td width="80">
-        <input value="{{ $prod->produto->perc_pis }}" class="form-control percentual" type="tel" name="perc_pis[]" id="inp-perc_pis">
+        <input style="width: 120px" value="{{ $prod->produto->perc_pis }}" class="form-control percentual" type="tel" name="perc_pis[]" id="inp-perc_pis">
     </td>
     <td width="80">
-        <input value="{{ $prod->produto->perc_cofins }}" class="form-control percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
+        <input style="width: 120px" value="{{ $prod->produto->perc_cofins }}" class="form-control percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
     </td>
     <td width="80">
-        <input value="{{ $prod->produto->perc_ipi }}" class="form-control percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
+        <input style="width: 120px" value="{{ $prod->produto->perc_ipi }}" class="form-control percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
     </td>
     <td width="80">
-        <input value="{{ $prod->produto->perc_red_bc }}" class="form-control percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
+        <input style="width: 120px" value="{{ $prod->produto->perc_red_bc }}" class="form-control percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
     </td>
     <td width="80">
-        <input value="{{ $prod->produto->cfop_estadual }}" class="form-control cfop" type="tel" name="cfop[]" id="inp-cfop_estadual">
+        <input style="width: 120px" value="{{ $prod->produto->cfop_estadual }}" class="form-control cfop" type="tel" name="cfop[]" id="inp-cfop_estadual">
     </td>
 
     <td width="120">
-        <input value="{{ $prod->produto->ncm }}" class="form-control ncm" type="tel" name="ncm[]" id="inp-ncm2">
+        <input style="width: 150px" value="{{ $prod->produto->ncm }}" class="form-control ncm" type="tel" name="ncm[]" id="inp-ncm2">
     </td>
     <td width="120">
-        <input value="{{ $prod->produto->codigo_beneficio_fiscal }}" class="form-control ignore codigo_beneficio_fiscal" type="text" name="codigo_beneficio_fiscal[]">
+        <input style="width: 120px" value="{{ $prod->produto->codigo_beneficio_fiscal }}" class="form-control ignore codigo_beneficio_fiscal" type="text" name="codigo_beneficio_fiscal[]">
     </td>
 
     <td>

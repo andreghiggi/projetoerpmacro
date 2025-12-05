@@ -14,7 +14,7 @@ class CidadeController extends Controller
                 return $quer->where('nome', 'LIKE', "%$request->nome%");
             });
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('cidades.index', compact('data'));
     }

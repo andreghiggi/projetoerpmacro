@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Pedido Delivery #' . $item->id])
+@extends('layouts.app', ['title' => 'Pedido Delivery #' . $item->numero_sequencial])
 @section('css')
 <style type="text/css">
 	.card-hover:hover{
@@ -150,7 +150,7 @@
 						</div>
 					</div>
 					<br>
-					<h3>ITENS <strong class="text-success">#{{ $item->id }}</strong></h3>
+					<h3>ITENS <strong class="text-success">#{{ $item->numero_sequencial }}</strong></h3>
 
 					<a target="_blank" class="float-end btn btn-dark mb-1" href="{{ route('pedidos-delivery.print', [$item->id])}}">
 						<i class="ri-printer-line"></i>
@@ -191,7 +191,7 @@
 									</td>
 									<td>
 										@if($item->estado == 'novo' || $item->estado == 'aprovado')
-										<form action="{{ route('pedidos-delivery.destroy-item', $i->id) }}" method="post" id="form-{{$item->id}}">
+										<form action="{{ route('pedidos-delivery.destroy-item', $i->id) }}" method="post" id="form-item-{{$item->id}}">
 											@csrf
 											@method('delete')
 											<button type="submit" title="Deletar" class="btn btn-danger btn-delete btn-sm"><i class="ri-delete-bin-2-line"></i></button>
@@ -283,6 +283,7 @@
 					</h5>
 					<h5>Valor de entrega: <strong class="text-danger">R$ {{ __moeda($item->valor_entrega) }}</strong></h5>
 					<h5>Tipo de pagamento: <strong class="text-danger">{{ $item->tipo_pagamento }}</strong></h5>
+					<span>Estado do pagamento: {!! $item->_estadoPagamento() !!}</span>
 					@if($item->observacao)
 					<h5>Observação: <strong class="text-danger">{{ $item->observacao }}</strong></h5>
 					@endif
@@ -295,7 +296,9 @@
 					@endif
 
 					@if($item->troco_para)
-					<h5 class="mt-25 float-end">Troco para: <strong>R$ {{ __moeda($item->troco_para) }}</strong></h5>
+					<div class="row">
+						<h5 class="mt-25 float-end">Troco para: <strong>R$ {{ __moeda($item->troco_para) }}</strong></h5>
+					</div>
 					@endif
 
 					@if($item->motoboy)
@@ -310,6 +313,16 @@
 							<i class="ri-shopping-cart-2-line"></i>
 							Finalizar <strong style="font-size: 25px; margin-left: 15px">R$ {{ __moeda($item->valor_total) }}</strong>
 						</button>
+
+						<div style="float: right;">
+							<form action="{{ route('pedidos-delivery.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+								@method('delete')
+								@csrf
+								<button type="button" class="btn btn-delete btn-sm btn-danger">
+									<i class="ri-delete-bin-line"></i> Remover Pedido
+								</button>
+							</form>
+						</div>
 					</div>
 					@endif
 

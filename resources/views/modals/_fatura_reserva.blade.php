@@ -20,6 +20,14 @@
                                 <label>Acréscimo</label>
                                 <input type="tel" class="form-control moeda" name="valor_outros" value="{{ __moeda($item->valor_outros) }}">
                             </div>
+
+                            <div class="col-md-3">
+                                <label>Gerar conta a receber</label>
+                                <select class="form-control form-select" name="gerar_conta_receber">
+                                    <option value="1">Sim</option>
+                                    <option value="0">Não</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-dynamic table-fatura">

@@ -14,15 +14,15 @@ class SpeedService{
 	public function getXml($venda, $path, $attr = null){
 
 		if(file_exists(public_path($path).$venda->chave.'.xml')){
-			$xml = simplexml_load_file(public_path($path).$venda->chave.'.xml');
 			try{
+				$xml = simplexml_load_file(public_path($path).$venda->chave.'.xml');
 				return $xml;
 			}catch(\Exception $e){
 				return null;
 			}
 		}elseif(file_exists(public_path($path).$venda[$attr].'.xml')){
-			$xml = simplexml_load_file(public_path($path).$venda[$attr].'.xml');
 			try{
+				$xml = simplexml_load_file(public_path($path).$venda[$attr].'.xml');
 				return $xml;
 			}catch(\Exception $e){
 				return null;

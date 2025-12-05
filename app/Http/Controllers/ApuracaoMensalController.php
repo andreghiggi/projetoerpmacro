@@ -8,7 +8,7 @@ use App\Models\ContaPagar;
 use App\Models\EventoSalario;
 use App\Models\Funcionario;
 use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 
 class ApuracaoMensalController extends Controller
 {
@@ -39,7 +39,7 @@ class ApuracaoMensalController extends Controller
             return $query->whereDate('apuracao_mensals.created_at', '<=', $end_date);
         })
         ->orderBy('id', 'desc')
-        ->paginate(getenv("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $funcionario = null;
         if($funcionario_id){
@@ -74,6 +74,7 @@ class ApuracaoMensalController extends Controller
     public function store(Request $request)
     {
         try {
+            // dd($request->all());
             $ap = DB::transaction(function () use ($request) {
                 $ap = [
                     'funcionario_id' => $request->funcionario_id,
@@ -90,7 +91,7 @@ class ApuracaoMensalController extends Controller
                         ApuracaoMensalEvento::create([
                             'apuracao_id' => $result->id,
                             'evento_id' => $ev->id,
-                            'valor' => __convert_value_bd($request->evento[$i]),
+                            'valor' => __convert_value_bd($request->valor[$i]),
                             'metodo' => $request->metodo[$i],
                             'condicao' => $request->condicao[$i],
                             'nome' => $ev->nome

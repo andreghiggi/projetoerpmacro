@@ -112,6 +112,13 @@
                             ->required()
                             !!}
                         </div>
+
+                        <div class="col-md-2 mb-2">
+                            {!!Form::select('tipo_cte', 'Tipo de CTe', App\Models\Cte::tiposDeCte())
+                            ->attrs(['class' => 'form-select'])
+                            ->required()
+                            !!}
+                        </div>
                         <hr>
                         <div class="col-md-6">
                             {!! Form::select('remetente_id','Remetente', ['' => 'Selecione'] + $clientes->pluck('razao_social', 'id')->all(),

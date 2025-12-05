@@ -601,7 +601,9 @@ class NFCeController extends Controller
 
             for ($i = 0; $i < sizeof($request->fatura); $i++) {
                 $objeto = (object)$request->fatura[$i];
-                if ($request->conta_receber == 1) {
+
+                $dataAtual = date('Y-m-d');
+                if ($request->conta_receber == 1 && strtotime($dataAtual) >= strtotime($objeto->vencimento)) {
                     ContaReceber::create([
                         'empresa_id' => $request->empresa_id,
                         'nfce_id' => $nfce->id,
@@ -672,9 +674,10 @@ public function gerarVenda(Request $request)
             'cliente_nome' => $item->cliente->razao_social ?? '',
             'cliente_cpf_cnpj' => $item->cliente->cpf_cnpj ?? '',
             'estado' => 'novo',
-            'total' => $total,
-            'desconto' => 0,
-            'acrescimo' => 0,
+            // 'total' => $total,
+            'total' => $item->valor_total,
+            'desconto' => $item->desconto,
+            'acrescimo' => $item->acrescimo,
             'valor_produtos' => __convert_value_bd($item->valor_total) ?? 0,
             'valor_frete' => $item->valor_frete ? __convert_value_bd($item->valor_frete) : 0,
             'caixa_id' => $caixa ? $caixa->id : null,
@@ -729,11 +732,12 @@ public function gerarVenda(Request $request)
             FaturaNfce::create([
                 'nfce_id' => $nfce->id,
                 'tipo_pagamento' => $objeto->tipo,
-                'data_vencimento' => $objeto->vencimento,
+                'data_vencimento' => $objeto->vencimento ?? date('Y-m-d'),
                 'valor' => __convert_value_bd($objeto->valor)
             ]);
 
-            if ($request->conta_receber == 1) {
+            $dataAtual = date('Y-m-d');
+            if ($request->conta_receber == 1 && strtotime($dataAtual) >= strtotime($objeto->vencimento)) {
                 ContaReceber::create([
                     'empresa_id' => $item->empresa_id,
                     'nfce_id' => $nfce->id,

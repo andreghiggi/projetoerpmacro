@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Relação Dados Fornecedor'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -18,20 +18,21 @@
                     ->get()
                     !!}
                     <div class="row mt-3">
+                        <h5>Pesquisar</h5>
                         <div class="col-md-2">
-                            {!!Form::text('cst_csosn_entrada', 'Pesquisar por CST/CSOSN entrada')
+                            {!!Form::text('cst_csosn_entrada', 'CST/CSOSN entrada')
                             !!}
                         </div>
                         <div class="col-md-2">
-                            {!!Form::text('cst_csosn_saida', 'Pesquisar por CST/CSOSN saída')
+                            {!!Form::text('cst_csosn_saida', 'CST/CSOSN saída')
                             !!}
                         </div>
                         <div class="col-md-2">
-                            {!!Form::text('cfop_entrada', 'Pesquisar por CFOP entrada')
+                            {!!Form::text('cfop_entrada', 'CFOP entrada')
                             !!}
                         </div>
                         <div class="col-md-2">
-                            {!!Form::text('cfop_saida', 'Pesquisar por CFOP saída')
+                            {!!Form::text('cfop_saida', 'CFOP saída')
                             !!}
                         </div>
                         <div class="col-md-3 text-left ">
@@ -47,7 +48,6 @@
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    
                                     <th>CST/CSOSN Entrada</th>
                                     <th>CST/CSOSN Saída</th>
                                     <th>CFOP Entrada</th>
@@ -58,12 +58,10 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                   
-                                    <td>{{ $item->cst_csosn_entrada }}</td>
-                                    <td>{{ $item->cst_csosn_saida }}</td>
-                                    <td>{{ $item->cfop_entrada }}</td>
-                                    <td>{{ $item->cfop_saida }}</td>
-                                   
+                                    <td data-label="CST/CSOSN Entrada">{{ $item->cst_csosn_entrada }}</td>
+                                    <td data-label="CST/CSOSN Saída">{{ $item->cst_csosn_saida }}</td>
+                                    <td data-label="CFOP Entrada">{{ $item->cfop_entrada }}</td>
+                                    <td data-label="CFOP Saída">{{ $item->cfop_saida }}</td>
                                     <td>
                                         <form action="{{ route('relacao-dados-fornecedor.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
@@ -83,11 +81,12 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">Nada encontrado</td>
+                                    <td colspan="5" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
                         
                     </div>

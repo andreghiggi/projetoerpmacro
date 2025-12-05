@@ -1,0 +1,37 @@
+.product {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.add-to-car {
+  position: absolute
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
+}
+
+.add-to-car .btn {
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  padding: 10px 0;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  width: 100%;
+}
+
+.add-to-car .btn i {
+  margin-right: 5px;
+}
+
+.add-to-car .btn-success {
+  background: var(--color-main, #c62828);
+  border: none;
+}

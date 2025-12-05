@@ -32,8 +32,8 @@ class ProdutoController extends Controller
             'origem', 'perc_red_bc', 'cfop_estadual', 'cfop_outro_estado', 'cEnq', 'pST',
             'categoria_id', 'gerenciar_estoque', 'valor_compra', 'status', 'marca_id', 'cfop_entrada_estadual', 
             'cfop_entrada_outro_estado', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'balanca_pdv', 'exportar_balanca', 
-            'referencia_balanca')
-        ->with(['marca', 'categoria'])
+            'referencia_balanca', 'numero_sequencial', 'valor_atacado', 'quantidade_atacado')
+        ->with(['marca', 'categoria', 'estoque'])
         ->get();
         __createApiLog($request->empresa_id, $request->token, 'sucesso', '', 'read', $this->prefix);
         return response()->json($data, 200);
@@ -52,8 +52,8 @@ class ProdutoController extends Controller
             'origem', 'perc_red_bc', 'cfop_estadual', 'cfop_outro_estado', 'cEnq', 'pST',
             'categoria_id', 'gerenciar_estoque', 'valor_compra', 'status', 'marca_id', 'cfop_entrada_estadual', 
             'cfop_entrada_outro_estado', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'balanca_pdv', 'exportar_balanca',
-            'referencia_balanca')
-        ->with(['marca', 'categoria'])
+            'referencia_balanca', 'numero_sequencial', 'valor_atacado', 'quantidade_atacado')
+        ->with(['marca', 'categoria', 'estoque'])
         ->findOrFail($id);
         __createApiLog($request->empresa_id, $request->token, 'sucesso', '', 'read', $this->prefix);
 
@@ -160,6 +160,7 @@ class ProdutoController extends Controller
                 'perc_ipi' => __convert_value_bd($request->perc_ipi),
                 'valor_unitario' => __convert_value_bd($request->valor_unitario),
                 'perc_red_bc' => __convert_value_bd($request->perc_red_bc),
+                'valor_atacado' => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : null,
                 'valor_compra' => $request->valor_compra ? __convert_value_bd($request->valor_compra) : 0,
                 'unidade' => isset($request->unidade) ? $request->unidade : 'UN',
                 'cEnq' => isset($request->cEnq) ? $request->cEnq : '999',
@@ -187,7 +188,7 @@ class ProdutoController extends Controller
                 $qtd = __convert_value_bd($request->estoque);
                 $this->utilEstoque->incrementaEstoque($item->id, $qtd, null, $localizacao->id);
 
-                $transacao = Estoque::where('produto_id', $item->id)->first();
+                $transacao = Estoque::where('produto_id', $item->id)->orderBy('id', 'desc')->first();
                 $tipo = 'incremento';
                 $codigo_transacao = $transacao->id;
                 $tipo_transacao = 'alteracao_estoque';
@@ -200,7 +201,7 @@ class ProdutoController extends Controller
                 'origem', 'perc_red_bc', 'cfop_estadual', 'cfop_outro_estado', 'cEnq', 'pST',
                 'categoria_id', 'gerenciar_estoque', 'valor_compra', 'status', 'marca_id', 'cfop_entrada_estadual', 
                 'cfop_entrada_outro_estado', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'balanca_pdv', 'exportar_balanca',
-                'referencia_balanca')
+                'referencia_balanca', 'numero_sequencial', 'valor_atacado', 'quantidade_atacado')
             ->with(['marca', 'categoria'])
             ->findOrFail($item->id);
             __createApiLog($request->empresa_id, $request->token, 'sucesso', '', 'create', $this->prefix);
@@ -276,6 +277,7 @@ class ProdutoController extends Controller
                 'valor_unitario' => __convert_value_bd($request->valor_unitario),
                 'perc_red_bc' => __convert_value_bd($request->perc_red_bc),
                 'valor_compra' => __convert_value_bd($request->valor_compra),
+                'valor_atacado' => $request->valor_atacado ? __convert_value_bd($request->valor_atacado) : null,
             ]);
 
             $item = Produto::where('empresa_id', $empresa_id)
@@ -296,7 +298,7 @@ class ProdutoController extends Controller
 
                     $this->utilEstoque->incrementaEstoque($item->id, $qtd, null, $localizacao->id);
 
-                    $transacao = Estoque::where('produto_id', $item->id)->first();
+                    $transacao = Estoque::where('produto_id', $item->id)->orderBy('id', 'desc')->first();
                     $tipo = 'incremento';
                     $codigo_transacao = $transacao->id;
                     $tipo_transacao = 'alteracao_estoque';
@@ -330,7 +332,7 @@ class ProdutoController extends Controller
                 'origem', 'perc_red_bc', 'cfop_estadual', 'cfop_outro_estado', 'cEnq', 'pST',
                 'categoria_id', 'gerenciar_estoque', 'valor_compra', 'status', 'marca_id', 'cfop_entrada_estadual', 
                 'cfop_entrada_outro_estado', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'balanca_pdv', 'exportar_balanca',
-                'referencia_balanca')
+                'referencia_balanca', 'numero_sequencial', 'valor_atacado', 'quantidade_atacado')
             ->with(['marca', 'categoria'])
             ->findOrFail($item->id);
 
@@ -355,7 +357,7 @@ class ProdutoController extends Controller
                 'origem', 'perc_red_bc', 'cfop_estadual', 'cfop_outro_estado', 'cEnq', 'pST',
                 'categoria_id', 'gerenciar_estoque', 'valor_compra', 'status', 'marca_id', 'cfop_entrada_estadual', 
                 'cfop_entrada_outro_estado', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'balanca_pdv', 'exportar_balanca',
-                'referencia_balanca')
+                'referencia_balanca', 'numero_sequencial', 'valor_atacado', 'quantidade_atacado')
             ->with(['marca', 'categoria'])
             ->find($request->id);
 
@@ -363,7 +365,7 @@ class ProdutoController extends Controller
                 return response()->json("Produto não encontrado!", 403);
             }
 
-            if($item->empresa_id !=  $empresa_id){
+            if($item->empresa_id != $empresa_id){
                 return response()->json("Não permitido!", 403);
             }
 

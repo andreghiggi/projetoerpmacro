@@ -33,9 +33,9 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @isset($item)
+                                @foreach($item->itens as $l)
                                 <tr class="dynamic-form">
-                                    @isset($item)
-                                    @foreach($item->itens as $l)
                                     <td>
                                         <select required class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
                                             <option value="{{ $l->produto_id }}">{{ $l->produto->nome }}</option>
@@ -49,8 +49,11 @@
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
                                     </td>
-                                    @endforeach
-                                    @else
+                                </tr>
+                                @endforeach
+                                @else
+                                <tr class="dynamic-form">
+
                                     <td>
                                         <select required class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
                                         </select>
@@ -63,8 +66,9 @@
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
                                     </td>
-                                    @endif
                                 </tr>
+                                @endif
+
                             </tbody>
                         </table>
                     </div>

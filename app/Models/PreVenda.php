@@ -10,8 +10,9 @@ class PreVenda extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cliente_id', 'usuario_id', 'valor_total', 'natureza_id', 'tipo_pagamento', 'forma_pagamento', 'funcionario_id', 'observacao'
-        , 'desconto', 'acrescimo', 'empresa_id', 'bandeira_cartao', 'cnpj_cartao', 'cAut_cartao', 'descricao_pag_outros', 'rascunho', 'status', 'codigo', 'venda_id', 'local_id'
+        'cliente_id', 'usuario_id', 'valor_total', 'natureza_id', 'tipo_pagamento', 'forma_pagamento', 'funcionario_id', 'observacao',
+        'desconto', 'acrescimo', 'empresa_id', 'bandeira_cartao', 'cnpj_cartao', 'cAut_cartao', 'descricao_pag_outros', 'rascunho', 'status', 
+        'codigo', 'venda_id', 'local_id'
     ];
 
     public function cliente()
@@ -34,6 +35,11 @@ class PreVenda extends Model
     //     return $this->belongsTo(Funcionario::class, 'funcionario_id');
     // }
 
+    public function funcionario()
+    {
+        return $this->belongsTo(Funcionario::class, 'funcionario_id');
+    }
+    
     public function vendedor()
     {
         $funcionario = Funcionario::find($this->funcionario_id);

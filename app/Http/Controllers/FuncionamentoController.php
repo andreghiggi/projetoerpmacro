@@ -19,7 +19,7 @@ class FuncionamentoController extends Controller
         ->when($funcionario_id, function ($q) use ($funcionario_id) {
             return $q->where('funcionarios.id', $funcionario_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $funcionario = null;
         if($funcionario_id){

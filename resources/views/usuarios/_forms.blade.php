@@ -104,20 +104,32 @@
         </div>
     </div>
 
+    <div class="col-md-2">
+        {!!Form::select('finalizacao_pdv', 'Finalização PDV', ['fiscal' => 'Fiscal', 'nao_fiscal' => 'Não fiscal', 'todos' => 'Todos'])
+        ->attrs(['class' => 'form-select tooltipp2'])
+        !!}
+
+        <div class="text-tooltip2 d-none">
+            Para finalizar Venda PDV
+        </div>
+    </div>
+    
     <hr>
-    <div class="card col-md-3 mt-3 form-input">
-        <p>Selecione uma imagem de perfil</p>
+    <div class="card col-md-3 mt-3 form-input" style="width: 210px">
+        <p>Selecione uma imagem</p>
+
         <div class="preview">
             <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
             @isset($item)
             <img id="file-ip-1-preview" src="{{ $item->img }}">
             @else
-            <img id="file-ip-1-preview" src="/imgs/no-image.png">
+            <img id="file-ip-1-preview" src="/imgs/no-client.png">
             @endif
         </div>
-        <label for="file-ip-1">Imagem</label>
+        <label for="file-ip-1">Foto</label>
         <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);">
     </div>
+
     <hr class="mt-4">
     <div class="col-12" style="text-align: right;">
         <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>

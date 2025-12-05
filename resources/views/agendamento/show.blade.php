@@ -36,6 +36,8 @@
                                 <i class="ri-edit-line"></i> Editar cliente
                             </a>
                             @endcan
+                            <h4>#{{ $item->numero_sequencial }}</h4>
+
                             <p>
                                 <b>Cliente: <strong class="text-primary">{{ $item->cliente->razao_social }}</strong></b> 
                             </p>

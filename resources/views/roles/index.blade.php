@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Atribuições'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -66,9 +66,11 @@
                                                 <i class="ri-pencil-fill"></i>
                                             </a>
                                             @csrf
+                                            @if($item->empresa)
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
+                                            @endif
                                         </form>
                                         @endif
                                     </td>

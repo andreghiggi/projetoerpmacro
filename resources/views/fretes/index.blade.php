@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Fretes'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
 	<div class="row">
 		<div class="card">
 			<div class="card-body">
@@ -88,7 +88,7 @@
 									@if(__countLocalAtivo() > 1)
 									<th>Local</th>
 									@endif
-									<th>Data incial da viagem</th>
+									<th>Data inicial da viagem</th>
 									<th>Data final da viagem</th>
 									<th>Data de cadastro</th>
 									<th>Estado</th>
@@ -98,31 +98,24 @@
 							<tbody>
 								@forelse($data as $item)
 								<tr>
-									<td>{{ $item->numero_sequencial }}</td>
-									<td>{{ $item->cliente->info }}</td>
-									<td>{{ $item->veiculo->info }}</td>
-									<td>{{ __moeda($item->total) }}</td>
-									<td>{{ __moeda($item->total_despesa) }}</td>
+									<td data-label="#">{{ $item->numero_sequencial }}</td>
+									<td data-label="Cliente">{{ $item->cliente->info }}</td>
+									<td data-label="Veículo">{{ $item->veiculo->info }}</td>
+									<td data-label="Valor do frete">{{ __moeda($item->total) }}</td>
+									<td data-label="Total de despesas">{{ __moeda($item->total_despesa) }}</td>
 									@if(__countLocalAtivo() > 1)
-									<th>{{ $item->localizacao->descricao }}</th>
+									<td data-label="Local">{{ $item->localizacao->descricao }}</td>
 									@endif
-									<td>{{ __data_pt($item->data_inicio, 0) }}</td>
-									<td>{{ __data_pt($item->data_fim, 0) }}</td>
-									<td>{{ __data_pt($item->created_at) }}</td>
-
-									<td style="width: 200px">
+									<td data-label="Data inicial da viagem">{{ __data_pt($item->data_inicio, 0) }}</td>
+									<td data-label="Data final da viagem">{{ __data_pt($item->data_fim, 0) }}</td>
+									<td data-label="Data de cadastro">{{ __data_pt($item->created_at) }}</td>
+									<td data-label="Estado">
 										@if($item->estado == 'em_carregamento')
-										<span class="btn btn-sm btn-warning text-white btn-sm w-100">
-											Em carregamento
-										</span>
+										<span class="btn btn-sm btn-warning text-white">Em carregamento</span>
 										@elseif($item->estado == 'em_viagem')
-										<span class="btn btn-primary text-white btn-sm w-100">
-											Em viagem
-										</span>
+										<span class="btn btn-primary text-white btn-sm">Em viagem</span>
 										@else
-										<span class="btn btn-success text-white btn-sm w-100">
-											Finalizado
-										</span>
+										<span class="btn btn-success text-white btn-sm">Finalizado</span>
 										@endif
 									</td>
 									<td>
@@ -137,11 +130,14 @@
 											@endcan
 
 											@can('frete_delete')
-											<button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
+											<button type="button" class="btn btn-danger btn-sm btn-delete">
+												<i class="ri-delete-bin-line"></i>
+											</button>
 											@endcan
 
-											<a class="btn btn-ligth btn-sm" title="Detalhes" href="{{ route('fretes.show', $item->id) }}"><i class="ri-eye-line"></i></a>
-
+											<a class="btn btn-light btn-sm" title="Detalhes" href="{{ route('fretes.show', $item->id) }}">
+												<i class="ri-eye-line"></i>
+											</a>
 										</form>
 									</td>
 								</tr>
@@ -159,6 +155,7 @@
 								</tr>
 							</tfoot>
 						</table>
+
 					</div>
 					<br>
 					{!! $data->appends(request()->all())->links() !!}

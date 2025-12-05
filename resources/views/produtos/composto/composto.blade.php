@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Composição do produto'])
+@extends('layouts.app', ['title' => 'Composição do Produto'])
 @section('content')
 
 <div class="card mt-1">
@@ -24,7 +24,7 @@
                     !!}
                 </div>
                 <div class="col-md-2">
-                    {!!Form::text('quantidade', 'Quantidade')->attrs(['class' => ''])->required()
+                    {!!Form::text('quantidade', 'Quantidade')->attrs(['class' => 'qtd'])->required()
                     !!}
                 </div>
                 <div class="row col-12 col-lg-2 mt-3">

@@ -21,7 +21,11 @@
         <p class="text-primary">Gerando venda de orçamentos</p>
         @endif
 
-        @if(isset($isOrcamento))
+        @isset($isPedidoVendiZap)
+        <p class="text-primary">Gerando venda pedido VendiZap #{{ $item->_id }}</p>
+        @endif
+
+        @if(isset($isOrcamento) && $isOrcamento == 1)
         <input type="hidden" id="is_orcamento" value="1">
         @else
         <input type="hidden" id="is_orcamento" value="0">
@@ -31,7 +35,8 @@
             @if(__countLocalAtivo() > 1 && isset($caixa) && !__escolheLocalidade())
             <h5 class="mt-2">Local: <strong class="text-danger">{{ $caixa->localizacao ? $caixa->localizacao->descricao : '' }}</strong></h5>
             @endif
-            @if(isset($isOrcamento))
+
+            @if(isset($isOrcamento) && $isOrcamento == 1)
             <a href="{{ route('orcamentos.index') }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar
             </a>
@@ -58,11 +63,13 @@
 </div>
 @isset($isCompra)
 @include('modals._novo_fornecedor')
+@include('compras.partials._importacao_di')
 @else
 @include('modals._novo_cliente')
 @endif
 
 @include('modals._dimensao_item_nfe')
+@include('modals._descricao_item')
 
 @section('js')
 
@@ -78,6 +85,7 @@
 <script src="/js/nfe.js"></script>
 @isset($isCompra)
 <script src="/js/novo_fornecedor.js"></script>
+<script src="/js/compra_importacao.js"></script>
 @else
 <script src="/js/novo_cliente.js"></script>
 @endif

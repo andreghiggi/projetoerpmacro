@@ -21,22 +21,39 @@
 
                     <div class="col-md-3 mt-2">
                         <label>Categoria</label>
-                        <select class="form-select" id="modal_categoria_id">
+                        <div class="input-group flexw-nowrap">
+                            <select class="form-select" id="modal_categoria_id">
+                                <option value="">Selecione</option>
+                                @foreach($categorias as $c)
+                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button class="btn btn-dark btn-modal-categoria" type="button">
+                                <i class="ri-add-circle-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mt-2">
+                        <label>Subcategoria</label>
+                        <select class="form-select" id="modal_sub_categoria_id">
                             <option value="">Selecione</option>
-                            @foreach($categorias as $c)
-                            <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-3 mt-2">
                         <label>Marca</label>
-                        <select class="form-select" id="modal_marca_id">
-                            <option value="">Selecione</option>
-                            @foreach($marcas as $c)
-                            <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group flexw-nowrap">
+                            <select class="form-select" id="modal_marca_id">
+                                <option value="">Selecione</option>
+                                @foreach($marcas as $c)
+                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button class="btn btn-dark btn-modal-marca" type="button">
+                                <i class="ri-add-circle-fill"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="col-md-2 mt-2">
@@ -53,8 +70,18 @@
                     </div>
 
                     <div class="col-md-3 mt-2">
+                        <label>Código de barras2</label>
+                        <input class="form-control" type="text" id="modal_codigo_barras2">
+                    </div>
+
+                    <div class="col-md-3 mt-2">
                         <label>NCM</label>
                         <input class="form-control ncm" type="text" id="modal_ncm">
+                    </div>
+
+                    <div class="col-md-2 mt-2">
+                        <label>Quantidade</label>
+                        <input class="form-control moeda" type="tel" id="modal_quantidade">
                     </div>
 
                     <div class="col-md-2 mt-2">
@@ -70,6 +97,21 @@
                     <div class="col-md-2 mt-2">
                         <label>Valor de venda</label>
                         <input class="form-control moeda" type="tel" id="modal_valor_venda">
+                    </div>
+
+                    <div class="col-md-2 mt-2">
+                        <label>Valor de atacado</label>
+                        <input class="form-control moeda" type="tel" id="modal_valor_atacado">
+                    </div>
+
+                    <div class="col-md-2 mt-2">
+                        <label>Quantidade para atacado</label>
+                        <input class="form-control" data-mask="000" type="tel" id="modal_quantidade_atacado">
+                    </div>
+
+                    <div class="col-md-2 mt-2">
+                        <label>Valor mínimo de venda</label>
+                        <input class="form-control moeda" type="tel" id="modal_valor_minimo_venda">
                     </div>
 
                     <div class="col-md-2 mt-2">
@@ -136,11 +178,18 @@
                     <input type="hidden" value="{{ __getLocalAtivo() ? __getLocalAtivo()->id : '' }}" name="local_id">
                     @endif
 
+                    <div class="col-md-2 mt-2 d-none select-desvincular">
+                        <label>Desvincular Produto</label>
+                        <select class="form-select" id="modal_desvincular">
+                            <option value="0">Não</option>
+                            <option value="1">Sim</option>
+                        </select>
+                    </div>
+
                     <div class="col-md-2 mt-2 form-check" style="margin-left: 10px">
                         <br>
                         <input type="checkbox" class="form-check-input ml-3" id="check">
                         <label>Revisado</label>
-
                     </div>
                     
                     <div class="mt-3 ms-auto">

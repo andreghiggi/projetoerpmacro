@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Produtos de Ecommerce'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -83,7 +83,7 @@
                                     </td>
                                     @endif
                                     <td>
-                                        <form action="{{ route('produtos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form action="{{ route('produtos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 300px;">
                                             @method('delete')
                                             <a class="btn btn-warning btn-sm" href="{{ route('produtos.edit', [$item->id, 'ecommerce=1']) }}" title="Editar">
                                                 <i class="ri-edit-line"></i>

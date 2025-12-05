@@ -98,7 +98,7 @@ class PaymentController extends Controller
                 //     'status_pagamento' => 'pendente',
                 //     'plano_empresa_id' => $planoEmpresa->id
                 // ]);
-
+                
                 session()->flash("flash_success", "QrCode gerado!");
                 return redirect()->route('payment.pix', [(string)$payment->id]);
             }else{
@@ -133,7 +133,10 @@ class PaymentController extends Controller
         $config = ConfiguracaoSuper::first();
 
         $client = new \GuzzleHttp\Client();
-        $endPoint = 'https://api.asaas.com/v3/pix/qrCodes/static';
+        $endPoint = 'https://api-sandbox.asaas.com/v3/pix/qrCodes/static';
+        if($config->sandbox_boleto == 0){
+            $endPoint = 'https://api.asaas.com/v3/pix/qrCodes/static'; 
+        }
 
         $response = $client->request('POST', $endPoint, [
             'body' => '{"value":'.$item->valor.'}',

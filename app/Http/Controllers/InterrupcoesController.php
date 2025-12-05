@@ -18,7 +18,7 @@ class InterrupcoesController extends Controller
         ->when($funcionario_id, function ($q) use ($funcionario_id) {
             return $q->where('funcionario_id', $funcionario_id);
         })
-        ->paginate(getenv("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)
         ->orderBy('nome', 'asc')

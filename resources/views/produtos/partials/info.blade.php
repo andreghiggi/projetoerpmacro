@@ -10,6 +10,6 @@
 		
 	</div>
 	<div class="col-md-6">
-		<img src="{{ $item->img }}" style="height: 100px">
+		<img src="{{ $item->img }}" style="height: 100px; border-radius: 8px;">
 	</div>
 </div>

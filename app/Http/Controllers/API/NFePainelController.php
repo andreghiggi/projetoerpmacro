@@ -9,22 +9,28 @@ use App\Models\Nfe;
 use App\Models\Caixa;
 use App\Models\EmailConfig;
 use App\Models\Inutilizacao;
+use App\Models\ContaPagar;
+use App\Models\ContaReceber;
+use App\Models\ProdutoUnico;
 use App\Services\NFeService;
 use NFePHP\DA\NFe\Danfe;
 use App\Models\Contigencia;
 use App\Utils\EmailUtil;
 use Mail;
 use App\Utils\SiegUtil;
+use App\Utils\EstoqueUtil;
 
 class NFePainelController extends Controller
 {
 
     protected $emailUtil;
     protected $siegUtil;
+    protected $estoqueUtil;
     
-    public function __construct(EmailUtil $util, SiegUtil $siegUtil){
+    public function __construct(EmailUtil $util, SiegUtil $siegUtil, EstoqueUtil $estoqueUtil){
         $this->emailUtil = $util;
         $this->siegUtil = $siegUtil;
+        $this->estoqueUtil = $estoqueUtil;
 
         if (!is_dir(public_path('xml_nfe'))) {
             mkdir(public_path('xml_nfe'), 0777, true);
@@ -70,7 +76,8 @@ class NFePainelController extends Controller
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
             "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-            "schemes" => "PL_009_V4",
+            // "schemes" => "PL_009_V4",
+            "schemes" => "PL_010_V1.21",
             "versao" => "4.00",
         ], $empresa);
 
@@ -96,6 +103,11 @@ class NFePainelController extends Controller
             if($itensComErro){
                 return response()->json($itensComErro, 403);
             }
+
+            if($this->validarTagsICMS($xml) != ""){
+                return response()->json("XML inválido: não foi encontrado o grupo ICMS/ICMSSN correspondente ao CST/CSOSN informado no " . $this->validarTagsICMS($xml), 403);
+            }
+
             try{
                 $signed = $nfe_service->sign($xml);
                 $resultado = $nfe_service->transmitir($signed, $doc['chave']);
@@ -172,13 +184,82 @@ class NFePainelController extends Controller
                     }
                 }
             }catch(\Exception $e){
-                return response()->json($e->getMessage(), 404);
+                $msg = $this->formatarErroNFe($e->getMessage());
+                return response()->json($msg, 404);
             }
 
         }else{
             return response()->json($doc['erros_xml'], 401);
         }
+    }
 
+    
+    function validarTagsICMS($xmlString)
+    {
+        libxml_use_internal_errors(true);
+
+        $xml = simplexml_load_string($xmlString);
+        $retorno = "";
+        $cont = 1;
+        foreach ($xml->infNFe->det as $det) {
+
+            $nItem = (string) $det['nItem'];
+
+            $imposto = $det->imposto;
+            $temTag = 0;
+            $gruposICMS = [
+                'ICMS00','ICMS10','ICMS20','ICMS30','ICMS40','ICMS51',
+                'ICMS60', 'ICMS61','ICMS70','ICMS90','ICMSST'
+            ];
+
+            foreach ($gruposICMS as $g) {
+                if (isset($imposto->ICMS->{$g})) {
+                    $temTag = 1;
+                }
+            }
+            if (isset($imposto->ICMS->ICMSST)) {
+                $temTag = 1;
+            }
+
+            $gruposSN = [
+                'ICMSSN101','ICMSSN102','ICMSSN201','ICMSSN202','ICMSSN203',
+                'ICMSSN500','ICMSSN900', 'ICMS61'
+            ];
+
+            foreach ($gruposSN as $g) {
+                if (isset($imposto->ICMS->{$g})) {
+                    $temTag = 1;
+                }
+            }
+
+            if($temTag == 0){
+                $retorno .= " item $cont.";
+            }
+            $cont++;
+        }
+
+        return $retorno;
+    }
+
+    private function formatarErroNFe($mensagem)
+    {
+        if (preg_match('/cClassTrib.*pattern.*not accepted/', $mensagem)) {
+            return "O código de classificação tributária (cClassTrib) deve conter 6 dígitos numéricos. Verifique o campo e corrija o valor enviado (exemplo: 000002).";
+        }
+
+        if (preg_match('/ICMSSN900.*Expected.*vICMS/', $mensagem)) {
+            return "No regime Simples Nacional com CSOSN 900 é obrigatório informar o campo vICMS (mesmo que seja 0,00). Ajuste o XML e tente novamente.";
+        }
+
+        if (preg_match('/This element is not expected/', $mensagem)) {
+            preg_match('/Element.*\{.*\}(.*?)\'.*Expected.*\{.*\}(.*?)\)/', $mensagem, $matches);
+            if (isset($matches[1], $matches[2])) {
+                return "Campo inválido no XML: <strong>{$matches[1]}</strong>. Esperado: <strong>{$matches[2]}</strong>.";
+            }
+            return "Erro de estrutura no XML: verifique os campos do ICMS.";
+        }
+
+        return "Erro ao validar XML. Detalhes técnicos: " . htmlspecialchars($mensagem);
     }
 
     public function cancelar(Request $request)
@@ -195,7 +276,8 @@ class NFePainelController extends Controller
                 "razaosocial" => $empresa->nome,
                 "siglaUF" => $empresa->cidade->uf,
                 "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $empresa);
             $doc = $nfe_service->cancelar($nfe, $request->motivo);
@@ -203,6 +285,29 @@ class NFePainelController extends Controller
             if (!isset($doc['erro'])) {
                 $nfe->estado = 'cancelado';
                 $nfe->save();
+
+                foreach ($nfe->itens as $i) {
+                    if ($i->produto->gerenciar_estoque) {
+                        if ($nfe->tpNF == 1) {
+                            $this->estoqueUtil->incrementaEstoque($i->produto_id, $i->quantidade, $i->variacao_id, $nfe->local_id);
+                        }else{
+                            $this->estoqueUtil->reduzEstoque($i->produto_id, $i->quantidade, $i->variacao_id, $nfe->local_id);
+                        }
+                    }
+                }
+
+                $garantia = Garantia::where('empresa_id', $nfe->empresa_id)
+                ->where('nfe_id', $nfe->id)->first();
+
+                if($garantia){
+                    $garantia->delete();
+                }
+
+                ContaPagar::where('nfe_id', $nfe->id)->delete();
+                ContaReceber::where('nfe_id', $nfe->id)->delete();
+                ProdutoUnico::where('nfe_id', $nfe->id)->delete();
+                $item->delete();
+                $nfe->fatura()->delete();
                 // return response()->json($doc, 200);
                 $motivo = $doc['retEvento']['infEvento']['xMotivo'];
                 $cStat = $doc['retEvento']['infEvento']['cStat'];
@@ -249,7 +354,8 @@ class NFePainelController extends Controller
                 "razaosocial" => $empresa->nome,
                 "siglaUF" => $empresa->cidade->uf,
                 "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $empresa);
             $doc = $nfe_service->correcao($nfe, $request->motivo);
@@ -300,7 +406,8 @@ class NFePainelController extends Controller
                 "razaosocial" => $empresa->nome,
                 "siglaUF" => $empresa->cidade->uf,
                 "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $empresa);
             $consulta = $nfe_service->consultar($nfe);
@@ -339,7 +446,8 @@ class NFePainelController extends Controller
                 "razaosocial" => $empresa->nome,
                 "siglaUF" => $empresa->cidade->uf,
                 "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $empresa);
             $consulta = $nfe_service->inutilizar($item);
@@ -377,7 +485,8 @@ class NFePainelController extends Controller
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
             "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-            "schemes" => "PL_009_V4",
+            // "schemes" => "PL_009_V4",
+            "schemes" => "PL_010_V1.21",
             "versao" => "4.00",
         ], $empresa);
         $consulta = $nfe_service->consultaStatus((int)$empresa->ambiente, $empresa->cidade->uf);

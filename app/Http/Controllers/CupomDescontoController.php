@@ -24,7 +24,7 @@ class CupomDescontoController extends Controller
         ->when($cliente_id, function ($q) use ($cliente_id) {
             return $q->where('cliente_id', $cliente_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         $cliente = null;
         if($cliente_id){
             $cliente = Cliente::findOrFail($cliente_id);

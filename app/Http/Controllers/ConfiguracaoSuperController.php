@@ -22,6 +22,7 @@ class ConfiguracaoSuperController extends Controller
             'timeout_nfce' => $request->timeout_nfce ?? 8,
             'timeout_cte' => $request->timeout_cte ?? 8,
             'timeout_mdfe' => $request->timeout_mdfe ?? 8,
+            'dias_alerta_boleto' => $request->dias_alerta_boleto ?? 10,
             'percentual_juros_padrao_boleto' => $request->percentual_juros_padrao_boleto ?? 0,
             'percentual_multa_padrao_boleto' => $request->percentual_multa_padrao_boleto ?? 0,
             'token_api' => $request->token_api ?? '',

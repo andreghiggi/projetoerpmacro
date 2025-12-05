@@ -14,7 +14,8 @@ class NcmController extends Controller
         $data = Ncm::
         when(!empty($request->descricao), function ($q) use ($request) {
             return $q->where('descricao', 'LIKE', "%$request->descricao%");
-        })->paginate('50');
+        })
+        ->paginate(50);
         return view('ncm.index', compact('data'));
     }
 
@@ -50,7 +51,7 @@ class NcmController extends Controller
     {
         $item = Ncm::findOrFail($id);
         try {
-            
+
             $item->fill($request->all())->save();
             session()->flash("flash_success", "NCM alterado com sucesso!");
         } catch (\Exception $e) {
@@ -70,6 +71,10 @@ class NcmController extends Controller
             session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
         }
         return redirect()->route('ncm.index');
+    }
+
+    public function refresh(){
+        return view('ncm.upload');
     }
 
     private function validaNcm(){
@@ -100,6 +105,43 @@ class NcmController extends Controller
                     }
                 }
             }
+        }
+    }
+
+    public function import(Request $request){
+        if ($request->hasFile('file')) {
+
+            $arquivo = $request->hasFile('file');
+            $file = $request->file;
+            Ncm::query()->delete();
+
+            $rows = Excel::toArray(new ProdutoImport, $file);
+            $isNcm = 0;
+            foreach($rows[0] as $key => $line){
+
+                if(isset($line[0])){
+                    $codigo = trim($line[0]);
+                    $descricao = trim($line[1]);
+                    if(is_numeric($codigo) && $isNcm == 0){
+                        $isNcm = 1;
+                    }
+                    if($isNcm){
+                        $descricao = str_replace("--", "", $descricao);
+                        $descricao = str_replace("-", "", $descricao);
+
+                        Ncm::create([
+                            'codigo' => $codigo,
+                            'descricao' => "$codigo - $descricao"
+                        ]);
+                    }
+                    
+                }
+            }
+            session()->flash("flash_success", "Registro atualizado!");
+            return redirect()->route('ncm.index');
+        } else {
+            session()->flash('flash_error', 'Arquivo inválido!');
+            return redirect()->back();
         }
     }
 }

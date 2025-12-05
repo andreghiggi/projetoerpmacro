@@ -18,7 +18,8 @@ class Empresa extends Model
         'numero_ultima_mdfe_producao', 'numero_ultima_mdfe_homologacao', 'numero_serie_mdfe', 'logo',
         'tipo_contador', 'limite_cadastro_empresas', 'percentual_comissao', 'exclusao_icms_pis_cofins',
         'token_nfse', 'numero_ultima_nfse', 'numero_serie_nfse', 'aut_xml', 'observacao_padrao_nfe', 'observacao_padrao_nfce',
-        'perc_ap_cred', 'mensagem_aproveitamento_credito', 'receber_com_boleto', 'dia_vencimento_boleto'
+        'perc_ap_cred', 'mensagem_aproveitamento_credito', 'receber_com_boleto', 'dia_vencimento_boleto', 'token_ibpt', 'cadastrar_planos',
+        'substituto_tributario'
     ];
 
     protected $appends = [ 'info' ];
@@ -63,6 +64,10 @@ class Empresa extends Model
 
     public function roles(){
         return $this->hasMany(Role::class, 'empresa_id');
+    }
+
+    public function produtos(){
+        return $this->hasMany(Produto::class, 'empresa_id');
     }
 
     public function naturezasOperacao(){

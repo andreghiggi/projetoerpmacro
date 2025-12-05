@@ -18,7 +18,7 @@ class BairroSuperController extends Controller
         ->when($cidade_id, function ($q) use ($cidade_id) {
             return $q->where('cidade_id', $cidade_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $cidade = null;
         if($cidade_id){

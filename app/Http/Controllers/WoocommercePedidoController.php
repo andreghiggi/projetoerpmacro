@@ -9,6 +9,7 @@ use App\Models\Cidade;
 use App\Models\Transportadora;
 use App\Models\NaturezaOperacao;
 use App\Models\Empresa;
+use App\Models\Funcionario;
 use App\Models\Nfe;
 
 class WoocommercePedidoController extends Controller
@@ -88,8 +89,12 @@ class WoocommercePedidoController extends Controller
         $item->cliente_id = $cliente->id;
 
         $isPedidoWoocommerce = 1;
+
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
         return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isPedidoWoocommerce', 'numeroNfe',
-            'caixa'));
+            'caixa', 'funcionarios'));
     }
 
 }

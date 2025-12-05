@@ -12,6 +12,7 @@ use App\Models\Produto;
 use App\Models\Estoque;
 use App\Models\ConfigGeral;
 use App\Models\Agendamento;
+use App\Models\MensagemAgendamentoLog;
 use App\Models\ConfiguracaoAgendamento;
 use App\Utils\WhatsAppUtil;
 
@@ -135,8 +136,13 @@ class AlertaCron extends Command
                             if($retorno->success){
                                 $a->msg_wpp_manha_horario = 1;
                                 $a->save();
+                                MensagemAgendamentoLog::create([
+                                    'empresa_id' => $config->empresa_id,
+                                    'mensagem' => $msg,
+                                    'cliente_id' => $a->cliente_id
+                                ]);
                             }else{
-                                dd($retorno);
+                                // dd($retorno);
                             }
                         }
                     }
@@ -146,29 +152,35 @@ class AlertaCron extends Command
         if($config->msg_wpp_alerta){
             $dataAtual = date('Y-m-d H:i');
             foreach($agendamentos as $a){
+
                 $dataEnvio = date('Y-m-d H:i', strtotime($a->data . " " . $a->inicio . "- $config->msg_wpp_alerta_minutos_antecedencia minutes"));
 
                 if(strtotime($dataAtual) >= strtotime($dataEnvio)){
-                    foreach($agendamentos as $a){
-                        if($a->cliente->telefone && $a->msg_wpp_alerta_horario == 0){
+                    // foreach($agendamentos as $a){
+                    if($a->cliente->telefone && $a->msg_wpp_alerta_horario == 0){
+                        $msg = $this->criaMensagemAgendamento($a, $config->mensagem_alerta);
 
-                            $msg = $this->criaMensagemAgendamento($a, $config->mensagem_alerta);
-                            if($msg != ""){
-                                $telefone = "55".preg_replace('/[^0-9]/', '', $a->cliente->telefone);
-                                $retorno = $this->whatsAppUtil->sendMessageWithToken($telefone, $msg, $config->empresa_id, $config->token_whatsapp);
-                                $retorno = json_decode($retorno);
-                                if($retorno->success){
-                                    $a->msg_wpp_alerta_horario = 1;
-                                    $a->save();
-                                }else{
-                                    dd($retorno);
-                                }
+                        if($msg != ""){
+                            $telefone = "55".preg_replace('/[^0-9]/', '', $a->cliente->telefone);
+                            $retorno = $this->whatsAppUtil->sendMessageWithToken($telefone, $msg, $config->empresa_id, $config->token_whatsapp);
+                            $retorno = json_decode($retorno);
+                            if($retorno->success){
+                                $a->msg_wpp_alerta_horario = 1;
+                                $a->save();
+
+                                MensagemAgendamentoLog::create([
+                                    'empresa_id' => $config->empresa_id,
+                                    'mensagem' => $msg,
+                                    'cliente_id' => $a->cliente_id
+                                ]);
+                            }else{
+                                // dd($retorno);
                             }
                         }
                     }
+                    // }
                 }
             }
-
         }
     }
 
@@ -177,6 +189,22 @@ class AlertaCron extends Command
         $msg = str_replace("%nome%", $agendamento->cliente->razao_social, $msg);
         $msg = str_replace("%data%", __data_pt($agendamento->data, 0), $msg);
         $msg = str_replace("%hora%", substr($agendamento->inicio, 0, 5), $msg);
+
+        $textoServico = "SERVIÇOS\n";
+        foreach($agendamento->itens as $i){
+            if($i->servico){
+                $textoServico .= number_format($i->quantidade, 0) . "X ";
+
+                $textoServico .= " " . $i->servico->nome;
+                $textoServico .= " R$ " . __moeda($i->valor);
+                $textoServico .= " = R$ " . __moeda($i->valor);
+                $textoServico .= "\n";
+
+            }
+        }
+
+        $msg = str_replace("%serviços%", $textoServico, $msg);
+
         return $msg;
     }
 
@@ -200,7 +228,7 @@ class AlertaCron extends Command
                 'referencia' => $referencia,
                 'status' => 1,
                 'por_sistema' => 1,
-                'prioridade' => $prioridade,
+                'prioridade' => $prioridade, 
                 'visualizada' => 0,
                 'titulo' => $titulo
             ]);

@@ -56,6 +56,8 @@ class WhatsAppUtil
 			'token'     => $token,
 		];
 
+		// dd($data);
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');

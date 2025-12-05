@@ -16,12 +16,17 @@
     }
 
 </style>
+
+<link rel="stylesheet" type="text/css" href="/css/pdv.css">
 @endsection
 
 <input type="hidden" id="abertura" value="{{ $abertura }}" name="">
 <input type="hidden" id="valor_total_old" value="{{ $item->total }}">
 <input type="hidden" id="venda_id" value="{{ isset($item) ? $item->id : '' }}">
+<input type="hidden" id="tipo" value="{{ isset($item->troco) ? 'nfce' : 'nfe' }}">
 <input type="hidden" id="lista_id" value="" name="lista_id">
+<input type="hidden" id="local_id" value="{{ $caixa->localizacao->id }}">
+
 @if($isVendaSuspensa)
 <input type="hidden" value="{{ $item->id }}" name="venda_suspensa_id">
 @endif
@@ -333,12 +338,12 @@
                 <div class="col-lg-3 col-6">
                     <div class="card widget-icon-box div-pagamento">
                         <div class="card-body">
-                            <div class="row">
+                            <div class="row mt-1">
                                 <div class="col-6">
                                     <div class="row">
                                         <h5 class="text-center">SUPRIMENTO</h5>
                                     </div>
-                                    <div class="avatar-sm m-1">
+                                    <div class="avatar-sm m-1 mt-2">
                                         <button type="button" style="margin-left: 35px" data-bs-toggle="modal" data-bs-target="#suprimento_caixa" class="avatar-title text-bg-info rounded rounded-3 fs-3 widget-icon-box-avatar">
                                             <i class="ri-add-box-line"></i>
                                         </button>
@@ -348,7 +353,7 @@
                                     <div class="row">
                                         <h5 class="text-center">SANGRIA</h5>
                                     </div>
-                                    <div class="avatar-sm m-1">
+                                    <div class="avatar-sm m-1 mt-2">
                                         <button type="button" style="margin-left: 35px" data-bs-toggle="modal" data-bs-target="#sangria_caixa" class="avatar-title text-bg-danger rounded rounded-3 fs-3 widget-icon-box-avatar">
                                             <i class="ri-checkbox-indeterminate-line"></i>
                                         </button>
@@ -437,9 +442,9 @@
                     <div class="card widget-icon-box div-pagamento" style="height: 93%">
                         <div class="card-body">
                             <div class="">
-                                <h4>VALOR DA VENDA: <strong class="text-primary">R$ {{ __moeda($item->total) }}</strong></h4>
-                                <h4 class="h-valor_pagar">VALOR À PAGAR: <strong class="text-success valor_pagar">R$ {{ __moeda(0) }}</strong></h4>
-                                <h4 class="h-valor_restante d-none">VALOR RESTANTE: <strong class="text-warning valor_restante">R$ {{ __moeda(0) }}</strong></h4>
+                                <h4 class="text-muted">Valor original da venda: <strong class="text-primary">R$ {{ __moeda($item->total) }}</strong></h4>
+                                <h4 class="h-valor_pagar text-muted">Valor à pagar: <strong class="text-success valor_pagar">R$ {{ __moeda(0) }}</strong></h4>
+                                <h4 class="h-valor_restante d-none">Valor restante: <strong class="text-warning valor_restante">R$ {{ __moeda(0) }}</strong></h4>
                                 <h5>Data da venda: <strong class="text-danger">{{ __data_pt($item->created_at) }}</strong></h5>
                                 <!-- <h4>VALOR DE DIFERENÇA: <strong class="text-danger valor_diferenca">R$ {{ __moeda(0) }}</strong></h4> -->
                             </div>
@@ -490,7 +495,13 @@
 @include('modals._cliente', ['cashback' => 1])
 
 @section('js')
+<script>
+    var senhaAcao = "";
 
+    @if(isset($config) && strlen(trim($config->senha_manipula_valor)) > 1)
+    senhaAcao = "{{ $config->senha_manipula_valor }}";
+    @endif
+</script>
 @if($msgTroca != "")
 <script type="text/javascript">
     toastr.warning('{{ $msgTroca }}');

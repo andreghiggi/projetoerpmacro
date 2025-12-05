@@ -23,7 +23,7 @@ class MercadoLivreProdutoController extends Controller
     protected $util;
     protected $utilMercadoLivre;
     protected $uploadUtil;
-    public function __construct(Request $request, EstoqueUtil $util,
+    public function __construct(Request $request, EstoqueUtil $util, 
         MercadoLivreUtil $utilMercadoLivre, UploadUtil $uploadUtil)
     {
         $this->util = $util;
@@ -56,7 +56,7 @@ class MercadoLivreProdutoController extends Controller
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->where('mercado_livre_id', '!=', null)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('mercado_livre_produtos.index', compact('data'));
 
     }
@@ -337,12 +337,14 @@ class MercadoLivreProdutoController extends Controller
             $padraoTributacao = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->where('padrao', 1)
             ->first();
             $padroes = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->get();
-            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)->get();
+            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)
+            ->where('categoria_id', null)
+            ->get();
 
             $unidades = UnidadeMedida::where('empresa_id', request()->empresa_id)
             ->where('status', 1)->get();
 
-            return view('mercado_livre_produtos.create_produtos',
+            return view('mercado_livre_produtos.create_produtos', 
                 compact('produtosIsert', 'padraoTributacao', 'listaCTSCSOSN', 'padroes', 'categorias', 'unidades'));
         }else{
             return redirect()->route('mercado-livre-produtos.index');
@@ -404,7 +406,7 @@ class MercadoLivreProdutoController extends Controller
         DB::transaction(function () use ($request) {
             $contInserts = 0;
             try{
-                for($i=0; $i<sizeof($request->mercado_livre_id); $i++){m
+                for($i=0; $i<sizeof($request->mercado_livre_id); $i++){
 
                     $last = Produto::where('empresa_id', $request->empresa_id)
                     ->orderBy('numero_sequencial', 'desc')
@@ -441,10 +443,10 @@ class MercadoLivreProdutoController extends Controller
                         'mercado_livre_categoria' => $request->mercado_livre_categoria[$i],
                         'valor_prazo' => 0
                     ];
-
+                    
                     $produto = Produto::create($data);
                     ProdutoLocalizacao::updateOrCreate([
-                        'produto_id' => $produto->id,
+                        'produto_id' => $produto->id, 
                         'localizacao_id' => $request->local_id
                     ]);
                     if($request->mercado_livre_id_row){
@@ -546,9 +548,9 @@ public function galeryStore(Request $request){
 
     if(isset($retorno->id)){
         $files = glob('uploads/temp-ml/*');
-        foreach($files as $file){
+        foreach($files as $file){ 
             if(is_file($file)) {
-                unlink($file);
+                unlink($file); 
             }
         }
         session()->flash("flash_success", "Imagem adicionada!");

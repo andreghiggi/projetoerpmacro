@@ -39,7 +39,12 @@ class PaymentController extends Controller
         $config = ConfiguracaoSuper::first();
 
         $client = new \GuzzleHttp\Client();
-        $endPoint = 'https://api.asaas.com/v3/pix/transactions';
+        $endPoint = 'https://api-sandbox.asaas.com/v3/pix/transactions';
+
+        if($config->sandbox_boleto == 0){
+            // $endPoint = 'https://api.asaas.com/v3/pix/qrCodes/static';
+            $endPoint = 'https://api.asaas.com/v3/pix/transactions';
+        }
 
         $response = $client->request('GET', $endPoint, [
             'headers' => [

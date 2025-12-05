@@ -30,7 +30,13 @@
         <link href="/bs5-tour/css/bs5-intro-tour.css" rel="stylesheet"/>
 
         <link rel='stylesheet' href='/css/bootstrap-duallistbox.min.css'/>
-
+        <link rel='stylesheet' href='/css/custom.css'/>
+        <style type="text/css">
+            :root {
+                --leftbar-bg: url("{{ __tipoSmallHeader() }}");
+            }
+            
+        </style>
         @yield('css')
 
     </head>
@@ -87,63 +93,154 @@
                         </button>
 
                         <!-- Topbar Search Form -->
+                        @if(__infoTopoMenu())
                         @if(Auth::user()->empresa && !__isContador())
+
                         <div class="app-search dropdown d-none d-lg-block">
-                            <span class="badge bg-primary">AMBIENTE: {{ Auth::user()->empresa->empresa->ambiente == 2 ? 'HOMOLOGAÇÃO' : 'PRODUÇÃO'}}</span>
+                            <span class="badge border border-light shadow box-custom rounded">
+                                <i class="ri-building-line text-primary"></i>
+                                <span class="text-dark">EMPRESA:</span>
+                                <span class="text-primary">{{ Auth::user()->empresa->empresa->nome }}</span>
+                            </span>
                         </div>
+
+                        <div class="app-search dropdown d-none d-lg-block">
+                            <span class="badge border border-light shadow box-custom rounded">
+                                <i class="ri-server-line text-primary"></i>
+                                <span class="text-dark">AMBIENTE:</span>
+                                <span class="text-primary">{{ Auth::user()->empresa->empresa->ambiente == 2 ? 'HOMOLOGAÇÃO' : 'PRODUÇÃO' }}</span>
+                            </span>
+                        </div>
+
                         @endif
 
                         @if(sizeof(Auth::user()->acessos) > 0)
-                        <div class="app-search dropdown d-none d-lg-block float-end">
-                            <span class="badge bg-info">IP: {{ Auth::user()->acessos ? Auth::user()->acessos->first()->ip : ''}}</span>
+
+                        <div class="app-search dropdown d-none d-lg-block">
+                            <span class="badge border border-light shadow box-custom rounded">
+                                <i class="ri-wifi-line text-primary"></i>
+                                <span class="text-dark">IP:</span>
+
+                                <span class="text-primary">{{ Auth::user()->acessos ? Auth::user()->acessos->first()->ip : '' }}</span>
+                            </span>
                         </div>
+
                         @endif
 
-                        @if(Auth::user()->empresa && Auth::user()->empresa->empresa->empresa_selecionada != null)
-                        <div class="app-search dropdown d-none d-lg-block float-end">
-                            <a href="{{ route('contador.show') }}" class="badge bg-success p-2">Empresa selecionada: {{ Auth::user()->empresa->empresa->empresaSelecionada->info }}</a>
+                        @if(Auth::user()->empresa && __isContador())
+                        <div class="d-lg-block d-none d-md-inline-block selecionar-empresa-contador">
+                            <div class="app-search dropdown d-none d-lg-block">
+                                <span class="badge border border-light shadow rounded">
+                                    <i class="ri-building-2-fill text-danger"></i>
+                                    <span class="text-dark">Empresa selecionada:</span>
+
+                                    <span class="text-primary">
+                                        {{ Auth::user()->empresa->empresa->empresa_selecionada != null ? Auth::user()->empresa->empresa->empresaSelecionada->info : '--' }}
+                                    </span>
+                                </span>
+                            </div>
                         </div>
                         @endif
 
                         @if(Auth::user()->empresa && Auth::user()->empresa->empresa->plano)
                         @if(Auth::user()->empresa->empresa->receber_com_boleto == 0)
 
-                        <div class="app-search dropdown d-lg-block video d-none d-md-inline-block" style="margin-left: 20px;">
-                            <span class="badge bg-dark p-2">Plano:
-                                <strong class="text-success">{{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong> - data de expiração:
-                                <strong>{{ __data_pt(Auth::user()->empresa->empresa->plano->data_expiracao, 0) }}</strong>
-                            </span>
-                            <a class="btn btn-light btn-sm" href="{{ route('upgrade.index') }}">Fazer upgrade</a>
-                            <button class="btn btn-info btn-sm ml-1" id="click-tour">Tour do sistema</button>
-                            @if(env("APP_ENV") == "demo")
-                            <button class="btn btn-success btn-sm ml-1" id="click-modal-dev">
-                                <i class="ri-code-box-line"></i>
-                                DADOS DO DESENVOLVEDOR
-                            </button>
-                            @endif
+                        <div class="app-search dropdown d-lg-block d-none d-md-inline-block">
+
+                            <div class="app-search dropdown d-none d-lg-block">
+                                <span class="badge border border-light shadow box-custom rounded">
+                                    <i class="ri-vip-crown-fill text-warning"></i>
+                                    <span class="text-dark">PLANO:</span>
+
+                                    <span class="text-primary">
+                                        {{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong> - até:
+                                        <strong>{{ __data_pt(Auth::user()->empresa->empresa->plano->data_expiracao, 0) }}</strong>
+                                    </span>
+                                </span>
+                            </div>
 
                         </div>
+
+                        <div class="app-search dropdown d-lg-block d-none d-md-inline-block">
+                            @if(__usuarioEscolherPlano())
+                            <a href="{{ route('upgrade.index') }}">
+
+                                <span class="badge border border-light shadow box-custom rounded">
+                                    <i class="ri-star-smile-fill text-danger"></i>
+                                    <span class="text-dark">Fazer upgrade</span>
+                                </span>
+                            </a>
+
+                            @else
+                            @if(__periodoExpirar())
+                            <a href="{{ route('upgrade.assinatura') }}">
+
+                                <span class="badge border border-light box-custom shadow rounded">
+                                    <i class="ri-award-fill text-danger"></i>
+                                    <span class="text-dark">Renovar assinatura</span>
+                                </span>
+                            </a>
+                            @endif
+                            @endif
+                        </div>
+
+
+                        @if(env("APP_ENV") == "demo")
+                        <div class="app-search dropdown d-lg-block d-none d-md-inline-block">
+                            <div class="app-search dropdown d-none d-lg-block">
+                                <button class="badge bg-success border border-light shadow p-1 rounded-3" id="click-modal-dev">
+                                    <i class="ri-code-box-line text-white"></i>
+                                    <span class="text-white">DADOS DO DESENVOLVEDOR</span>
+                                </button>
+                            </div>
+                        </div>
+                        @endif
+
                         @else
 
                         @if(env("APP_ENV") == "demo")
-                        <div class="app-search dropdown d-lg-block video d-none d-md-inline-block" style="margin-left: 20px;">
-
-                            <button class="btn btn-success btn-sm ml-1" id="click-modal-dev">
-                                <i class="ri-code-box-line"></i>
-                                DADOS DO DESENVOLVEDOR
-                            </button>
+                        <div class="app-search dropdown d-lg-block d-none d-md-inline-block">
+                            <div class="app-search dropdown d-none d-lg-block">
+                                <button class="badge bg-success border border-light shadow p-1 rounded-3" id="click-modal-dev">
+                                    <i class="ri-code-box-line text-white"></i>
+                                    <span class="text-white">DADOS DO DESENVOLVEDOR</span>
+                                </button>
+                            </div>
                         </div>
                         @endif
+
                         @endif
                         @endif
 
+                        <div class="app-search dropdown d-lg-block video d-none d-md-inline-block">
+                        </div>
+                        @endif
+
+                        @if(session()->has('impersonate'))
+                        <div class="app-search dropdown d-lg-block d-none d-md-inline-block">
+                            <a href="{{ route('impersonate.stop') }}">
+                                <span class="badge border border-light shadow box-custom rounded">
+                                    <i class="ri-settings-fill text-success"></i>
+                                    <span class="text-dark">Voltar para superadmin</span>
+                                </span>
+                            </a>   
+                        </div>
+                        @endif
+
+                        @if(session()->has('impersonate_contador'))
+                        <div class="app-search dropdown d-lg-block d-none d-md-inline-block">
+                            <a href="{{ route('impersonate-contador.stop') }}">
+                                <span class="badge border border-light shadow box-custom rounded">
+                                    <i class="ri-settings-fill text-success"></i>
+                                    <span class="text-dark">Voltar para menu contador</span>
+                                </span>
+                            </a>   
+                        </div>
+                        @endif
                     </div>
 
-
                     <ul class="topbar-menu d-flex align-items-center gap-3">
-
                         <!-- inicio alertas -->
-
                         <li class="dropdown notification-list">
                             <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                                 <i class="ri-notification-3-fill fs-22"></i>
@@ -183,6 +280,12 @@
                                 <i class="ri-shopping-basket-2-fill fs-22"></i>
                             </a>
                         </li>
+
+                        <li class="d-block d-md-none">
+                            <a title="PDV" class="nav-link" href="{{ route('pdv-mobo.index')}}">
+                                <i class="ri-shopping-basket-2-fill fs-22"></i>
+                            </a>
+                        </li>
                         @endcan
                         @endif
                         @endif
@@ -202,11 +305,9 @@
                         <li class="dropdown me-md-2" id="step3">
                             <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                                 <span class="account-user-avatar">
-                                    @if(Auth::user()->imagem != null)
-                                    <img src="{{ Auth::user()->img }}" height="32" class="rounded-circle">
-                                    @else
-                                    <img src="/assets/images/users/avatar-4.jpg" alt="user-image" width="32" class="rounded-circle">
-                                    @endif
+
+                                    <i class="ri-user-line fs-22"></i>
+
                                 </span>
                                 <span class="d-lg-flex flex-column gap-1 d-none">
                                     <h5 class="my-0"> {{ Auth::user()->name }}</h5>
@@ -236,6 +337,13 @@
                                     <i class="ri-information-fill align-middle me-1"></i>
                                     <span>Abrir chamado</span>
                                 </a>
+                                @else
+
+                                <a href="{{ route('contador.profile') }}" class="dropdown-item">
+                                    <i class="ri-account-circle-fill align-middle me-1"></i>
+                                    <span>Minha Conta</span>
+                                </a>
+
                                 @endif
 
                                 <!-- item-->
@@ -262,7 +370,7 @@
             <!-- end:: Menu -->
 
             <div class="content-page">
-                <div class="content">
+                <div class="content" style="margin-left: -5px; margin-right: -5px;">
                     <div class="@if(__tipoMenu() == 'vertical') container-fluid @endif" @if(__tipoMenu() == 'horizontal') style="margin-top: -15px" @endif>
 
                         @yield('content')
@@ -307,6 +415,36 @@
                 </div>
             </div>
 
+            <div class="modal fade" id="modal-empresas-contador" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Selecionar Empresa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Empresa</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="modal fade" id="modal-crm-notificacao" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
@@ -329,6 +467,23 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="staticBackdropLabel">Financeiro</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal-alerta-certificado" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Alerta de certificado</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -392,6 +547,10 @@
                 </div>
             </div>
 
+            <button id="btn-top" class="btn btn-primary rounded-circle">
+                <i class="ri-arrow-up-line fs-5"></i>
+            </button>
+
             <script type="text/javascript">
                 let prot = window.location.protocol;
                 let host = window.location.host;
@@ -406,6 +565,9 @@
             <script src="/assets/vendor/daterangepicker/moment.min.js"></script>
             <script src="/assets/vendor/daterangepicker/daterangepicker.js"></script>
             <script src="/assets/vendor/jquery-mask-plugin/jquery.mask.min.js"></script>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.9/jquery.inputmask.min.js" integrity="sha512-F5Ul1uuyFlGnIT1dk2c4kB4DBdi5wnBJjVhL7gQlGh46Xn0VhvD8kgxLtjdZ5YN83gybk/aASUAlpdoWUjRR3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
             <script src="/assets/vendor/admin-resources/jquery.vectormap/jquery-jvectormap-1.2.2.min.js"></script>
             <script src="/assets/vendor/admin-resources/jquery.vectormap/maps/jquery-jvectormap-world-mill-en.js"></script>
             <script src="/assets/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
@@ -414,10 +576,12 @@
             <script src='/js/jquery.bootstrap-duallistbox.min.js'></script>
 
             <script type="text/javascript">
-                // vars
                 var casas_decimais_qtd = '{{ __casas_decimais_quantidade() }}';
             </script>
 
+            @if(__isContador())
+            <script src="/js/contador.js"></script>
+            @endif
             <script src="/js/uploadImagem.js"></script>
             <script type="text/javascript" src="/js/jquery.mask.min.js"></script>
             <script src='https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js'></script>
@@ -453,6 +617,11 @@
                     , "showMethod": "fadeIn"
                     , "hideMethod": "fadeOut"
                 }
+
+                @if(session()->has('swal_success'))
+                swal("Sucesso", '{{ session()->get('swal_success') }}', "success")
+                @endif
+
                 @if(session()->has('flash_success'))
                 toastr.success('{{ session()->get('flash_success') }}');
                 @endif
@@ -477,14 +646,24 @@
                 modalFinanceiro()
                 @endif
 
-                $(html).attr('data-topbar-color', '{{__dataTopBar()}}')
-                $(html).attr('data-menu-color', '{{__dataMenuBar()}}')
+                @if(session()->has('flash_alerta_certificado'))
+                modalAlertaCertificado()
+                @endif
+
+                $(html).attr('data-topbar-color', '{{ __dataTopBar() }}')
+                $(html).attr('data-menu-color', '{{ __dataMenuBar() }}')
+                $(html).attr('data-bs-theme', '{{ __dataThemeDefault() }}')
 
                 window.addEventListener("load", () => {
                     setTimeout(() => {
                         document.querySelector(".loader").classList.add("loader--hidden")
                     }, 100)
                 })
+
+                @if(__dataTopBar() == 'brand')
+                $('.box-custom').addClass('bg-white')
+                $('.ri-menu-2-fill').addClass('text-white')
+                @endif
 
                 function audioError(){
                     var audio = new Audio('/audio/error.mp3');
@@ -508,14 +687,23 @@
                 }
 
                 function modalFinanceiro(){
-                    $.get(path_url+'api/financeiro-boleto/modal', {empresa_id: $('#empresa_id').val()})
-                    .done((res) => {
-                        console.log(res)
-                        $('#modal-financeiro').modal('show')
-                        $('#modal-financeiro .modal-body').html(res)
-                    }).fail((err) => {
-                        console.log(err)
-                    })
+                    setTimeout(() => {
+                        $.get(path_url+'api/financeiro-boleto/modal', {empresa_id: $('#empresa_id').val()})
+                        .done((res) => {
+                            // console.log(res)
+                            $('#modal-financeiro').modal('show')
+                            $('#modal-financeiro .modal-body').html(res)
+                        }).fail((err) => {
+                            console.log(err)
+                        })
+                    }, 1000)
+                }
+
+                function modalAlertaCertificado(){
+                    setTimeout(() => {
+                        $('#modal-alerta-certificado').modal('show')
+                        $('#modal-alerta-certificado .modal-body').html('{{ session()->get('flash_alerta_certificado') }}')
+                    }, 1000)
                 }
             </script>
 

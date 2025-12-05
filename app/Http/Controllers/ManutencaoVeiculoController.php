@@ -50,7 +50,7 @@ class ManutencaoVeiculoController extends Controller
             return $query->where('estado', $estado);
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($veiculo_id){
             $veiculo = Veiculo::findOrFail($veiculo_id);

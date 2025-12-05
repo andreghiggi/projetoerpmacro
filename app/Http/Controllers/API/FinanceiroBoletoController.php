@@ -152,10 +152,26 @@ class FinanceiroBoletoController extends Controller
 
     public function modal(Request $request){
 
-        $item = FinanceiroBoleto::where('empresa_id', $request->empresa_id)
-        ->whereMonth('created_at', date('m'))
-        ->where('status', 0)
-        ->first();
+        // $item = FinanceiroBoleto::where('empresa_id', $request->empresa_id)
+        // ->whereMonth('created_at', date('m'))
+        // ->where('status', 0)
+        // ->first();
+
+        $item = $this->validaFaturasAnteriores($request->empresa_id);
         return view('financeiro_boletos.partials.modal', compact('item'));
+    }
+
+    private function validaFaturasAnteriores($empresa_id){
+        $mes = 1;
+        $fim = (int)date('m');
+        for($i=1; $i<=$fim; $i++){
+            $fatura = FinanceiroBoleto::where('empresa_id', $empresa_id)
+            ->whereMonth('vencimento', $mes)
+            ->where('status', 0)
+            ->first();
+
+            if($fatura != null) return $fatura;
+            $mes++;
+        }
     }
 }

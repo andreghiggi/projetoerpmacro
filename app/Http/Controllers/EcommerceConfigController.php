@@ -23,18 +23,15 @@ class EcommerceConfigController extends Controller
         if($item != null){
             $item->tipos_pagamento = json_decode($item->tipos_pagamento);
         }
-
         return view('ecommerce_config.index', compact('item'));
     }
 
     public function store(Request $request)
     {
-
         $item = EcommerceConfig::where('empresa_id', $request->empresa_id)
         ->first();
 
         $this->_validate($request, $item ? $item->id : null);
-
 
         if(!isset($request->tipos_pagamento)){
             $request->tipos_pagamento = [];

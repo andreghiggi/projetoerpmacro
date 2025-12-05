@@ -11,7 +11,7 @@ class PadraoTributacaoProdutoAdmController extends Controller
 {
     public function index(Request $request){
         $data = PadraoTributacaoProduto::where('empresa_id', $request->empresa)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $empresa = Empresa::findOrFail($request->empresa);
 

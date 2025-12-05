@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Notas de Serviço'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -74,28 +74,26 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->razao_social }}</td>
-                                    <td>{{ $item->documento }}</td>
-                                    
-                                    <td>{{ $item->numero_nfse ? $item->numero_nfse : '' }}</td>
-                                    <td>{{ __moeda($item->valor_total) }}</td>
-                                    <td width="150">
+                                    <td data-label="Tomador">{{ $item->razao_social }}</td>
+                                    <td data-label="CPF/CNPJ">{{ $item->documento }}</td>
+                                    <td data-label="Número">{{ $item->numero_nfse ? $item->numero_nfse : '' }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->valor_total) }}</td>
+                                    <td data-label="Estado">
                                         @if($item->estado == 'aprovado')
-                                        <span class="btn btn-success text-white btn-sm w-100">Aprovado</span>
+                                        <span class="btn btn-success text-white btn-sm">Aprovado</span>
                                         @elseif($item->estado == 'cancelado')
-                                        <span class="btn btn-danger text-white btn-sm w-100">Cancelado</span>
+                                        <span class="btn btn-danger text-white btn-sm">Cancelado</span>
                                         @elseif($item->estado == 'rejeitado')
-                                        <span class="btn btn-warning text-white btn-sm w-100">Rejeitado</span>
+                                        <span class="btn btn-warning text-white btn-sm">Rejeitado</span>
                                         @else
-                                        <span class="btn btn-info text-white btn-sm w-100">Novo</span>
+                                        <span class="btn btn-info text-white btn-sm">Novo</span>
                                         @endif
                                     </td>
-                                    <td>{{ $item->ambiente == 2 ? 'Homologação' : 'Produção' }}</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>{{ $item->chave }}</td>
-                                    
+                                    <td data-label="Ambiente">{{ $item->ambiente == 2 ? 'Produção' : 'Produção' }}</td>
+                                    <td data-label="Data">{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Chave">{{ $item->chave }}</td>
                                     <td>
-                                        <form action="{{ route('nota-servico.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 360px">
+                                        <form action="{{ route('nota-servico.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 320px">
                                             @method('delete')
                                             @csrf
 
@@ -103,41 +101,34 @@
                                             <a class="btn btn-dark btn-sm" title="Imprimir NFSe" target="_blank" href="{{ route('nota-servico.imprimir', [$item->id]) }}">
                                                 <i class="ri-printer-line"></i>
                                             </a>
-
                                             <button title="Cancelar NFSe" type="button" class="btn btn-danger btn-sm" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-close-circle-line"></i>
                                             </button>
-
                                             @else
-                                            <a title="Visualizar PDF Temorário" class="btn btn-dark btn-sm" href="{{ route('nota-servico.preview', [$item->id]) }}">
+                                            <a title="Visualizar PDF Temorário" target="_blank" class="btn btn-dark btn-sm" href="{{ route('nota-servico.preview', [$item->id]) }}">
                                                 <i class="ri-file-ppt-line"></i>
                                             </a>
-
                                             @endif
-                                            
-                                            @if($item->estado == 'novo' || $item->estado == 'rejeitado')
 
+                                            @if($item->estado == 'novo' || $item->estado == 'rejeitado')
                                             @can('nfse_edit')
                                             <a class="btn btn-warning btn-sm" href="{{ route('nota-servico.edit', $item->id) }}">
                                                 <i class="ri-edit-line"></i>
                                             </a>
                                             @endcan
-                                            
                                             @can('nfse_delete')
-                                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
+                                            <button type="button" class="btn btn-danger btn-sm btn-delete">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
                                             @endcan
-                                            
                                             <button title="Transmitir NFSe" type="button" class="btn btn-success btn-sm" onclick="transmitir('{{$item->id}}')">
                                                 <i class="ri-send-plane-fill"></i>
                                             </button>
-
                                             @endif
 
                                             <button title="Consultar NFSe" type="button" class="btn btn-light btn-sm" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-file-search-line"></i>
                                             </button>
-
-
                                         </form>
                                     </td>
                                 </tr>
@@ -148,6 +139,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>

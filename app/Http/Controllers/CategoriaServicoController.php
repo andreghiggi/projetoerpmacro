@@ -37,7 +37,7 @@ class CategoriaServicoController extends Controller
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('categoria_servico.index', compact('data'));
     }
@@ -120,10 +120,10 @@ class CategoriaServicoController extends Controller
             $descricaoLog = $item->nome;
             $item->delete();
             __createLog(request()->empresa_id, 'Categoria de Serviço', 'excluir', $descricaoLog);
-            session()->flash('flash_success', 'Deletado com sucesso');
+            session()->flash('flash_success', 'Categoria removida com sucesso');
         } catch (\Exception $e) {
             __createLog(request()->empresa_id, 'Categoria de Serviço', 'erro', $e->getMessage());
-            session()->flash('flash_error', 'Não foi possível deletar' . $e->getMessage());
+            session()->flash('flash_error', 'Não foi possível deletar: ' . $e->getMessage());
         }
         return redirect()->route('categoria-servico.index');
     }

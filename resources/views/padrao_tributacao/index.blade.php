@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Tributações Padrão'])
 @section('content')
 
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -48,33 +48,38 @@
                                     <th width="12%">Ações</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
                                     @can('config_produto_fiscal_delete')
-                                    <td>
+                                    <td data-label="Selecionar">
                                         <div class="form-check form-checkbox-danger mb-2">
                                             <input class="form-check-input check-delete" type="checkbox" name="item_delete[]" value="{{ $item->id }}">
                                         </div>
                                     </td>
                                     @endcan
-                                    <td width="300">{{ $item->descricao }}</td>
-                                    <td>
+
+                                    <td data-label="Descrição">{{ $item->descricao }}</td>
+
+                                    <td data-label="Padrão">
                                         @if($item->padrao)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td>{{ $item->ncm }}</td>
-                                    <td>{{ $item->perc_icms }}</td>
-                                    <td>{{ $item->perc_pis }}</td>
-                                    <td>{{ $item->perc_cofins }}</td>
-                                    <td>{{ $item->perc_ipi }}</td>
-                                    <td>{{ $item->cst_csosn }}</td>
-                                    <td>{{ $item->cst_pis }}</td>
-                                    <td>{{ $item->cst_cofins }}</td>
-                                    <td>{{ $item->cst_ipi }}</td>
+
+                                    <td data-label="NCM">{{ $item->ncm }}</td>
+                                    <td data-label="%ICMS">{{ $item->perc_icms }}</td>
+                                    <td data-label="%PIS">{{ $item->perc_pis }}</td>
+                                    <td data-label="%COFINS">{{ $item->perc_cofins }}</td>
+                                    <td data-label="%IPI">{{ $item->perc_ipi }}</td>
+                                    <td data-label="CST/CSOSN">{{ $item->cst_csosn }}</td>
+                                    <td data-label="CST PIS">{{ $item->cst_pis }}</td>
+                                    <td data-label="CST COFINS">{{ $item->cst_cofins }}</td>
+                                    <td data-label="CST IPI">{{ $item->cst_ipi }}</td>
+
                                     <td>
                                         <form action="{{ route('produtopadrao-tributacao.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
@@ -92,6 +97,7 @@
                                         </form>
                                     </td>
                                 </tr>
+
                                 @empty
                                 <tr>
                                     <td colspan="13" class="text-center">Nada encontrado</td>
@@ -99,6 +105,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
                         @can('config_produto_fiscal_delete')
                         <form action="{{ route('produtopadrao-tributacao.destroy-select') }}" method="post" id="form-delete-select">
@@ -112,6 +119,7 @@
                         @endcan
                     </div>
                 </div>
+                <br>
                 {!! $data->appends(request()->all())->links() !!}
             </div>
         </div>

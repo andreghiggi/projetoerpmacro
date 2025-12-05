@@ -10,6 +10,7 @@ use App\Models\Transportadora;
 use App\Models\NaturezaOperacao;
 use App\Models\EcommerceConfig;
 use App\Models\Empresa;
+use App\Models\Funcionario;
 use App\Models\Nfe;
 
 class PedidoEcommerceController extends Controller
@@ -30,7 +31,7 @@ class PedidoEcommerceController extends Controller
         ->when(!empty($estado), function ($query) use ($estado) {
             return $query->where('estado', $estado);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($cliente_id){
             $cliente = Cliente::findOrFail($cliente_id);
@@ -151,8 +152,10 @@ class PedidoEcommerceController extends Controller
         $numeroNfe = Nfe::lastNumero($empresa);
 
         $isPedidoEcommerce = 1;
-        return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isPedidoEcommerce', 'numeroNfe', 
-            'caixa'));
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
+
+        return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isPedidoEcommerce', 
+            'numeroNfe', 'caixa', 'funcionarios'));
     }
 
 }

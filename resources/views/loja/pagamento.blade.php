@@ -1,48 +1,13 @@
 @extends('loja.default', ['title' => 'Pagamento'])
 @section('css')
-<style type="text/css">
-	.w-100{
-		width: 100%;
-		margin-bottom: 10px;
-	}
-
-	.ml-2{
-		border-left: 10px;
-	}
-
-	.select{
-		border-bottom: 2px solid #D10024;
-	}
-	.header-pay{
-		text-align: center;
-	}
-	.header-pay:hover{
-		cursor: pointer;
-	}
-	.body-pay{
-		margin-top: 20px;
-	}
-	.d-none{
-		display: none;
-	}
-	label{
-		margin-top: 10px;
-		margin-bottom: -4px;
-	}
-
-	.btn-success{
-		background: var(--color-main)!important;
-		border: none;
-	}
-
-</style>
+<link rel="stylesheet" type="text/css" href="/css/ecommerce_pagamento.css">
 @endsection
 @section('content')
 
 <div class="section">
 	<div class="container">
 
-		<div class="col-md-4 order-details">
+		<div class="col-md-4 billing-details">
 			<div class="section-title text-center">
 				<h3 class="title">Seu Pedido</h3>
 			</div>
@@ -81,7 +46,7 @@
 			<textarea class="form-control" id="observacao"></textarea>
 		</div>
 
-		<div class="col-md-8 order-details">
+		<div class="col-md-8 billing-details">
 
 			<div class="row header-pay">
 				@if(in_array('Pix', $tiposPagamento))
@@ -405,16 +370,15 @@
 	function setCardTokenAndPay(status, response) {
 
 		if (status == 200 || status == 201) {
-			let form = document.getElementById('paymentForm');
+			let form = document.getElementById('paymentFormCartao');
 			let card = document.createElement('input');
 			card.setAttribute('name', 'token');
 			card.setAttribute('type', 'hidden');
 			card.setAttribute('value', response.id);
+			// console.log(response.id)
 			form.appendChild(card);
 			doSubmit=true;
 			$('button').attr('disabled', true)
-
-
 			form.submit();
 		} else {
 			alert("Verify filled data!\n"+JSON.stringify(response, null, 4));

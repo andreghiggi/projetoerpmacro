@@ -52,7 +52,7 @@ class NotaServicoController extends Controller
             return $query->where('estado', $estado);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('nota_servico.index', compact('data'));
 
@@ -63,11 +63,15 @@ class NotaServicoController extends Controller
             session()->flash("flash_warning", "Abrir caixa antes de continuar!");
             return redirect()->route('caixa.create');
         }
-        return view('nota_servico.create');
+
+        $config = Empresa::find(request()->empresa_id);
+        $novoNumeroNFse = $config->numero_ultima_nfse+1;
+        return view('nota_servico.create', compact('novoNumeroNFse'));
     }
 
     public function edit($id){
         $item = NotaServico::findOrFail($id);
+
         return view('nota_servico.edit', compact('item'));
     }
 
@@ -85,7 +89,6 @@ class NotaServicoController extends Controller
                     'estado' => 'novo',
                     'serie' => '',
                     'codigo_verificacao' => '',
-                    'numero_nfse' => 0,
                     'url_xml' => '',
                     'url_pdf_nfse' => '',
                     'url_pdf_rps' => '',
@@ -102,6 +105,7 @@ class NotaServicoController extends Controller
                     'complemento' => $request->complemento ?? '',
                     'cidade_id' => $request->cidade_id,
                     'email' => $request->email ?? '',
+                    'numero_nfse' => $request->numero_nfse ?? 0,
                     'gerar_conta_receber' => $request->gerar_conta_receber,
                     'telefone' => $request->telefone ?? ''
                 ]);
@@ -136,6 +140,9 @@ class NotaServicoController extends Controller
                     'responsavel_retencao_iss' => $request->responsavel_retencao_iss ?? 1,
 
                 ]);
+
+                $config->numero_ultima_nfse = $nfse->numero_nfse;
+                $config->save();
 
                 if(isset($request->reserva_id)){
                     $reserva = Reserva::findOrFail($request->reserva_id);
@@ -183,7 +190,6 @@ public function update(Request $request, $id){
                 'ambiente' => $config->ambiente,
                 'serie' => '',
                 'codigo_verificacao' => '',
-                'numero_nfse' => 0,
                 'url_xml' => '',
                 'url_pdf_nfse' => '',
                 'url_pdf_rps' => '',
@@ -197,6 +203,7 @@ public function update(Request $request, $id){
                 'cep' => $request->cep ?? '',
                 'rua' => $request->rua,
                 'numero' => $request->numero,
+                'numero_nfse' => $request->numero_nfse,
                 'bairro' => $request->bairro,
                 'complemento' => $request->complemento ?? '',
                 'cidade_id' => $request->cidade_id,
@@ -303,7 +310,10 @@ public function preview($id){
     $params = [
         'token' => $empresa->token_nfse,
         'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $config->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
+        'timeout' => 60,
+        'port' => 443,
+        'http_version' => CURL_HTTP_VERSION_NONE,
+        'debug' => false,
         'options' => [
             'debug' => false,
             'timeout' => 60,
@@ -318,7 +328,7 @@ public function preview($id){
         $doc = preg_replace('/[^0-9]/', '', $item->documento);
         $im = preg_replace('/[^0-9]/', '', $item->im);
         $ie = preg_replace('/[^0-9]/', '', $item->ie);
-        $novoNumeroNFse = $empresa->numero_ultima_nfse+1;
+
         $config = ConfigGeral::where('empresa_id', $item->empresa_id)
         ->first();
 
@@ -326,8 +336,11 @@ public function preview($id){
         if($config != null){
             $regimeTributacao = $config->regime_nfse;
         }
+
+        $valorLiquido = $servico->valor_servico - $servico->desconto_incondicional - $servico->desconto_condicional;
+
         $payload = [
-            "numero" => $novoNumeroNFse,
+            "numero" => $item->numero_nfse,
             "serie" => $empresa->numero_serie_nfse,
             "tipo" => "1",
             "status" => "1",
@@ -359,7 +372,11 @@ public function preview($id){
                 "valor_servicos" => $servico->valor_servico,
                 "valor_pis" => $servico->aliquota_pis,
                 "valor_aliquota" => $servico->aliquota_iss,
+                // "valor_liquido" => $servico->valor_servico - $servico->desconto_incondicional - $servico->desconto_condicional,
+                "valor_liquido" => $valorLiquido - ($servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : 0),
                 "codigo_cnae" => $servico->codigo_cnae,
+                "valor_iss" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
+                "valor_iss_retido" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
                 "itens" => [
                     [
                         "codigo" => $servico->codigo_servico,
@@ -369,15 +386,34 @@ public function preview($id){
                         "valor_servicos" => $servico->valor_servico,
                         "valor_pis" => $servico->aliquota_pis,
                         "valor_aliquota" => $servico->aliquota_iss,
+                        "valor_liquido" => $valorLiquido - ($servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : 0),
                         "codigo_cnae" => $servico->codigo_cnae,
+                        "valor_iss" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
+                        "valor_iss_retido" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
                     ]
                 ]
             ]
         ];
-            // return response()->json($payload, 404);
+        // dd($payload);
+        if($servico->desconto_incondicional > 0){
+            $payload['servico']['valor_desconto_incondicionado'] = $servico->desconto_incondicional;
+            $payload['servico']['itens'][0]['valor_desconto_incondicionado'] = $servico->desconto_incondicional;
+        }
+
+        if($servico->desconto_condicional > 0){
+            $payload['servico']['valor_desconto_condicionado'] = $servico->desconto_condicional;
+            $payload['servico']['itens'][0]['valor_desconto_condicionado'] = $servico->desconto_condicional;
+        }
+
+        if($servico->iss_retido == 1){
+            $payload['servico']['iss_retido'] = true;
+            $payload['servico']['responsavel_retencao'] = $servico->responsavel_retencao_iss;
+        }
+        // dd($payload);
+        // return response()->json($payload, 404);
         $rute = "nfse_temp/temp.pdf";
         $resp = $nfse->preview($payload);
-
+        $resp = json_decode($resp);
         if(isset($resp->pdf)){
             $pdf_b64 = base64_decode($resp->pdf);
 
@@ -395,6 +431,7 @@ public function preview($id){
     }
 
 }
+
 
 private function retiraAcentos($texto){
     return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/", "/(ç)/", "/(&)/"),explode(" ","a A e E i I o O u U n N c e"),$texto);

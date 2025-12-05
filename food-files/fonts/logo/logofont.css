@@ -1,0 +1,71 @@
+.logofont,
+.logofont * {
+
+}
+
+@font-face {
+    font-family: 'Gilroy Black';
+    src: url('Gilroy-Black.woff2') format('woff2'),
+        url('Gilroy-Black.woff') format('woff'),
+        url('Gilroy-Black.svg#Gilroy-Black') format('svg');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy Extrabold';
+    src: url('Gilroy-ExtraBold.woff2') format('woff2'),
+        url('Gilroy-ExtraBold.woff') format('woff'),
+        url('Gilroy-ExtraBold.svg#Gilroy-ExtraBold') format('svg');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+.logofont {
+font-family: 'Gilroy Black' !important;
+font-size: 46px;
+line-height: 46px;
+color: rgba(255,255,255,.9);
+}
+
+.logofont-dark span {
+display: block;
+transform: translateY(-2px);
+font-family: 'Gilroy Black' !important;
+color: #31323a !important;
+font-size: 46px !important;
+line-height: 46px !important;
+}
+
+.logofont strong {
+color: #4ECB4A;
+}
+
+.logofont-mobile span {
+display: block;
+text-align: center;
+transform: translateY(-1px);
+font-family: 'Gilroy Black' !important;
+font-size: 34px !important;
+line-height: 30px !important;
+}
+
+.logofont-login span {
+display: block;
+text-align: center;
+margin: 6px 0 0 0;
+font-family: 'Gilroy Black' !important;
+font-size: 46px !important;
+line-height: 46px !important;
+}
+
+.logofont-city span {
+display: block;
+text-align: center;
+margin: -4px 0 0 0;
+font-family: 'Gilroy Black' !important;
+font-size: 38px !important;
+line-height: 30px !important;
+}

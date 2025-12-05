@@ -54,7 +54,7 @@ class BoletoController extends Controller
             return $query->where('boletos.conta_boleto_id', $banco);
         })
         ->orderBy('boletos.created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('boletos.index', compact('data', 'contasBoleto', 'cliente'));
     }
 

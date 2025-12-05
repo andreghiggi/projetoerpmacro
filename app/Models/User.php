@@ -30,7 +30,9 @@ class User extends Authenticatable
         'notificacao_ecommerce',
         'escolher_localidade_venda',
         'suporte',
-        'status'
+        'status',
+        'finalizacao_pdv',
+        'plano_auto_cadastro'
     ];
 
     /**
@@ -76,7 +78,7 @@ class User extends Authenticatable
     public function getImgAttribute()
     {
         if($this->imagem == ""){
-            return "/imgs/no-image.png";
+            return "/imgs/no-client.png";
         }
         return "/uploads/usuarios/$this->imagem";
     }

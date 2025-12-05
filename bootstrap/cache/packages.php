@@ -1,18 +1,4 @@
 <?php return array (
-  'blade-ui-kit/blade-icons' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'BladeUI\\Icons\\BladeIconsServiceProvider',
-    ),
-  ),
-  'eduard9969/blade-polaris-icons' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Eduard9969\\BladePolarisIcons\\BladePolarisIconsServiceProvider',
-    ),
-  ),
   'laravel/sail' => 
   array (
     'providers' => 
@@ -50,6 +36,17 @@
     'aliases' => 
     array (
       'Excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+    ),
+  ),
+  'mews/captcha' => 
+  array (
+    'aliases' => 
+    array (
+      'Captcha' => 'Mews\\Captcha\\Facades\\Captcha',
+    ),
+    'providers' => 
+    array (
+      0 => 'Mews\\Captcha\\CaptchaServiceProvider',
     ),
   ),
   'nesbot/carbon' => 

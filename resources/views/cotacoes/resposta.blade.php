@@ -79,21 +79,21 @@
 									<tr>
 										<input type="hidden" class="" name="item_id[]" value="{{ $p->id }}">
 										<td>
-											<input style="width: 300px" disabled type="tel" class="form-control" name="produto_nome[]" value="{{ $p->produto->nome }}">
+											<input style="width: 450px" disabled type="tel" class="form-control" name="produto_nome[]" value="{{ $p->descricao_produto }}">
 										</td>
 										<td id="quantity">
 											@php
 											$casasDecimais = 2;
 											@endphp
-											<input style="width: 100px" required readonly type="tel" class="form-control moeda" value="{{ number_format($p->quantidade, $casasDecimais) }}" name="quantidade[]">
+											<input style="width: 150px" required readonly type="tel" class="form-control moeda" value="{{ number_format($p->quantidade, $casasDecimais) }}" name="quantidade[]">
 										</td>
 
 										<td>
-											<input style="width: 100px" required type="tel" class="form-control moeda value" id="value" name="valor_unitario[]">
+											<input style="width: 150px" required type="tel" class="form-control moeda value" id="value" name="valor_unitario[]">
 										</td>
 
 										<td>
-											<input style="width: 100px" readonly type="text" name="subtotal[]" class="form-control subtotal">
+											<input style="width: 150px" readonly type="text" name="subtotal[]" class="form-control subtotal">
 										</td>
 
 										<td>

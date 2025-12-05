@@ -11,7 +11,9 @@
         </div>
         <div class="row">
             <div class="col-3 mt-1">
-                {!! Form::select('gerar_conta_receber', 'Gerar Conta a Receber', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select']) !!}
+                {!! Form::select('gerar_conta_receber', 'Gerar Conta a Receber', [0 => 'Não', 1 => 'Sim'])
+                ->value($config ? $config->gerar_conta_receber_padrao : 0)
+                ->attrs(['class' => 'form-select']) !!}
             </div>
             <div class="col-3 mt-1">
                 {!! Form::text('cpf_nota', "CPF/CNPJ na nota?")->attrs(['class' => 'cpf_cnpj']) !!}
@@ -120,7 +122,7 @@
                     @else
                     <tr class="dynamic-form">
                         <td width="300">
-                            <select name="tipo_pagamento[]" class="form-control tipo_pagamento select2">
+                            <select name="tipo_pagamento[]" class="form-select tipo_pagamento">
                                 <option value="">Selecione..</option>
                                 @foreach(App\Models\Nfe::tiposPagamento() as $key => $c)
                                 <option value="{{$key}}">{{$c}}</option>

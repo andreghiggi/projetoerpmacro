@@ -18,7 +18,7 @@ class GerenciarPlanoController extends Controller
         ->when(!empty($empresa), function ($query) use ($empresa) {
             return $query->where('empresa_id', $empresa);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($empresa){
             $empresa = Empresa::findOrFail($empresa);

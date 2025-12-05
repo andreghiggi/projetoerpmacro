@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\UsuarioEmpresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UsuarioSuperController extends Controller
 {
@@ -27,7 +28,7 @@ class UsuarioSuperController extends Controller
             return $q->where('usuario_empresas.empresa_id', $request->empresa)
             ->join('usuario_empresas', 'usuario_empresas.usuario_id', '=', 'users.id');
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $empresa = null;
         if($request->empresa){
@@ -112,8 +113,10 @@ class UsuarioSuperController extends Controller
 
     public function store(Request $request)
     {
+        $this->__validate($request);
         try {
             // dd($request->all());
+
             $usuario = User::create([
                 'password' => Hash::make($request->password),
                 'email' => $request->email,
@@ -134,5 +137,17 @@ class UsuarioSuperController extends Controller
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
         return redirect()->route('usuario-super.index');
+    }
+
+    private function __validate(Request $request)
+    {
+        $rules = [
+            'email' => 'unique:users',
+        ];
+
+        $messages = [
+            'email.unique' => 'Este email já esta em uso!',
+        ];
+        $this->validate($request, $rules, $messages);
     }
 }

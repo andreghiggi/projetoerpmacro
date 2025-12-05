@@ -1,20 +1,20 @@
 @extends('layouts.app', ['title' => 'Funcionários'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
                 <div class="row">
                     @can('funcionario_create')
-                    <div class="col-md-2">
+                    <div class="col-md-2 mt-1">
                         <a href="{{ route('funcionarios.create') }}" class="btn btn-success">
                             <i class="ri-add-circle-fill"></i>
                             Novo Funcionário
                         </a>
                     </div>
 
-                    <div class="col-md-8"></div>
-                    <div class="col-md-2">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-3 mt-1">
                         <a href="{{ route('comissao.index') }}" class="btn btn-dark float-end">
                             <i class="ri-wallet-2-fill"></i>
                             Comissão de vendas
@@ -41,7 +41,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -56,11 +56,11 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->nome }}</td>
-                                    <td>{{ __moeda($item->salario) }}</td>
-                                    <td>{{ __moeda($item->comissao) }}</td>
-                                    <td>{{ __data_pt($item->created_at, 1) }}</td>
-                                    <td>
+                                    <td data-label="Nome">{{ $item->nome }}</td>
+                                    <td data-label="Salário">{{ __moeda($item->salario) }}</td>
+                                    <td data-label="Comissão">{{ __moeda($item->comissao) }}</td>
+                                    <td data-label="Data de cadastro">{{ __data_pt($item->created_at, 1) }}</td>
+                                    <td data-label="Status">
                                         @if($item->status)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
@@ -68,7 +68,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <form action="{{ route('funcionarios.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 150px;" action="{{ route('funcionarios.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @can('funcionario_edit')
                                             <a class="btn btn-warning btn-sm" href="{{ route('funcionarios.edit', [$item->id]) }}">
@@ -84,19 +84,21 @@
                                             @endcan
 
                                             @can('funcionario_edit')
-                                            <a href="{{ route('funcionarios.atribuir', [$item->id]) }}" class="btn btn-dark btn-sm" title="Atribuir Funcionário a Serviço"><i class="ri-user-settings-fill"></i></a>
+                                            <a href="{{ route('funcionarios.atribuir', [$item->id]) }}" class="btn btn-dark btn-sm" title="Atribuir Funcionário a Serviço">
+                                                <i class="ri-user-settings-fill"></i>
+                                            </a>
                                             @endcan
-                                            
                                         </form>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Nada encontrado</td>
+                                    <td colspan="6" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                 </div>
 

@@ -12,7 +12,7 @@
 @endsection
 @section('content')
 
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -58,8 +58,8 @@
                     <a class="col-12 col-lg-4" href="{{ route('pedidos-delivery.show', [$item->id]) }}">
                         <div class="card">
 
-                            <div class="card-body" style="height: 260px">
-                                <h3 class="card-title">ID: <strong>#{{ $item->id }}</strong></h3>
+                            <div class="card-body" style="height: 305px">
+                                <h3 class="card-title">ID: <strong>#{{ $item->numero_sequencial }}</strong></h3>
 
                                 <h4>Total: <strong>R$ {{ __moeda($item->valor_total) }}</strong></h4>
                                 <h4>Cliente: <strong>{{ $item->cliente->razao_social }}</strong></h4>
@@ -71,10 +71,24 @@
                                 <h4 class="text-primary">Retirada no balcão</h4>
                                 @endif
 
-                                {!! $item->_estado() !!}
-
+                                Estado do pedido {!! $item->_estado() !!}<br>
+                                Estado do pagamento {!! $item->_estadoPagamento() !!}
                                 @if($item->inicio_agendamento)
-                                <h4 class="text-danger">Pedido com agendamento</h4>
+                                <h5 class="text-danger">Pedido com agendamento</h5>
+                                @endif
+
+                                @if($item->estado == 'novo')
+                                <form method="post" action="{{ route('pedidos-delivery.update', [$item->id]) }}" class="row">
+                                    @csrf
+                                    @method('put')
+                                    <input type="hidden" name="estado" value="aprovado">
+                                    <div class="col-12">
+                                        <button class="btn btn-success btn-sm">
+                                            Aprovar Pedido
+                                            <i class="ri-checkbox-circle-fill"></i>
+                                        </button>
+                                    </div>
+                                </form>
                                 @endif
 
                             </div>

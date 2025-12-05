@@ -1,13 +1,17 @@
 @extends('layouts.app', ['title' => 'NCM'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
-                <div class="col-md-2">
+                <div class="col-md-12">
                     <a href="{{ route('ncm.create') }}" class="btn btn-success">
                         <i class="ri-add-circle-fill"></i>
                         Novo NCM
+                    </a>
+                    <a href="{{ route('ncm.refresh') }}" class="btn btn-dark" style="float: right;">
+                        <i class="ri-refresh-line"></i>
+                        Atualizar NCM
                     </a>
                 </div>
                 <hr class="mt-3">

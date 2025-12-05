@@ -1,5 +1,9 @@
 <div class="row g-2">
     <div class="col-md-12 table-responsible">
+        <button type="button" class="btn btn-dark btn-add px-2 mb-2">
+            <i class="ri-add-fill"></i>
+            Adicionar Produto
+        </button>
         <table class="table">
             <thead class="table-dark">
                 <tr>
@@ -15,7 +19,7 @@
                     <th>Nº Pedido</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="tbody-produtos">
                 @foreach($data as $i)
                 @if($i->itemNfe)
                 <tr>
@@ -40,6 +44,7 @@
                 @isset($item)
                 @foreach($item->itens as $i)
                 <tr>
+                    @if($i->itemProducao)
                     <td>
                         <div class="form-check form-checkbox-danger mb-2">
                             <input checked class="form-check-input check-button" type="checkbox" name="item_select[]" value="{{ $i->itemProducao->id }}">
@@ -47,6 +52,7 @@
                     </td>
                     <td>{{ $i->produto->nome }} {{ $i->itemProducao->dimensao }}</td>
                     <td>{{ $i->itemProducao->itemNfe->nfe->cliente->info }}</td>
+
                     <td>
                         <input type="tel" readonly class="form-control" name="qtd[]" value="{{ number_format($i->quantidade, 0) }}">
                     </td>
@@ -54,7 +60,35 @@
                         <input type="text" class="form-control" name="observacao_item[]" value="{{ $i->observacao }}">
                     </td>
                     <td>{{ $i->itemProducao->itemNfe->nfe->numero_sequencial }}</td>
+                    @else
 
+                    <td>
+                        <div class="form-check form-checkbox-danger mb-2">
+                            <input checked class="form-check-input check-button" type="checkbox" name="item_select[]">
+                        </div>
+                    </td>
+
+                    <td>
+                        <select name="produto_id[]" required class="produto_id">
+                            <option value="{{ $i->produto_id }}">{{ $i->produto->nome }}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="cliente_id[]" required class="cliente_id">
+                            <option value="{{ $i->cliente_id }}">{{ $i->cliente->info }}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="tel" required class="form-control qtd" name="qtd[]" value="{{ number_format($i->quantidade, 0) }}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="observacao_item[]" value="{{ $i->observacao }}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="numero_pedido[]" value="{{ $i->numero_pedido }}">
+                    </td>
+
+                    @endif
 
                 </tr>
                 @endforeach
@@ -86,7 +120,9 @@
         !!}
     </div>
 
-
+    @isset($item)
+    <input type="hidden" id="_edit" value="1">
+    @endisset
 
     <hr class="mt-4">
     <div class="col-12" style="text-align: right;">
@@ -103,7 +139,8 @@
             $('.check-button').prop('checked', 0)
         }
 
-        validaButtonDelete()
+        // validaButtonDelete()
     });
 </script>
+<script type="text/javascript" src="/js/ordemProducao.js"></script>
 @endsection

@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Transportadoras'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -28,9 +28,8 @@
                             ->type('tel')
                             !!}
                         </div>
-                        <div class="col-md-3 text-left ">
+                        <div class="col-md-4 text-left ">
                             <br>
-
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
                             <a id="clear-filter" class="btn btn-danger" href="{{ route('transportadoras.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
                         </div>
@@ -65,9 +64,9 @@
                                         </div>
                                     </td>
                                     @endcan
-                                    <td>{{ $item->razao_social }}</td>
-                                    <td>{{ $item->cpf_cnpj }}</td>
-                                    <td>{{ $item->cidade ? $item->cidade->info : '--' }}</td>
+                                    <td data-label="Razão social">{{ $item->razao_social }}</td>
+                                    <td data-label="CPF/CNPJ">{{ $item->cpf_cnpj }}</td>
+                                    <td data-label="Cidade">{{ $item->cidade ? $item->cidade->info : '--' }}</td>
                                     <td>
                                         <form action="{{ route('transportadoras.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')

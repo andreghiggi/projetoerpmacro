@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Nfe;
 use App\Models\CrmAnotacao;
 use App\Models\Notificacao;
+use App\Models\FilaEnvioCron;
 
 class CrmController extends Controller
 {
@@ -36,6 +37,11 @@ class CrmController extends Controller
             $item->descricao = $item->numero_sequencial . " - " . $razaoSocial . " | R$" . __moeda($item->total);
         }
         return response()->json($data, 200);
+    }
+
+    public function modalLog(Request $request){
+        $item = FilaEnvioCron::findOrFail($request->id);
+        return view('mensagem_padrao_crm.partials.modal', compact('item'));
     }
 
     public function modal(Request $request){

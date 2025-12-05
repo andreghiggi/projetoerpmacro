@@ -712,7 +712,7 @@
             <td class="b-top text-left" style="width: 450px;">
                 Razão social: <strong>{{$config->nome}}</strong>
             </td>
-            <td class="b-top" style="width: 247px;">
+            <td class="b-top text-right" style="width: 247px;">
                 Documento: <strong>{{ __setMask($config->cpf_cnpj) }}</strong>
             </td>
         </tr>
@@ -732,8 +732,8 @@
             <td class="b-top b-bottom text-left" style="width: 200px;">
                 CEP: <strong>{{$config->cep}}</strong>
             </td>
-            <td class="b-top b-bottom text-left" style="width: 200px;">
-                Telefone: <strong>{{$config->fone}}</strong>
+            <td class="b-top b-bottom text-right" style="width: 200px;">
+                Telefone: <strong>{{$config->celular}}</strong>
             </td>
         </tr>
     </table>
@@ -758,7 +758,7 @@
             <td class="b-top text-left" style="width: 450px;">
                 Nome: <strong>{{$ordem->cliente->razao_social}}</strong>
             </td>
-            <td class="b-top" style="width: 247px;">
+            <td class="b-top text-right" style="width: 247px;">
                 CPF/CNPJ: <strong>{{$ordem->cliente->cpf_cnpj}}</strong>
             </td>
         </tr>
@@ -767,10 +767,10 @@
     <table>
         <tr>
             <td class="b-top text-left" style="width: 500px;">
-                Endereço: <strong>{{$ordem->cliente->rua}}, {{$ordem->cliente->numero}} - {{$ordem->cliente->bairro}} - {{$ordem->cliente->cidade->nome}} ({{$ordem->cliente->cidade->uf}})</strong>
+                Endereço: <strong>{{$ordem->cliente->rua}}, {{$ordem->cliente->numero}} - {{$ordem->cliente->bairro}} - {{ $ordem->cliente->cidade ? $ordem->cliente->cidade->info : '' }}</strong>
             </td>
 
-            <td class="b-top" style="width: 200px;">
+            <td class="b-top text-right" style="width: 200px;">
                 Telefone: <strong>{{$ordem->cliente->telefone}}</strong>
             </td>
         </tr>
@@ -796,6 +796,57 @@
         </tr>
     </table>
 
+    @if($ordem->veiculo)
+    <br>
+    <table>
+        <tr>
+            <td class="text-left" style="width: 700px;">
+                <strong>Dados do veiculo</strong>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="b-top text-left" style="width: 240px;">
+                Marca: <strong>{{ $ordem->veiculo->marca }}</strong>
+            </td>
+            <td class="b-top text-left" style="width: 240px;">
+                Modelo: <strong>{{ $ordem->veiculo->modelo }}</strong>
+            </td>
+            <td class="b-top text-left" style="width: 230px;">
+                Placa: <strong>{{ $ordem->veiculo->placa }}</strong>
+            </td>
+        </tr>
+    </table>
+    <br>
+    @endif
+
+    @if($configGeral->tipo_ordem_servico == 'assistencia técinica')
+    <br>
+    <table>
+        <tr>
+            <td class="b-top text-left" style="width: 240px;">
+                Equipamento: <strong>{{ $ordem->equipamento }}</strong>
+            </td>
+            <td class="b-top text-center" style="width: 230px;">
+                Número de série: <strong>{{ $ordem->numero_serie }}</strong>
+            </td>
+            <td class="b-top text-right" style="width: 230px;">
+                Cor: <strong>{{ $ordem->cor }}</strong>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+    <span style="font-size: 12px; font-weight: bold;">Diagnóstico do cliente</span>
+    {!! $ordem->diagnostico_cliente !!}
+    <br>
+
+    <span style="font-size: 12px; font-weight: bold;">Diagnóstico técnico</span>
+    {!! $ordem->diagnostico_tecnico !!}
+    <br>
+    @endif
+
     <table>
         <tr>
             <td class="b-top text-left" style="width: 350px;">
@@ -813,7 +864,7 @@
 
     <table>
         <tr>
-            <td class="b-top b-bottom" style="width: 700px; height: 50px;">
+            <td class="b-top b-bottom" style="width: 700px; height: 50px; text-align: left;">
                 <strong>SERVIÇOS</strong>
             </td>
         </tr>
@@ -865,7 +916,7 @@
 
     <table>
         <tr>
-            <td class="b-top b-bottom" style="width: 700px; height: 50px;">
+            <td class="b-top b-bottom" style="width: 700px; height: 50px; text-align: left;">
                 <strong>PRODUTOS</strong>
             </td>
         </tr>
@@ -890,7 +941,7 @@
                     {{ $item->quantidade }}
                 </td>
                 <td style="text-align: left">
-                    {{ __moeda($item->produto->valor_unitario) }}
+                    {{ __moeda($item->subtotal/$item->quantidade) }}
                 </td>
                 <td style="text-align: left">
                     {{ __moeda($item->subtotal) }}
@@ -911,43 +962,10 @@
         </tfoot>
     </table>
 
-    <h4>VALOR TOTAL DA OS <strong style="color: #49526B">R$ {{ __moeda($ordem->valor) }}</strong></h4>
+    <h4>VALOR TOTAL<strong style="color: #49526B"> R${{ __moeda($ordem->valor) }}</strong></h4>
 
-    <table>
-        <tr>
-            <td class="b-top b-bottom" style="width: 700px; height: 50px;">
-                <strong>RELATÓRIOS</strong>
-            </td>
-        </tr>
-    </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 140px; text-align: left">Data</th>
-                <th style="width: 580px; text-align: left">Texto</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($ordem->relatorios as $item)
-            <tr>
-                <td style="text-align: left;">
-                    {{ __data_pt($item->created_at) }}
-                </td>
-                <td style="text-align: left;">
-                    {{ $item->texto }}
-                </td>
-
-            </tr>
-            @empty
-            <tr>
-                <td colspan="5" class="text-center">Nenhum registro</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    @if($configGeral->mensagem_padrao_impressao_os != "")
+    @if($configGeral && $configGeral->mensagem_padrao_impressao_os != "")
     <br><br>
     {!! $configGeral->mensagem_padrao_impressao_os !!}
     @endif

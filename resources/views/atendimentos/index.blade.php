@@ -1,8 +1,6 @@
 @extends('layouts.app', ['title' => 'Dias da semana'])
-
 @section('content')
-
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -36,11 +34,11 @@
                     {!!Form::close()!!}
                 </div>
 
-                <div class="table-responsive-sm mt-3">
+                <div class="table-responsive mt-3">
                     <table class="table table-striped table-centered mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>Funucionário</th>
+                                <th>Funcionário</th>
                                 <th>Dias</th>
                                 <th>Ações</th>
                             </tr>
@@ -48,20 +46,23 @@
                         <tbody>
                             @forelse ($data as $item)
                             <tr>
-                                <td>{{ $item->funcionario->nome }}</td>
-                                <td>{{ $item->diaStr() }}</td>
+                                <td data-label="Funcionário">{{ $item->funcionario->nome }}</td>
+                                <td data-label="Dias">{{ $item->diaStr() }}</td>
                                 <td>
-                                    <form action="{{ route('atendimentos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                    <form style="width: 100px;" action="{{ route('atendimentos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                         @csrf
                                         @method('delete')
+
                                         @can('atendimentos_edit')
                                         <a class="btn btn-warning btn-sm" href="{{ route('atendimentos.edit', [$item->id]) }}">
                                             <i class="ri-pencil-fill"></i>
                                         </a>
                                         @endcan
-                                        
+
                                         @can('atendimentos_delete')
-                                        <button type="submit" title="Deletar" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-2-line"></i></button>
+                                        <button type="submit" title="Deletar" class="btn btn-danger btn-sm btn-delete">
+                                            <i class="ri-delete-bin-2-line"></i>
+                                        </button>
                                         @endcan
                                     </form>
                                 </td>
@@ -73,6 +74,7 @@
                             @endforelse
                         </tbody>
                     </table>
+
                 </div>
             </div>
         </div>

@@ -57,7 +57,7 @@ class FreteController extends Controller
             return $query->where('local_id', $local_id);
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($veiculo_id){
             $veiculo = Veiculo::findOrFail($veiculo_id);

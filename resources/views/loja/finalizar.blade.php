@@ -65,9 +65,9 @@
 				<br>
 				<label class="text-danger" id="filename"></label>
 			</form>
-			@endif
 
-			<div class="row status-approved col-md-12" style="display: none;text-align:center;">
+			@elseif($pedido->tipo_pagamento == 'cartao')
+			<div class="row status-approved col-md-12">
 
 				<h2 class="text-success" style="">
 					<i class="fa fa-check"></i>
@@ -77,6 +77,8 @@
 					Tela inicial
 				</a>
 			</div>
+			@endif
+
 		</div>
 	</div>
 </div>

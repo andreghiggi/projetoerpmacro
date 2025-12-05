@@ -70,7 +70,7 @@ class CTeService{
 		$ide->tpEmis = '1'; 
 		$ide->cDV = $cDV; 
 		$ide->tpAmb = (int)$emitente->ambiente; 
-		$ide->tpCTe = '0'; 
+		$ide->tpCTe = $cteEmit->tipo_cte; 
 
 		// 0- CT-e Normal; 1 - CT-e de Complemento de Valores;
 // 2 -CT-e de Anulação; 3 - CT-e Substituto
@@ -102,7 +102,7 @@ class CTeService{
 			}
 		}else if($cteEmit->tomador == 3){
 			if($cteEmit->destinatario->ie != ''){
-				$ide->indIEToma = '2';
+				$ide->indIEToma = '1';
 			}else{
 				$ide->indIEToma = '9';
 			}
@@ -138,7 +138,6 @@ class CTeService{
 			$toma4->fone = preg_replace('/[^0-9]/', '', $cteEmit->telefone_tomador);
 			$toma4->email = $cteEmit->email_tomador;
 			$cte->tagtoma4($toma4);
-
 		}
 
 		$enderToma = new \stdClass();
@@ -148,7 +147,7 @@ class CTeService{
 		$enderToma->xBairro = $cteEmit->bairro_tomador; 
 		$enderToma->cMun = $cteEmit->municipioTomador->codigo; 
 		$enderToma->xMun = $cteEmit->municipioTomador->nome; 
-		$enderToma->CEP = $cteEmit->cep_tomador; 
+		$enderToma->CEP =preg_replace('/[^0-9]/', '',  $cteEmit->cep_tomador); 
 		$enderToma->UF = $cteEmit->municipioTomador->uf; 
 		$enderToma->cPais = '1058'; 
 		$enderToma->xPais = 'Brasil';  
@@ -188,13 +187,15 @@ class CTeService{
 		$rem = new \stdClass();
 
 		$cnpjRemente = preg_replace('/[^0-9]/', '', $cteEmit->remetente->cpf_cnpj);
+		$ieRemetente = preg_replace('/[^0-9]/', '', $cteEmit->remetente->ie);
 		if(strlen($cnpjRemente) == 14){
 			$rem->CNPJ = $cnpjRemente; 
-			$ieRemetente = preg_replace('/[^0-9]/', '', $cteEmit->remetente->ie);
-			$rem->IE = $ieRemetente;
-		}
-		else{
+		}else{
 			$rem->CPF = $cnpjRemente; 
+		}
+
+		if(strlen($ieRemetente) > 2){
+			$rem->IE = $ieRemetente;
 		}
 
 		$rem->xNome = $cteEmit->remetente->razao_social;
@@ -219,15 +220,16 @@ class CTeService{
 
 		$dest = new \stdClass();
 		$cnpjDestinatario = preg_replace('/[^0-9]/', '', $cteEmit->destinatario->cpf_cnpj);
+		$ieDestinatario = preg_replace('/[^0-9]/', '', $cteEmit->destinatario->ie);
 
 		if(strlen($cnpjDestinatario) == 14){
 			$dest->CNPJ = $cnpjDestinatario; 
-			$ieDestinatario = preg_replace('/[^0-9]/', '', $cteEmit->destinatario->ie);
-
-			$dest->IE = $ieDestinatario;
-		}
-		else{
+		}else{
 			$dest->CPF = $cnpjDestinatario; 
+		}
+
+		if(strlen($ieDestinatario) > 2){
+			$dest->IE = $ieDestinatario;
 		}
 		
 		$dest->xNome = $cteEmit->destinatario->razao_social;
@@ -295,25 +297,18 @@ class CTeService{
 		$icms->vICMSUFFim = 0;
 		$icms->infAdFisco = '';
 		$cte->tagicms($icms);
-
-		$cte->taginfCTeNorm();              // Grupo de informações do CT-e Normal e Substituto
 		
 		$infCarga = new \stdClass();
 		$infCarga->vCarga = $this->format($cteEmit->valor_carga);
 		$infCarga->proPred = $cteEmit->produto_predominante; 
 		$infCarga->xOutCat = 0.00; 
-		// $infCarga->vCargaAverb = 1.99;
 		$cte->taginfCarga($infCarga);
 
 		foreach($cteEmit->medidas as $m){
 			$infQ = new \stdClass();
 			$infQ->cUnid = $m->cod_unidade; 
-// Código da Unidade de Medida: ( 00-M3; 01-KG; 02-TON; 03-UNIDADE; 04-LITROS; 05-MMBTU
 			$infQ->tpMed = $m->tipo_medida; 
-// Tipo de Medida
-// ( PESO BRUTO; PESO DECLARADO; PESO CUBADO; PESO AFORADO; PESO AFERIDO; LITRAGEM; CAIXAS e etc)
 			$infQ->qCarga = $m->quantidade;  
-// Quantidade (15 posições; sendo 11 inteiras e 4 decimais.)
 			$cte->taginfQ($infQ);
 		}
 
@@ -343,8 +338,8 @@ class CTeService{
 		$infModal = new \stdClass();
 		$infModal->versaoModal = '4.00';
 		$cte->taginfModal($infModal);
+		if(strlen($cteEmit->referencia_cte) == 44 && $cteEmit->emitente_anterior){
 
-		if(strlen($cteEmit->referencia_cte) == 44){
 			$cte->tagdocAnt();
 			$emiDocAn = new \stdClass();
 			$doc = preg_replace('/[^0-9]/', '', $cteEmit->doc_anterior);
@@ -366,6 +361,17 @@ class CTeService{
 			$idDocAntEle->chCTe = $cteEmit->referencia_cte;
 			$cte->tagidDocAntEle($idDocAntEle);
 
+		}
+
+		if(strlen($cteEmit->referencia_cte) == 44 && $ide->tpCTe == 1){
+			$infCTeComp = new \stdClass();
+			$infCTeComp->chCTe = $cteEmit->referencia_cte;
+			$taginfCTeComp = $cte->taginfCTeComp($infCTeComp);
+		}
+
+		// dd($taginfCTeComp);
+		if($ide->tpCTe == 0){
+			$cte->taginfCTeNorm();
 		}
 
 		$rodo = new \stdClass();
@@ -436,7 +442,7 @@ class CTeService{
 				];
 			}
 			$recibo = $std->protCTe->infProt->nProt;
-			
+
 			try {
 				$xml = Complements::toAuthorize($signXml, $resp);
 
@@ -502,7 +508,7 @@ class CTeService{
 	public function cancelar($cte, $justificativa){
 
 		try {
-			
+
 			$chave = $cte->chave;
 			$response = $this->tools->sefazConsultaChave($chave);
 			$stdCl = new Standardize($response);
@@ -622,7 +628,7 @@ class CTeService{
 			return ['erro' => true, 'data' => $e->getMessage(), 'status' => 404];
 		}
 	}
-	
+
 	public function getXml($chave){
 		// $resp = file_get_contents('ctes.xml');
 		try{
@@ -684,7 +690,7 @@ class CTeService{
 		$dom = new \DOMDocument();
 		$dom->loadXML($resp);
 		$xMotivo = $dom->getElementsByTagName('xMotivo')->item(0)->nodeValue;
-		
+
 		if($xMotivo == 'Rejeicao: Consumo indevido'){
 			echo $xMotivo;
 			die;
@@ -705,7 +711,7 @@ class CTeService{
 			$xml = $xml->CTe->infCte;
 
 			if(isset($xml->emit)){
-				
+
 				$chave = substr((string)$xml['Id'], 3, strlen((string)$xml['Id']));
 				$temp = [
 					'documento' => (int)$xml->emit->CNPJ,

@@ -29,6 +29,110 @@
 	.check{
 		margin-top: 30px;
 	}
+
+	/* ======= Estilo geral da tabela ======= */
+	.table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 20px;
+		border-radius: 12px;
+		overflow: hidden;
+		background: #fff;
+		box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+	}
+
+	.table th, 
+	.table td {
+		padding: 10px 12px;
+		text-align: left;
+		vertical-align: middle;
+		border-bottom: 1px solid #eee;
+	}
+
+	.table th {
+		background: #f9fafb;
+		font-weight: 600;
+		color: #111;
+		font-size: 14px;
+	}
+
+	.table img {
+		width: 60px;
+		height: 60px;
+		border-radius: 8px;
+		object-fit: cover;
+	}
+
+	@media (max-width: 768px) {
+		.table, 
+		.table thead, 
+		.table tbody, 
+		.table th, 
+		.table td, 
+		.table tr {
+			display: block;
+			width: 100%;
+		}
+
+		.table thead {
+			display: none;
+		}
+
+		.table tr {
+			background: #fff;
+			border: 1px solid #eee;
+			border-radius: 12px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+			margin-bottom: 14px;
+			padding: 12px;
+		}
+
+		.table td {
+			border: none;
+			padding: 6px 0;
+			position: relative;
+		}
+
+		.table td::before {
+			content: attr(data-label);
+			font-weight: 600;
+			color: #6b7280;
+			display: block;
+			font-size: 13px;
+			margin-bottom: 4px;
+		}
+
+		.table img {
+			width: 80px;
+			height: 80px;
+			margin-bottom: 8px;
+		}
+	}
+
+	.card-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 10px;
+		padding-top: 10px;
+		border-top: 1px solid #eee;
+	}
+
+	.btn-success {
+		background: #22c55e !important;
+		color: #fff !important;
+		border: none;
+		border-radius: 8px;
+		padding: 10px 16px;
+		font-weight: 600;
+		transition: 0.2s ease;
+	}
+
+	.btn-success:hover {
+		background: #16a34a !important;
+	}
+
 </style>
 @endsection
 
@@ -122,7 +226,7 @@
 										<td>
 											<img class="image" src="{{ $i->produto->img }}">
 										</td>
-										<td>
+										<td data-label="Produto">
 											@if($i->tamanho)
 											@foreach($i->pizzas as $pizza)
 											1/{{ sizeof($i->pizzas) }} {{ $pizza->sabor->nome }} @if(!$loop->last) | @endif
@@ -132,9 +236,9 @@
 											{{ $i->produto->nome }}
 											@endif
 										</td>
-										<td>{{ number_format($i->quantidade, 0) }}</td>
-										<td>{{ __moeda($i->valor_unitario) }}</td>
-										<td>{{ __moeda($i->sub_total) }}</td>
+										<td data-label="Quantidade">{{ number_format($i->quantidade, 0) }}</td>
+										<td data-label="Valor unitário">{{ __moeda($i->valor_unitario) }}</td>
+										<td data-label="Sub total">{{ __moeda($i->sub_total) }}</td>
 									</tr>
 									@if(sizeof($i->adicionais) > 0)
 									<tr>

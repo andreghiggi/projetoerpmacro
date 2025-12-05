@@ -1,43 +1,11 @@
 @extends('loja.default', ['title' => 'Cadastro'])
 @section('css')
-
-<style type="text/css">
-	.order-submit{
-		width: 100%;
-	}
-
-	.select2-selection__rendered {
-		line-height: 38px !important;
-	}
-	.select2-container .select2-selection--single {
-		height: 40px !important;
-		border: 1px solid #E4E7ED;
-	}
-	.select2-selection__arrow {
-		height: 38px !important;
-	}
-
-	.invalid-feedback{
-		font-size: 12px;
-		color: red;
-		position: fixed;
-	}
-
-	.form-group{
-		margin-top: 5px;
-	}
-
-	.title{
-		margin-left: 15px!important;
-	}
-</style>
+<link rel="stylesheet" type="text/css" href="/css/ecommerce_cadastro.css">
 @endsection
 @section('content')
 
 <div class="section">
-	<!-- container -->
 	<div class="container">
-		<!-- row -->
 		<form class="row" method="post" action="{{ route('loja.cadastro-store') }}">
 			@csrf
 			<input type="hidden" name="link" value="{{ $config->loja_id }}">
@@ -149,7 +117,7 @@
 
 			<!-- Order Details -->
 			@if($carrinho != [])
-			<div class="col-md-5 order-details" style="margin-top: 10px">
+			<div class="col-md-5 billing-details">
 
 				<div class="section-title text-center">
 					<h3 class="title">Seu Pedido</h3>
@@ -197,12 +165,8 @@
 				</label>
 			</div>
 			@endif
-
-			<!-- /Order Details -->
 		</form>
-		<!-- /row -->
 	</div>
-	<!-- /container -->
 </div>
 
 <div class="modal fade" id="modal-termos-condicoes" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -279,21 +243,23 @@
 	$(document).on("blur", "#email", function () {
 		let email = $(this).val()
 		let empresa_id = $('#empresa_id').val()
-		$.get(path_url + "api/ecommerce/valida-email", 
-		{
-			email: email,
-			empresa_id: empresa_id
-		})
-		.done((res) => {
-			console.log(res)
-		})
-		.fail((err) => {
-			console.log(err)
-			if(err.status == 402){
-				swal("Erro", "Email já cadastrado no sistema", "error")
-				$('#email').val('')
-			}
-		})
+		if(email){
+			$.get(path_url + "api/ecommerce/valida-email", 
+			{
+				email: email,
+				empresa_id: empresa_id
+			})
+			.done((res) => {
+				console.log(res)
+			})
+			.fail((err) => {
+				console.log(err)
+				if(err.status == 402){
+					swal("Erro", "Email já cadastrado no sistema", "error")
+					$('#email').val('')
+				}
+			})
+		}
 	})
 
 	$(document).on("blur", ".cep", function () {

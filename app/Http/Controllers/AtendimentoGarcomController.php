@@ -18,6 +18,7 @@ class AtendimentoGarcomController extends Controller
         $data = ItemPedido::join('pedidos', 'pedidos.id', '=', 'item_pedidos.pedido_id')
         ->select('item_pedidos.*')
         ->where('pedidos.empresa_id', $request->empresa_id)
+        ->where('item_pedidos.funcionario_id', '!=', null)
         ->when($funcionario_id, function ($q) use ($funcionario_id) {
             return $q->where('item_pedidos.funcionario_id', $funcionario_id);
         })
@@ -28,11 +29,12 @@ class AtendimentoGarcomController extends Controller
             return $query->whereDate('item_pedidos.created_at', '<=', $end_date);
         })
         ->orderBy('item_pedidos.id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $soma = ItemPedido::join('pedidos', 'pedidos.id', '=', 'item_pedidos.pedido_id')
         ->select('item_pedidos.*')
         ->where('pedidos.empresa_id', $request->empresa_id)
+        ->where('item_pedidos.funcionario_id', '!=', null)
         ->when($funcionario_id, function ($q) use ($funcionario_id) {
             return $q->where('item_pedidos.funcionario_id', $funcionario_id);
         })

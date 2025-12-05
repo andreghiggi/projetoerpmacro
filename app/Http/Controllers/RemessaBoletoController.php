@@ -46,7 +46,7 @@ class RemessaBoletoController extends Controller
             return $query->where('conta_boleto_id', $conta_boleto_id);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('remessa_boletos.index', compact('data', 'contasBoleto'));
     }

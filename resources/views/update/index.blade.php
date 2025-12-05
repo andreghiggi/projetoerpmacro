@@ -23,7 +23,7 @@
 	}
 </style>
 
-<div class="mt-3">
+<div class="mt-1">
 	<div class="card card-custom gutter-b example example-compact">
 		<div class="container @if(env('ANIMACAO')) animate__animated @endif animate__backInLeft">
 			<div class="col-lg-12">

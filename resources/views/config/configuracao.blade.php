@@ -93,18 +93,19 @@
                                 <div class="col-md-3">
                                     {!!Form::tel('cpf_cnpj', 'CPF/CNPJ')
                                     ->attrs(['class' => 'cpf_cnpj'])
+                                    ->value(isset($item) ? __setMask($item->cpf_cnpj) : '')
                                     ->required()
                                     !!}
                                 </div>
                                 <div class="col-md-5">
                                     {!!Form::tel('nome', 'Razão social')
-                                    ->attrs(['class' => ''])
+                                    ->attrs(['data-contador' => true, 'maxlength' => 60])
                                     ->required()
                                     !!}
                                 </div>
                                 <div class="col-md-4 mt-3">
                                     {!!Form::tel('nome_fantasia', 'Nome fantasia')
-                                    ->attrs(['class' => ''])
+                                    ->attrs(['data-contador' => true, 'maxlength' => 60])
                                     ->required()
                                     !!}
                                 </div>
@@ -133,8 +134,8 @@
                                     !!}
                                 </div>
                                 <hr class="mt-3">
-                                <div class="card col-md-3 mt-3 form-input">
-                                    <h5>Selecionar imagem</h5>
+
+                                <div class="card col-md-3 mt-3 form-input" style="width: 210px">
                                     <div class="preview">
                                         <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
                                         @isset($item)
@@ -167,8 +168,7 @@
                                     !!}
                                 </div>
                                 <div class="col-md-1">
-                                    {!!Form::tel('numero', 'Número')
-                                    ->attrs(['data-mask' => '000000'])
+                                    {!!Form::text('numero', 'Número')
                                     ->required()
                                     !!}
                                 </div>
@@ -214,7 +214,7 @@
                                     !!}
                                 </div>
 
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label for="">Token</label>
                                     <div class="input-group">
                                         @if (!isset($not_submit))
@@ -226,6 +226,11 @@
 
                                 <div class="col-md-2">
                                     {!!Form::select('ambiente', 'Ambiente', [2 => 'Homologação', 1 => 'Produção'])
+                                    ->attrs(['class' => 'form-select'])
+                                    !!}
+                                </div>
+                                <div class="col-md-2">
+                                    {!!Form::select('substituto_tributario', 'Substituto tributário', [0 => 'Não', 1 => 'Sim'])
                                     ->attrs(['class' => 'form-select'])
                                     !!}
                                 </div>
@@ -249,6 +254,12 @@
 
                                 <div class="col-md-2 mt-3">
                                     {!!Form::tel('numero_serie_nfse', 'Número de série NFSe')
+                                    ->attrs(['class' => ''])
+                                    !!}
+                                </div>
+
+                                <div class="col-md-7 mt-3">
+                                    {!!Form::text('token_ibpt', 'Token IBPT')
                                     ->attrs(['class' => ''])
                                     !!}
                                 </div>

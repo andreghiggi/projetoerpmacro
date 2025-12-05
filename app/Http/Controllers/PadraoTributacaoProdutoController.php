@@ -10,7 +10,7 @@ class PadraoTributacaoProdutoController extends Controller
 {
     public function index(){
         $data = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('padrao_tributacao.index', compact('data'));
     }
@@ -144,6 +144,7 @@ class PadraoTributacaoProdutoController extends Controller
         ->get();
 
         $produtos = Produto::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)
         ->get();
 
         return view('padrao_tributacao.alterar_produtos', compact('padroes', 'produtos'));
@@ -155,7 +156,7 @@ class PadraoTributacaoProdutoController extends Controller
             for($i=0; $i<sizeof($request->produto_check); $i++){
                 $produto = Produto::find($request->produto_check[$i]);
                 if($produto != null){
-
+                    $produto->padrao_id = $request->padrao_id;
                     $produto->fill($request->all())->save();
                     $cont++;
                 }

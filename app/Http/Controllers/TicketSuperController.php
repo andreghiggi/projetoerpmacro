@@ -44,7 +44,7 @@ class TicketSuperController extends Controller
             return $query->where('departamento', $departamento);
         })
         ->orderBy('updated_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('ticket_super.index', compact('data', 'empresa'));
     }

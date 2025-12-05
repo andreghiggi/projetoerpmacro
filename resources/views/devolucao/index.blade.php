@@ -1,23 +1,23 @@
 @extends('layouts.app', ['title' => 'Devoluções'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-2 mt-1">
                         @can('devolucao_create')
-                        <a href="{{ route('devolucao.xml') }}" class="btn btn-danger">
+                        <a href="{{ route('devolucao.xml') }}" class="btn btn-danger w-100">
                             <i class="ri-add-circle-fill"></i>
                             Nova Devolução
                         </a>
                         @endcan
                     </div>
-                    <div class="col-md-8"></div>
+                    <div class="col-md-7"></div>
 
                     @if(__isPlanoFiscal())
-                    <div class="col-md-2">
-                        <button id="btn-consulta-sefaz" class="btn btn-dark" style="float: right;">
+                    <div class="col-md-3 mt-1">
+                        <button id="btn-consulta-sefaz" class="btn btn-dark w-100" style="float: right;">
                             <i class="ri-refresh-line"></i>
                             Consultar Status Sefaz
                         </button>
@@ -111,42 +111,49 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->numero_sequencial }}</td>
+                                    <td data-label="#"> {{ $item->numero_sequencial }} </td>
+
                                     @if($item->cliente)
-                                    <td><label style="width: 300px">{{ $item->cliente ? $item->cliente->razao_social : "--" }}</label></td>
-                                    <td><label style="width: 150px">{{ $item->cliente ? $item->cliente->cpf_cnpj : "--" }}</label></td>
+                                    <td data-label="Fornecedor"><label style="width: 300px">{{ $item->cliente ? $item->cliente->razao_social : "--" }}</label></td>
+                                    <td data-label="CPF/CNPJ"><label style="width: 150px">{{ $item->cliente ? $item->cliente->cpf_cnpj : "--" }}</label></td>
                                     @else
-                                    <td><label style="width: 300px">{{ $item->fornecedor ? $item->fornecedor->razao_social : "--" }}</label></td>
-                                    <td><label style="width: 150px">{{ $item->fornecedor ? $item->fornecedor->cpf_cnpj : "--" }}</label></td>
+                                    <td data-label="Fornecedor"><label style="width: 300px">{{ $item->fornecedor ? $item->fornecedor->razao_social : "--" }}</label></td>
+                                    <td data-label="CPF/CNPJ"><label style="width: 150px">{{ $item->fornecedor ? $item->fornecedor->cpf_cnpj : "--" }}</label></td>
                                     @endif
+
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '' }}</td>
+                                    <td data-label="Local" class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '' }}</td>
                                     @endif
-                                    <td>{{ $item->numero ? $item->numero : '' }}</td>
-                                    <td>{{ __moeda($item->total) }}</td>
+
+                                    <td data-label="Número">{{ $item->numero ? $item->numero : '' }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->total) }}</td>
+
                                     @if(__isPlanoFiscal())
-                                    <td width="150">
+                                    <td data-label="Estado">
                                         @if($item->estado == 'aprovado')
-                                        <span class="btn btn-success text-white btn-sm w-100">Aprovado</span>
+                                        <span class="btn btn-success text-white btn-sm">Aprovado</span>
                                         @elseif($item->estado == 'cancelado')
-                                        <span class="btn btn-danger text-white btn-sm w-100">Cancelado</span>
+                                        <span class="btn btn-danger text-white btn-sm">Cancelado</span>
                                         @elseif($item->estado == 'rejeitado')
-                                        <span class="btn btn-warning text-white btn-sm w-100">Rejeitado</span>
+                                        <span class="btn btn-warning text-white btn-sm">Rejeitado</span>
                                         @else
-                                        <span class="btn btn-info text-white btn-sm w-100">Novo</span>
+                                        <span class="btn btn-info text-white btn-sm">Novo</span>
                                         @endif
                                     </td>
-                                    <td>{{ $item->ambiente == 2 ? 'Homologação' : 'Produção' }}</td>
+                                    <td data-label="Ambiente">{{ $item->ambiente == 2 ? 'Homologação' : 'Produção' }}</td>
                                     @endif
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>
+
+                                    <td data-label="Data">{{ __data_pt($item->created_at) }}</td>
+
+                                    <td data-label="Local de emissão">
                                         @if($item->api)
                                         <span class="text-success">API</span>
                                         @else
                                         <span class="text-primary">Painel</span>
                                         @endif
                                     </td>
-                                    <td style="width: 200px">
+
+                                    <td data-label="CRT">
                                         @if($item->crt == 1)
                                         <span class="text-info">Simples Nacional</span>
                                         @elseif($item->crt == 2)
@@ -155,7 +162,8 @@
                                         <span class="text-primary">Regime Normal</span>
                                         @endif
                                     </td>
-                                    <td>
+
+                                    <td data-label="Tipo">
                                         @if($item->tpNF)
                                         <span class="text-success">Saída</span>
                                         @else
@@ -173,11 +181,8 @@
                                                 <i class="ri-printer-line"></i>
                                             </a>
                                             @endif
-                                            @if($item->estado == 'aprovado')
-                                            <!-- <a class="btn btn-primary btn-sm" title="Imprimir NFe" target="_blank" href="{{ route('nfe.imprimir', [$item->id]) }}">
-                                                <i class="ri-printer-line"></i>
-                                            </a> -->
 
+                                            @if($item->estado == 'aprovado')
                                             <button type="button" onclick="imprimir('{{$item->id}}', '{{$item->numero}}')" class="btn btn-primary btn-sm" title="Imprimir NFe">
                                                 <i class="ri-printer-line"></i>
                                             </button>
@@ -190,7 +195,6 @@
                                                 <i class="ri-file-warning-line"></i>
                                             </button>
                                             @endcan
-
                                             @endif
 
                                             @if($item->estado == 'aprovado' || $item->estado == 'rejeitado')
@@ -200,7 +204,6 @@
                                             @endif
 
                                             @if($item->estado == 'novo' || $item->estado == 'rejeitado')
-
                                             @can('devolucao_edit')
                                             <a class="btn btn-warning btn-sm" href="{{ route('devolucao.edit', $item->id) }}">
                                                 <i class="ri-edit-line"></i>
@@ -224,14 +227,14 @@
                                             </button>
                                             @endcan
                                             @endif
-
                                             @endif
-                                            
+
                                             @if($item->estado == 'aprovado' || $item->estado == 'cancelado')
                                             <button title="Consultar NFe" type="button" class="btn btn-light btn-sm" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-file-search-line"></i>
                                             </button>
                                             @endif
+
                                             @if(__isPlanoFiscal())
                                             @can('devolucao_edit')
                                             <a title="Alterar estado fiscal devolução" class="btn btn-dark btn-sm" href="{{ route('nfe.alterar-estado', [$item->id, 'tipo=devolucao']) }}">
@@ -239,13 +242,12 @@
                                             </a>
                                             @endcan
                                             @endif
-                                            
+
                                             @if($item->estado != 'aprovado')
                                             <a class="btn btn-danger btn-sm" title="DANFE Temporária" target="_blank" href="{{ route('nfe.danfe-temporaria', [$item->id]) }}">
                                                 <i class="ri-printer-fill"></i>
                                             </a>
                                             @endif
-
                                         </form>
                                     </td>
                                 </tr>
@@ -256,7 +258,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
+                    <br>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>
                 <h5 class="mt-2">Soma: <strong class="text-success">R$ {{ __moeda($data->sum('total')) }}</strong></h5>

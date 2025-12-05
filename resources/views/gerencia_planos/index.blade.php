@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Gerenciar Planos'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -48,7 +48,7 @@
                                 @foreach($data as $item)
                                 <tr>
 
-                                    <td>{{ $item->empresa->info }}</td>
+                                    <td>{{ $item->empresa ? $item->empresa->info : 'Empresa removida' }}</td>
                                     <td>{{ $item->plano->nome }}</td>
                                     <td>{{ __moeda($item->valor) }}</td>
                                     <td>

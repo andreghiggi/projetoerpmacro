@@ -911,6 +911,10 @@
                 <th class="b-top" style="text-align: left;">{{$i->produto->numero_sequencial}} {{$i->produto->referencia != "" ? "/ " . $i->produto->referencia : "" }}</th>
                 <th class="b-top" style="text-align: left;">
                     {{$i->descricao()}}
+                    @if($i->produto->local_armazenamento)
+                    <br>
+                    <label>Local de armazenamento: <strong>{{ $i->produto->local_armazenamento }}</strong></label>
+                    @endif
                 </th>
                 <th class="b-top" style="text-align: left;">
                     {{__qtd($i->quantidade)}}
@@ -997,6 +1001,7 @@
             <tr>
                 <th class="b-top">
                     {{ $p->produto->nome }}
+
                 </th>
                 <th class="b-top">
                     {{ $p->codigo }}
@@ -1137,7 +1142,7 @@
             <td class="text-left" style="width: 700px;">
                 <span>Observação:
                     <strong>
-                        {{ $item->observacao }}
+                        {!! $item->observacao !!}
                     </strong>
                 </span>
             </td>
@@ -1169,7 +1174,7 @@
         </tr>
     </table>
 
-    @if($configGeral->mensagem_padrao_impressao_venda != "" && $item->tpNf == 1)
+    @if($configGeral && $configGeral->mensagem_padrao_impressao_venda != "" && $item->tpNf == 1)
     <br><br>
     {!! $configGeral->mensagem_padrao_impressao_venda !!}
     @endif

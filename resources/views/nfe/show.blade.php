@@ -11,11 +11,11 @@
                 @endif
                 <div style="text-align: right; margin-top: -35px;">
                     @if($data->tpNF == 0)
-                    <a href="{{ route('compras.index') }}" class="btn btn-danger btn-sm px-3">
+                    <a href="{{ url()->previous() }}" class="btn btn-danger btn-sm px-3">
                         <i class="ri-arrow-left-double-fill"></i>Voltar
                     </a>
                     @else
-                    <a href="{{ route('nfe.index') }}" class="btn btn-danger btn-sm px-3">
+                    <a href="{{ url()->previous() }}" class="btn btn-danger btn-sm px-3">
                         <i class="ri-arrow-left-double-fill"></i>Voltar
                     </a>
                     @endif

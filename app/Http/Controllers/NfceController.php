@@ -7,12 +7,15 @@ use App\Models\Cliente;
 use App\Models\Empresa;
 use App\Models\FaturaNfce;
 use App\Models\ItemNfce;
+use App\Models\PreVenda;
 use App\Models\UsuarioEmissao;
 use App\Models\NaturezaOperacao;
 use Illuminate\Http\Request;
 use NFePHP\DA\NFe\Danfce;
 use App\Models\Nfce;
+use App\Models\Localizacao;
 use App\Models\ProdutoLocalizacao;
+use App\Models\ConfigGeral;
 use App\Models\Inutilizacao;
 use App\Models\Produto;
 use App\Models\ContaReceber;
@@ -65,6 +68,12 @@ class NfceController extends Controller
     }
 
     private function corrigeNumeros($empresa_id){
+
+        $config = ConfigGeral::where('empresa_id', $empresa_id)->first();
+        if($config != null && $config->corrigir_numeracao_fiscal == 0){
+            return;
+        }
+        
         $item = UsuarioEmissao::where('usuario_empresas.empresa_id', request()->empresa_id)
         ->join('usuario_empresas', 'usuario_empresas.usuario_id', '=', 'usuario_emissaos.usuario_id')
         ->select('usuario_emissaos.*')
@@ -74,17 +83,31 @@ class NfceController extends Controller
         if($item != null){
             return;
         }
-        $empresa = Empresa::findOrFail($empresa_id);
-        if($empresa->ambiente == 1){
-            $numero = $empresa->numero_ultima_nfce_producao;
-        }else{
-            $numero = $empresa->numero_ultima_nfce_homologacao;
-        }
-        
-        if($numero){
-            Nfce::where('estado', 'novo')
-            ->where('empresa_id', $empresa_id)
-            ->update(['numero' => $numero+1]);
+
+        $locais = Localizacao::where('empresa_id', $empresa_id)->where('status', 1)->get();
+        foreach($locais as $key => $local){
+            $empresa = Empresa::findOrFail($empresa_id);
+            $caixa = __isCaixaAberto();
+            if($caixa){
+                $empresa = __objetoParaEmissao($empresa, $local->id);
+            }
+
+
+            if($empresa->ambiente == 1){
+                $numero = $empresa->numero_ultima_nfce_producao;
+            }else{
+                $numero = $empresa->numero_ultima_nfce_homologacao;
+            }
+
+            if($numero){
+                Nfce::where(function($q) {
+                    $q->where('estado', 'novo')->orWhere('estado', 'rejeitado');
+                })
+                ->where('empresa_id', $empresa_id)
+                ->where('local_id', $local->id)
+            // ->where('caixa_id', $caixa->id)
+                ->update(['numero' => $numero+1]);
+            }
         }
     }
 
@@ -93,7 +116,7 @@ class NfceController extends Controller
 
         $locais = __getLocaisAtivoUsuario();
         $locais = $locais->pluck(['id']);
-        // $this->corrigeNumeros($request->empresa_id);
+        $this->corrigeNumeros($request->empresa_id);
         
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
@@ -127,7 +150,7 @@ class NfceController extends Controller
             return $query->whereIn('local_id', $locais);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         $contigencia = $this->getContigencia(request()->empresa_id);
 
         return View('nfce.index', compact('data', 'contigencia'));
@@ -183,27 +206,15 @@ class NfceController extends Controller
         return view('nfce.edit', compact('item', 'cidades', 'naturezas', 'caixa'));
     }
 
-
     public function store(Request $request)
     {
         try {
             DB::transaction(function () use ($request) {
                 $cliente_id = $request->cliente_id;
                 $empresa = Empresa::findOrFail($request->empresa_id);
-
-                if ($request->cliente_cpf_cnpj) {
-                    $cliente_id = null;
-                } else {
-                    if ($request->cliente_id == null) {
-                        if ($request->nome != '') {
-                            $cliente_id = $this->cadastrarCliente($request);
-                        }
-                    } else {
-                        $this->atualizaCliente($request);
-                    }
-                }
                 $caixa = __isCaixaAberto();
-                $config = Empresa::find($request->empresa_id);
+
+                $empresa = __objetoParaEmissao($empresa, $caixa->local_id);
 
                 $tipoPagamento = $request->tipo_pagamento;
 
@@ -218,9 +229,9 @@ class NfceController extends Controller
                     $numeroSerieNfce = $configUsuarioEmissao->numero_serie_nfce;
                 }
                 $request->merge([
-                    'emissor_nome' => $config->nome,
-                    'emissor_cpf_cnpj' => $config->cpf_cnpj,
-                    'ambiente' => $config->ambiente,
+                    'emissor_nome' => $empresa->nome,
+                    'emissor_cpf_cnpj' => $empresa->cpf_cnpj,
+                    'ambiente' => $empresa->ambiente,
                     'chave' => '',
                     'cliente_id' => $cliente_id,
                     'numero_serie' => $numeroSerieNfce,
@@ -266,7 +277,7 @@ class NfceController extends Controller
                         'cst_ipi' => $request->cst_ipi[$i],
                         'perc_red_bc' => $request->perc_red_bc[$i] ? __convert_value_bd($request->perc_red_bc[$i]) : 0,
                         'cfop' => $request->cfop[$i],
-                        'ncm' => $request->ncm[$i],
+                        'ncm' => $request->ncm[$i] ?? '',
                         'codigo_beneficio_fiscal' => $request->codigo_beneficio_fiscal[$i],
                         'variacao_id' => $variacao_id
                     ]);
@@ -299,7 +310,9 @@ class NfceController extends Controller
                                 'valor_integral' => __convert_value_bd($request->valor_fatura[$i]),
                                 'tipo_pagamento' => $request->tipo_pagamento[$i],
                                 'data_vencimento' => $request->data_vencimento[$i],
-                                'local_id' => $caixa->local_id
+                                'local_id' => $caixa->local_id,
+                                'descricao' => "Parcela " . $i+1 . " de " . sizeof($tipoPagamento)
+                                
                             ]);
                         }
                     }
@@ -307,7 +320,7 @@ class NfceController extends Controller
             });
 session()->flash("flash_success", "NFCe cadastrada!");
 } catch (\Exception $e) {
-    // echo $e->getMessage() . '<br>' . $e->getLine();
+    // echo $e->getFile() . '<br>' . $e->getLine();
     // die;
     session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
 }
@@ -329,7 +342,7 @@ public function update(Request $request, $id)
                 'emissor_cpf_cnpj' => $config->cpf_cnpj,
                 'ambiente' => $config->ambiente,
                 'numero' => $request->numero_nfce,
-                'estado' => 'novo',
+                // 'estado' => 'novo',
                 'total' => ($request->valor_total) - __convert_value_bd($request->desconto) + __convert_value_bd($request->acrescimo),
                 'desconto' => $request->desconto ? __convert_value_bd($request->desconto) : 0,
                 'acrescimo' => $request->acrescimo ? __convert_value_bd($request->acrescimo) : 0,
@@ -391,8 +404,8 @@ public function update(Request $request, $id)
         });
         session()->flash("flash_success", "NFCe alterada com sucesso!");
     } catch (\Exception $e) {
-        echo $e->getMessage() . '<br>' . $e->getLine();
-        die;
+        // echo $e->getMessage() . '<br>' . $e->getLine();
+        // die;
         session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
     }
     return redirect()->route('nfce.index');
@@ -452,6 +465,8 @@ public function imprimir($id)
             $xml = file_get_contents(public_path('xml_nfce_contigencia/') . $item->chave . '.xml');
             $danfe = new Danfce($xml, $item);
             $empresa = $item->empresa;
+            $empresa = __objetoParaEmissao($empresa, $item->local_id);
+
             if($empresa->logo){
                 $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . $empresa->logo));
                 $danfe->logoParameters($logo, 'L');
@@ -469,6 +484,8 @@ public function imprimir($id)
             $xml = file_get_contents(public_path('xml_nfce/') . $item->chave . '.xml');
             $danfe = new Danfce($xml, $item);
             $empresa = $item->empresa;
+            $empresa = __objetoParaEmissao($empresa, $item->local_id);
+            
             if($empresa->logo){
                 $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . $empresa->logo));
                 $danfe->logoParameters($logo, 'L');
@@ -509,6 +526,16 @@ public function downloadXml($id)
     }
 }
 
+public function xmlTempContigencia($id)
+{
+    $item = Nfce::findOrFail($id);
+    __validaObjetoEmpresa($item);
+
+    $xml = file_get_contents(public_path('xml_nfce_contigencia/'.$item->chave.'.xml'));
+    return response($xml)
+    ->header('Content-Type', 'application/xml');
+}
+
 public function xmlTemp($id)
 {
     $item = Nfce::findOrFail($id);
@@ -528,12 +555,13 @@ public function xmlTemp($id)
         "razaosocial" => $empresa->nome,
         "siglaUF" => $empresa->cidade->uf,
         "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-        "schemes" => "PL_009_V4",
+        // "schemes" => "PL_009_V4",
+        "schemes" => "PL_010_V1.21",
         "versao" => "4.00",
         "CSC" => $empresa->csc,
         "CSCid" => $empresa->csc_id
     ], $empresa);
-
+    
     $doc = $nfe_service->gerarXml($item);
 
     if (!isset($doc['erros_xml'])) {
@@ -552,6 +580,7 @@ public function danfceTemporaria($id)
     __validaObjetoEmpresa($item);
 
     $empresa = $item->empresa;
+    $empresa = __objetoParaEmissao($empresa, $item->local_id);
 
     if ($empresa->arquivo == null) {
         session()->flash("flash_error", "Certificado não encontrado para este emitente");
@@ -618,10 +647,17 @@ public function destroy($id)
     __validaObjetoEmpresa($item);
     
     try {
-        foreach ($item->itens as $i) {
-            if ($i->produto->gerenciar_estoque) {
-                $this->util->incrementaEstoque($i->produto_id, $i->quantidade, $i->variacao_id, $item->local_id);
+        if($item->estado != 'cancelado'){
+            foreach ($item->itens as $i) {
+                if ($i->produto->gerenciar_estoque) {
+                    $this->util->incrementaEstoque($i->produto_id, $i->quantidade, $i->variacao_id, $item->local_id);
+                }
             }
+        }
+
+        $preVenda = PreVenda::where('venda_id', $id)->first();
+        if($preVenda){
+            $preVenda->delete();
         }
         $item->itens()->delete();
         $item->fatura()->delete();
@@ -789,7 +825,7 @@ private function preparaXmls($destino){
                     'fatura' => $fatura,
                     'file' => $file,
                     'natureza' => (string)$xml->NFe->infNFe->ide->natOp[0],
-                    'observacao' => (string)$xml->NFe->infNFe->infAdic ? $xml->NFe->infNFe->infAdic->infCpl[0] : '',
+                    'observacao' => (string)$xml->NFe->infNFe->infAdic ? (string)$xml->NFe->infNFe->infAdic->infCpl[0] : '',
                     'tipo_pagamento' => (string)$xml->NFe->infNFe->pag->detPag->tPag,
                     'finNFe' => (string)$xml->NFe->infNFe->ide->finNFe,
                     'data_emissao'
@@ -956,6 +992,7 @@ private function salvarVenda($venda, $local_id){
     $empresa = Empresa::findOrFail(request()->empresa_id);
     $empresa = __objetoParaEmissao($empresa, $local_id);
     // dd($venda);
+
     $dataVenda = [
         'estado' => 'aprovado',
         'empresa_id' => request()->empresa_id,
@@ -975,17 +1012,26 @@ private function salvarVenda($venda, $local_id){
 
     $nfe = Nfce::where('empresa_id', request()->empresa_id)
     ->where('chave', $venda->chave)->first();
+
     if($nfe == null){
-        $nfe = Nfce::create($dataVenda);
-        $nfe->data_emissao = $venda->data;
-        $nfe->created_at = $venda->data;
-        $nfe->save();
+
+        try{
+            // dd($dataVenda);
+            $nfe = Nfce::create($dataVenda);
+
+            $nfe->data_emissao = $venda->data;
+            $nfe->created_at = $venda->data;
+            $nfe->save();
+        }catch(\Exception $e){
+            dd($dataVenda);
+        }
     }else{
         $nfe->data_emissao = $venda->data;
         $nfe->created_at = $venda->data;
         $nfe->save();
         return 0;
     }
+    
 
     $nfe->data_emissao = $venda->data;
     $nfe->save();

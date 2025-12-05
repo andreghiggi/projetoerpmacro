@@ -10,15 +10,19 @@
 						<div class="bread">
 							<a href="{{ route('food.index', ['link='.$config->loja_id]) }}"><i class="lni lni-home"></i></a>
 							@if($item->categoria)
+							@if($item->categoria->hash_delivery)
+							
 							<span>/</span>
 							<a href="{{ route('food.produtos-categoria', [$item->categoria->hash_delivery, 'link='.$config->loja_id]) }}">Categorias</a>
 							<span>/</span>
 							<a href="{{ route('food.produtos-categoria', [$item->categoria->hash_delivery, 'link='.$config->loja_id]) }}">{{ $item->categoria->nome }}</a>
 							@endif
+							@endif
 						</div>
 					</div>
 				</div>
 				<input type="hidden" id="valor_unitario_produto" value="{{ $item->valor_delivery }}">
+				<input type="hidden" id="valor_unitario_pizza" value="">
 				<div class="col-md-12 hidden-xs hidden-sm">
 					<div class="clearline"></div>
 				</div>
@@ -57,6 +61,7 @@
 								</div>
 
 								<div class="row">
+									<br>
 									<div class="col-md-3 hidden-xs hidden-sm">
 										<span class="thelabel thelabel-normal">Link do Produto:</span>
 									</div>
@@ -113,7 +118,7 @@
 
 							</div>
 
-							<form id="the_form" method="POST" action="{{ route('food.adicionar-carrinho') }}">
+							<form id="the_form" class="form-modal-item" method="POST" action="{{ route('food.adicionar-carrinho') }}">
 
 								<input type="hidden" name="_token" id="_token_api">
 								<input type="hidden" value="{{ $config->loja_id }}" name="link">
@@ -124,6 +129,13 @@
 								
 								<div class="comprar">
 
+									@if(sizeof($item->ingredientes) > 0)
+									<div class="product__details__tab__desc">
+										<h5 style="font-weight: bold">Ingredientes</h5>
+										<p>@foreach($item->ingredientes as $i) {{ $i->ingrediente }}{{ !$loop->last ? ', ' : '' }} @endforeach</p>
+									</div>
+									@endif
+
 									@if(sizeof($item->adicionaisAtivos) > 0)
 									<div class="line line-variacao">
 										<div class="row">
@@ -133,30 +145,54 @@
 												</span>
 											</div>
 										</div>
-										<div class="row">	
-											<div class="col-md-12">
-												<div class="opcoes-input"></div>
+										<div class="row">
+											<div class="opcoes-input"></div>
 
-												<div class="opcoes">
+											@foreach($categoriasAdicional as $c)
+											<div class="adicional_categoria_{{ $c->id }}">
+												<input type="hidden" value="{{ $c->minimo_escolha }}" class="minimo_escolha">
+												<input type="hidden" value="{{ $c->nome }}" class="categoria_nome">
+												<input type="hidden" value="{{ $c->minimo_escolha == 0 ? 1 : 0 }}" class="minimo_escolha_valida">
 
-													@foreach($item->adicionaisAtivos as $a)
-													<div class="opcao op_{{ $a->adicional->id }}" adicional-id="{{ $a->adicional->id }}" adicional-valor="{{ $a->adicional->valor }}">
+												<input type="hidden" value="{{ $c->maximo_escolha }}" class="maximo_escolha">
+												<input type="hidden" value="0" class="maximo_escolha_contador">
+												<h5 style="margin-left: 15px;">
+													{{ $c->nome }}
+													@if($c->minimo_escolha > 0)
+													<strong> (selecione ao menos {{ $c->minimo_escolha }})</strong>
+													@endif
+												</h5>
+												<div class="col-md-12">
 
-														<div class="check" style="height: 62px;">
-															<i class="lni"></i>
+													<div class="opcoes">
+
+														@foreach($c->adicionais as $a)
+														@if(in_array($a->id, $item->adicionaisAtivos->pluck(['adicional_id'])->toArray()))
+														<div class="opcao op_{{ $a->id }}" categoria-adicional-id="{{ $c->id }}" adicional-id="{{ $a->id }}" adicional-valor="{{ $a->valor }}">
+															<div class="check" style="height: 62px;">
+																<i class="lni"></i>
+															</div>
+															<div class="detalhes">
+																<span class="titulo" style="font-size:12px"> 
+																	{{ $a->nome }} 
+																	@if($a->valor > 0)
+																	R$ {{ __moeda($a->valor) }}
+																	@else
+																	Gratis
+																	@endif
+																</span>
+																<span class="descricao" style="font-size:10px"></span>
+															</div>
+
+															<div class="clear"></div>
 														</div>
-														<div class="detalhes">
-															<span class="titulo" style="font-size:12px"> 
-																{{ $a->adicional->nome }} R${{ __moeda($a->adicional->valor) }}
-															</span>
-															<span class="descricao" style="font-size:10px"></span>
-														</div>
-
-														<div class="clear"></div>
+														@endif
+														@endforeach
 													</div>
-													@endforeach
 												</div>
 											</div>
+											@endforeach
+
 										</div>
 									</div>
 									@endif
@@ -210,12 +246,13 @@
 									@if($item->texto_delivery)
 									<div class="line observacoes">
 										<div class="row">
-											<div class="col-md-3 col-sm-2 col-xs-2">
+											<div class="col-md-3 col-12">
 												<span class="thelabel hidden-xs hidden-sm">Descrição:</span>
-												<span class="thelabel visible-xs visible-sm">Obs:</span>
+												<span class="thelabel visible-xs visible-sm">Descrição:</span>
 											</div>
-											<div class="col-md-9 col-sm-10 col-xs-10">
-												<p>{{ $item->texto_delivery }}</p>
+											<div class="col-md-9 col-12">
+												<br>
+												<p style="text-align: justify;">{{ $item->texto_delivery }}</p>
 											</div>
 										</div>
 									</div>
@@ -243,30 +280,26 @@
 											</div>
 											@endif
 											<div class="col-md-6">
-												<button @if($tipoPizza) disabled @endif class="sacola-adicionar botao-acao pull-right"><i class="icone icone-sacola"></i> <span>Adicionar a sacola</span></button>
+												<button type="button" @if($tipoPizza) disabled @endif class="sacola-adicionar botao-acao pull-right"><i class="icone icone-sacola"></i> <span>Adicionar na sacola</span></button>
 											</div>
 										</div>
 										<div class="row">
 											<div class="col-md-6">
-												<button type="button" style="margin-top:20px; color:white" class="btn" data-dismiss="modal">Cancelar</button>
+												<button type="button" style="margin-top:20px;" class="botao-cancelar pull-right" data-dismiss="modal">
+													<i class="lni lni-close"></i>Cancelar</button>
+												</div>
 											</div>
 										</div>
+										
 									</div>
-									@if(sizeof($item->ingredientes) > 0)
-									<div class="product__details__tab__desc">
-										<h5 style="font-weight: bold">Ingredientes</h5>
-										<p>@foreach($item->ingredientes as $i) {{ $i->ingrediente }}{{ !$loop->last ? ', ' : '' }} @endforeach</p>
-									</div>
-									@endif
-								</div>
-							</form>
+								</form>
 
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="fillrelacionados visible-xs visible-sm"></div>
-</div>
+		<div class="fillrelacionados visible-xs visible-sm"></div>
+	</div>

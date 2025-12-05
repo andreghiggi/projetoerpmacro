@@ -19,7 +19,7 @@ class AvaliacaoCardapioController extends Controller
         })
         ->whereNotNull('avaliacao')
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('cardapio.avaliacoes.index', compact('data'));
     }

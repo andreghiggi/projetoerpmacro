@@ -18,6 +18,7 @@ class AgendamentoController extends Controller
     {
         $servicos = json_decode($request->servicos);
         $data = $request->data;
+        $start_time = $request->start_time;
         $empresa_id = $request->empresa_id;
         $funcionario_id = $request->funcionario_id;
 
@@ -53,6 +54,10 @@ class AgendamentoController extends Controller
             ->first(); // funcionamento do dia
 
             $inicio = $funcionamento->inicio;
+
+            if($start_time){
+                $inicio = $start_time;
+            }
             $fim = $funcionamento->fim;
 
             if($data == date('Y-m-d')){
@@ -69,59 +74,61 @@ class AgendamentoController extends Controller
 
             $dif = strtotime("$data $fim") - strtotime("$data $inicio");
 
-            $minutosDif = $dif/(60); //converte milesegundos em minutos
-            $contador = $minutosDif/$tempoServico;
+            $minutosDif = $dif/(60);
+            if($minutosDif > 0 && $tempoServico > 0){
 
-            $interrupcoes = Interrupcoes::where('funcionario_id', $f->id)
-            ->where('status', 1)
-            ->where('dia_id', $diaStr)->get();
+                $contador = $minutosDif/$tempoServico;
 
-            $inicio = strtotime("$data $inicio");
-            for($i=0; $i<$contador; $i++){
-                $fim = strtotime("+".$tempoServico." minutes", $inicio);
+                $interrupcoes = Interrupcoes::where('funcionario_id', $f->id)
+                ->where('status', 1)
+                ->where('dia_id', $diaStr)->get();
 
-                $temp = [
-                    'funcionario_id' => $f->id,
-                    'funcionario_nome' => $f->nome,
-                    'inicio' => date('H:i', $inicio),
-                    'fim' => date('H:i', $fim),
-                    'data' => $data,
-                    'total' => $totalServico,
-                    'tempoServico' => $tempoServico
-                ];
+                $inicio = strtotime("$data $inicio");
+                for($i=0; $i<$contador; $i++){
+                    $fim = strtotime("+".$tempoServico." minutes", $inicio);
 
-                $add = true;
+                    $temp = [
+                        'funcionario_id' => $f->id,
+                        'funcionario_nome' => $f->nome,
+                        'inicio' => date('H:i', $inicio),
+                        'fim' => date('H:i', $fim),
+                        'data' => $data,
+                        'total' => $totalServico,
+                        'tempoServico' => $tempoServico
+                    ];
 
-                $interrupcao = Interrupcoes::where('funcionario_id', $f->id)
-                ->where('dia_id', $diaStr)
-                ->whereTime('inicio', '<=', date('H:i', $inicio))
-                ->whereTime('fim', '>=', date('H:i', $inicio))
-                ->first();
+                    $add = true;
 
-                if($interrupcao != null){
-
-                    $add = false;
-                }else{
-
-                    $agendamento = Agendamento::where('funcionario_id', $f->id)
-                    ->whereDate('data', $data)
+                    $interrupcao = Interrupcoes::where('funcionario_id', $f->id)
+                    ->where('dia_id', $diaStr)
                     ->whereTime('inicio', '<=', date('H:i', $inicio))
-                    ->whereTime('termino', '>=', date('H:i', $inicio))
+                    ->whereTime('fim', '>=', date('H:i', $inicio))
                     ->first();
 
-                    if($agendamento != null){
+                    if($interrupcao != null){
+
                         $add = false;
+                    }else{
+
+                        $agendamento = Agendamento::where('funcionario_id', $f->id)
+                        ->whereDate('data', $data)
+                        ->whereTime('inicio', '<=', date('H:i', $inicio))
+                        ->whereTime('termino', '>=', date('H:i', $inicio))
+                        ->first();
+
+                        if($agendamento != null){
+                            $add = false;
+                        }
                     }
-                }
 
-                if($add == true){
-                    array_push($horarios, $temp);
-                }
+                    if($add == true){
+                        array_push($horarios, $temp);
+                    }
 
-                $inicio = $fim;
+                    $inicio = $fim;
+                }
             }
         }
-
         return view('agendamento.partials.agenda_row', compact('horarios'));
 
     }

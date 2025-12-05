@@ -6,14 +6,46 @@
         overflow-x: auto;
         white-space: nowrap;
     }
+    @media (max-width: 768px) {
+        .btns .btn{
+            display: block;
+            margin-top: 3px;
+        }
+    }
+    .img-wrapper {
+        height: 180px;
+        overflow: hidden;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        background-color: #f8f9fa;
+    }
+    .produto-img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .produto-card {
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+    .produto-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    }
+    .produto-card:hover .produto-img {
+        transform: scale(1.05);
+    }
+
 </style>
 @endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
-                <div class="col-md-12">
+                <div class="col-md-12 btns">
                     @can('produtos_create')
                     <a href="{{ route('produtos.create') }}" class="btn btn-success">
                         <i class="ri-add-circle-fill"></i>
@@ -26,7 +58,7 @@
                         Upload
                     </a>
 
-                    <a href="{{ route('produtos.export') }}" class="btn btn-success pull-right">
+                    <a href="{{ route('produtos.export') }}" class="btn btn-warning pull-right">
                         <i class="ri-file-excel-line"></i>
                         Exportar
                     </a>
@@ -35,25 +67,43 @@
                         <i class="ri-file-edit-fill"></i>
                         Reajuste em Grupo
                     </a>
+
+                    <a href="{{ route('produtos.alterar-valor-estoque') }}" class="btn btn-secondary pull-right">
+                        <i class="ri-price-tag-3-line"></i>
+                        Alterar Valor ou Estoque
+                    </a>
                     @endif
 
                     <a href="{{ route('produtos.upload-imagens') }}" class="btn btn-light pull-right">
                         <i class="ri-image-fill"></i>
                         Upload de Imagens
                     </a>
+
+                    @if($empresa->token_ibpt)
+                    <a href="{{ route('produtos.ibpt') }}" class="btn btn-primary pull-right btn-ibpt">
+                        <i class="ri-booklet-fill"></i>
+                        Atualizar IBPT
+                    </a>
+                    @endif
                 </div>
                 <hr class="mt-3">
+
                 <div class="col-lg-12">
+
+                    <button class="btn btn-dark btn-toggle-filtros">
+                        <i class="ri-filter-2-line"></i> Filtros
+                    </button> 
+
                     {!!Form::open()->fill(request()->all())
-                    ->get()
+                    ->get()->attrs(['class' => 'filtros-container'])
                     !!}
                     <div class="row mt-3 g-1">
                         <div class="col-md-2">
                             {!!Form::text('nome', 'Pesquisar por nome')
                             !!}
                         </div>
-                        
-                        <div class="col-md-2">
+
+                        <div class="col-md-3 col-xl-2">
                             {!!Form::tel('codigo_barras', 'Pesquisar código de barras')
                             !!}
                         </div>
@@ -66,7 +116,13 @@
 
                         <div class="col-md-2">
                             {!!Form::select('categoria_id', 'Categoria', ['' => 'Todos'] + $categorias->pluck('nome', 'id')->all())
-                            ->attrs(['class' => 'form-select'])
+                            ->attrs(['class' => 'form-select select2'])
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!!Form::select('marca_id', 'Marca', ['' => 'Todos'] + $marcas->pluck('nome', 'id')->all())
+                            ->attrs(['class' => 'form-select select2'])
                             !!}
                         </div>
 
@@ -94,11 +150,29 @@
                         </div>
 
                         <div class="col-md-2">
+                            {!!Form::select('com_imagem', 'Com imagem', ['' => 'Todos', 1 => 'Sim', 0 => 'Não'])
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!!Form::select('status', 'Ativo', ['' => 'Todos', 1 => 'Sim', 0 => 'Não'])
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!!Form::select('gerenciar_estoque', 'Gerenciando estoque', ['' => 'Todos', 1 => 'Sim', -1 => 'Não'])
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
                             {!!Form::select('ordem', 'Ordenar por', ['nome' => 'Nome', 'numero_sequencial' => 'Código', 'created_at' => 'Data de cadastro'])
                             ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
-                        <div class="col-md-3 text-left">
+                        <div class="col-md-4 col-xl-2 text-left">
                             <br>
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
                             <a id="clear-filter" class="btn btn-danger" href="{{ route('produtos.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
@@ -106,253 +180,37 @@
                     </div>
                     {!!Form::close()!!}
                 </div>
-                <div class="col-md-12 mt-3 table-responsive">
-                    <h6>Total de registros: <strong>{{ $data->total() }}</strong></h6>
-                    <h6>Total de produtos cadastrados: <strong>{{ $totalCadastros }}</strong></h6>
-                    <div class="table-responsive-sm">
-                        <table class="table table-striped table-centered mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    @can('produtos_delete')
-                                    <th>
-                                        <div class="form-check form-checkbox-danger mb-2">
-                                            <input class="form-check-input" type="checkbox" id="select-all-checkbox">
-                                        </div>
-                                    </th>
-                                    @endcan
-                                    <th>Ações</th>
-                                    <th>Imagem</th>
-                                    <th>#</th>
-                                    <th>Nome</th>
-                                    <th>Valor de venda</th>
-                                    <th>Valor de compra</th>
-                                    @if(__countLocalAtivo() > 1)
-                                    <th>Disponibilidade</th>
-                                    @endif
-                                    <th>Categoria</th>
-                                    <th>Código de barras</th>
-                                    <th>NCM</th>
-                                    <th>Unidade</th>
-                                    <th>Data de cadastro</th>
-                                    <th>CFOP</th>
-                                    <th>Gerenciar estoque</th>
-                                    @can('estoque_view')
-                                    <th>Estoque</th>
-                                    @endcan
-                                    <th>Status</th>
-                                    <th>Variação</th>
-                                    <th>Combo</th>
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Cardapio'))
-                                    <th>Cardápio</th>
-                                    @endif
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Delivery'))
-                                    <th>Delivery</th>
-                                    @endif
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Ecommerce'))
-                                    <th>Ecommerce</th>
-                                    @endif
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Reservas'))
-                                    <th>Reserva</th>
-                                    @endif
-                                    
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($data as $item)
-                                <tr>
-                                    @can('produtos_delete')
-                                    <td>
-                                        <div class="form-check form-checkbox-danger mb-2">
-                                            <input class="form-check-input check-delete" type="checkbox" name="item_delete[]" value="{{ $item->id }}">
-                                        </div>
-                                    </td>
-                                    @endcan
-                                    <td>
-                                        <form style="width: 330px" action="{{ route('produtos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
-                                            @method('delete')
-                                            @can('produtos_edit')
-                                            <a class="btn btn-warning btn-sm" href="{{ route('produtos.edit', [$item->id]) }}">
-                                                <i class="ri-edit-line"></i>
-                                            </a>
-                                            @endcan
-                                            @csrf
-                                            @can('produtos_delete')
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
-                                            @endcan
 
-                                            @if($item->composto == true)
-                                            <a class="btn btn-info btn-sm" href="{{ route('produto-composto.show', [$item->id]) }}" title="Ver composição"><i class="ri-search-eye-fill"></i></a>
-                                            @endif
+                @if($tipoExibe == 'tabela')
+                @include('produtos.partials.tabela')
+                @else
+                @include('produtos.partials.card')
+                @endif
 
-                                            @if($item->alerta_validade != '')
-                                            <a title="Ver lote e vencimento" type="button" class="btn btn-light btn-sm" onclick="infoVencimento('{{$item->id}}')" data-bs-toggle="modal" data-bs-target="#info_vencimento"><i class="ri-eye-line"></i></a>
-                                            @endif
-
-                                            <a title="Ver movimentações" href="{{ route('produtos.show', [$item->id]) }}" class="btn btn-dark btn-sm"><i class="ri-draft-line"></i></a>
-
-                                            <a class="btn btn-primary btn-sm" href="{{ route('produtos.duplicar', [$item->id]) }}" title="Duplicar produto">
-                                                <i class="ri-file-copy-line"></i>
-                                            </a>
-                                            <a class="btn btn-light btn-sm" href="{{ route('produtos.etiqueta', [$item->id]) }}" title="Gerar etiqueta">
-                                                <i class="ri-barcode-box-line"></i>
-                                            </a>
-
-                                            @if(__countLocalAtivo() > 1)
-                                            <a class="btn btn-dark btn-sm" href="{{ route('produto-tributacao-local.index', [$item->id]) }}" title="Valores por local">
-                                                <i class="ri-percent-fill"></i>
-                                            </a>
-                                            @endif
-                                        </form>
-                                    </td>
-                                    <td><img class="img-60" src="{{ $item->img }}"></td>
-                                    <td style="font-weight: bold;">{{ $item->numero_sequencial }}</td>
-                                    <td><label style="width: 300px">{{ $item->nome }}</label></td>
-                                    @if(sizeof($item->variacoes) > 0)
-                                    <td>
-                                        <div class="div-overflow">
-                                            {{ $item->valoresVariacao() }}
-                                        </div>
-                                    </td>
-                                    @else
-                                    <td><label style="width: 100px">{{ __moeda($item->valor_unitario) }}</label></td>
-                                    @endif
-                                    <td><label style="width: 120px">{{ __moeda($item->valor_compra) }}</label></td>
-                                    @if(__countLocalAtivo() > 1)
-                                    <td>
-                                        <label style="width: 250px">
-                                            @foreach($item->locais as $l)
-                                            @if($l->localizacao)
-                                            <strong>{{ $l->localizacao->descricao }}</strong>
-                                            @if(!$loop->last) | @endif
-                                            @endif
-                                            @endforeach
-                                        </label>
-                                    </td>
-                                    @endif
-                                    <td width="150">{{ $item->categoria ? $item->categoria->nome : '--' }}</td>
-                                    <td width="200">{{ $item->codigo_barras ?? '--' }}</td>
-                                    <td>{{ $item->ncm }}</td>
-                                    <td>{{ $item->unidade }}</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>{{ $item->cfop_estadual }}/{{ $item->cfop_outro_estado }}</td>
-                                    <td>
-                                        @if($item->gerenciar_estoque)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-
-                                    @can('estoque_view')
-                                    <td>
-                                        <label style="width: 200px">
-                                            @if(__countLocalAtivo() == 1)
-                                            {{ $item->estoqueAtual() }}
-                                            @else
-                                            
-
-                                            @foreach($item->estoqueLocais as $e)
-                                            @if($e->local)
-                                            {{ $e->local->descricao }}:
-                                            <strong class="text-success">
-                                                @if(!$item->unidadeDecimal())
-                                                {{ number_format($e->quantidade, 0) }}
-                                                @else
-                                                {{ number_format($e->quantidade, 3) }}
-                                                @endif
-                                            </strong>
-                                            @endif
-                                            @if(!$loop->last) | @endif
-                                            @endforeach
-
-                                            @endif
-                                        </label>
-                                        
-                                    </td>
-                                    @endcan
-
-                                    <td>
-                                        @if($item->status)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if(sizeof($item->variacoes) > 0)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($item->combo)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Cardapio'))
-                                    <td>
-                                        @if($item->cardapio)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    @endif
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Delivery'))
-                                    <td>
-                                        @if($item->delivery)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    @endif
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Ecommerce'))
-                                    <td>
-                                        @if($item->ecommerce)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    @endif
-                                    @if(__isActivePlan(Auth::user()->empresa, 'Reservas'))
-                                    <td>
-                                        @if($item->reserva)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    @endif
-                                    
-                                    
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="21" class="text-center">Nada encontrado</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <br>
+                <div class="row">
+                    <div class="col-md-2">
+                        @can('produtos_delete')
+                        <form action="{{ route('produtos.destroy-select') }}" method="post" id="form-delete-select">
+                            @method('delete')
+                            @csrf
+                            <div></div>
+                            <button type="button" class="btn btn-danger btn-sm btn-delete-all w-100" disabled>
+                                <i class="ri-close-circle-line"></i> Remover selecionados
+                            </button>
+                        </form>
+                        @endcan
+                    </div>
+                    <div class="col-md-2">
+                        <form action="{{ route('produtos.desactive-select') }}" method="post" id="form-desactive-select">
+                            @csrf
+                            <div></div>
+                            <button type="button" class="btn btn-warning btn-sm btn-desactive-all w-100" disabled>
+                                <i class="ri-close-circle-line"></i> Desativar selecionados
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <br>
-                @can('produtos_delete')
-                <form action="{{ route('produtos.destroy-select') }}" method="post" id="form-delete-select">
-                    @method('delete')
-                    @csrf
-                    <div></div>
-                    <button type="button" class="btn btn-danger btn-sm btn-delete-all" disabled>
-                        <i class="ri-close-circle-line"></i> Remover selecionados
-                    </button>
-                </form>
-                @endcan
                 <br>
                 {!! $data->appends(request()->all())->links() !!}
             </div>
@@ -361,6 +219,7 @@
 </div>
 
 @include('modals._info_vencimento', ['not_submit' => true])
+@include('produtos.partials.modal_info')
 
 @endsection
 
@@ -372,6 +231,23 @@
         $.get(path_url + 'api/produtos/info-vencimento/' + id)
         .done((res) => {
             $('.table-infoValidade tbody').html(res)
+        })
+        .fail((e) => {
+            console.log(e)
+        })
+    }
+
+    $('.btn-ibpt').click(() => {
+        $body = $("body");
+        $body.addClass("loading");
+    })
+
+    function openModal(id) {
+        $.get(path_url + "api/produtos/modal/"+id)
+        .done((data) => {
+            // console.log(data)
+            $('#modal-info').modal('show')
+            $('#modal-info .modal-content').html(data)
         })
         .fail((e) => {
             console.log(e)

@@ -731,10 +731,17 @@
 			<tr>
 				<td style="text-align: left;" @if($i->status) class="text-success" @endif>
 					{{ $i->produto->nome }}
-					{{ $i->itemProducao->dimensao }} 
+					@if($i->itemProducao)
+					{{ $i->itemProducao->dimensao }}
+					@endif
 				</td>
+				@if($i->itemProducao)
 				<td style="text-align: left;">{{ $i->itemProducao->itemNfe->nfe->numero_sequencial }}</td>
 				<td style="text-align: left;">{{ $i->itemProducao->itemNfe->nfe->cliente->razao_social }}</td>
+				@else
+				<td style="text-align: left;">{{ $i->numero_pedido }}</td>
+				<td style="text-align: left;">{{ $i->cliente->razao_social }}</td>
+				@endif
 				<td style="text-align: left;">
 					@if(!$i->produto->unidadeDecimal())
 					{{ number_format($i->quantidade, 0) }}

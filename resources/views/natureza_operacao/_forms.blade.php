@@ -1,6 +1,7 @@
 <div class="row">
     <div class="col-md-4">
         {!!Form::text('descricao', 'Descrição')->required()
+        ->attrs(['data-contador' => true, 'maxlength' => 60])
         !!}
     </div>
 
@@ -16,6 +17,14 @@
         ->attrs(['class' => 'form-select'])
         !!}
     </div>
+
+    <div class="col-md-2">
+        {!!Form::select('movimentar_estoque', 'Movimentar Estoque', [1 => 'Sim', 0 => 'Não'])
+        ->required()
+        ->attrs(['class' => 'form-select'])
+        !!}
+    </div>
+
     <hr class="mt-2">
 
     <div class="card">

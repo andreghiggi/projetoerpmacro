@@ -4,6 +4,12 @@
     .ri-information-line:hover{
         cursor: pointer;
     }
+    .swal-button--confirm {
+        background-color: #159488 !important;
+        color: white !important;
+    }
+
+    
 </style>
 @endsection
 @section('content')
@@ -12,6 +18,7 @@
     <div class="card-header">
 
         <h4>Importação de XML</h4>
+
         @isset($dadosXml)
         <h5>Chave <strong class="text-success">{{ $dadosXml['chave'] }}</strong></h5>
         @endif
@@ -28,6 +35,7 @@
         {!!Form::open()
         ->post()
         ->route('compras.finish-xml')
+        ->id('form-xml')
         ->multipart()
         !!}
 
@@ -40,8 +48,11 @@
 
 @include('modals._altera_produto_xml')
 @include('modals._modal_show_xml')
+@include('modals._marca')
+@include('modals._categoria_produto')
+
 @section('js')
 <script src="/js/nfe.js"></script>
-<script src="/js/import_xml.js"></script>
+<script src="/js/import_xml.js?v=2"></script>
 @endsection
 @endsection

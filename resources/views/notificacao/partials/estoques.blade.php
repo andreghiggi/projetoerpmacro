@@ -4,9 +4,9 @@
 		<h5>Quantidade: 
 			<strong>
 				@if($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID')
-				{{ number_format($e->quantidade, 0) }}
+				{{ number_format($item->quantidade, 0) }}
 				@else
-				{{ number_format($e->quantidade, 3) }}
+				{{ number_format($item->quantidade, 3) }}
 				@endif
 			</strong>
 		</h5>

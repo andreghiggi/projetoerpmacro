@@ -13,10 +13,19 @@ class Cliente extends Model
         'empresa_id', 'razao_social', 'nome_fantasia', 'cpf_cnpj', 'ie', 'contribuinte', 'consumidor_final',
         'email', 'telefone', 'cidade_id', 'rua', 'cep', 'numero', 'bairro', 'complemento', 'status', 'uid',
         'senha', 'token', 'valor_cashback', 'nuvem_shop_id', 'valor_credito', 'limite_credito',
-        'lista_preco_id', '_id_import', 'id_estrangeiro', 'codigo_pais', 'numero_sequencial'
+        'lista_preco_id', '_id_import', 'id_estrangeiro', 'codigo_pais', 'numero_sequencial', 'data_nascimento',
+        'imagem'
     ];
 
     protected $appends = [ 'endereco', 'info' ];
+
+    public function getImgAttribute()
+    {
+        if($this->imagem == ""){
+            return "/imgs/no-client.png";
+        }
+        return "/uploads/clientes/$this->imagem";
+    }
 
     public function getInfoAttribute()
     {
@@ -26,11 +35,6 @@ class Cliente extends Model
     public function getEnderecoAttribute()
     {
         return "$this->rua, $this->numero - $this->bairro";
-    }
-
-    public function setCpfCnpjAttribute($value)
-    {
-        $this->attributes['cpf_cnpj'] = preg_replace('/\D/', '', $value);
     }
 
     public function cidade(){
@@ -45,13 +49,16 @@ class Cliente extends Model
         return $this->hasMany(Nfe::class, 'cliente_id');
     }
 
-
     public function enderecos(){
         return $this->hasMany(EnderecoDelivery::class, 'cliente_id')->with('bairro');
     }
 
     public function enderecosEcommerce(){
         return $this->hasMany(EnderecoEcommerce::class, 'cliente_id');
+    }
+
+    public function carrinhosDelivery(){
+        return $this->hasMany(CarrinhoDelivery::class, 'cliente_id');
     }
 
     public function enderecosDelivery(){
@@ -70,6 +77,10 @@ class Cliente extends Model
         return $this->hasOne(TributacaoCliente::class, 'cliente_id');
     }
 
+    public function fatura(){
+        return $this->hasMany(FaturaCliente::class, 'cliente_id');
+    }
+
     public function pedidos(){
         return $this->hasMany(PedidoDelivery::class, 'cliente_id')->orderBy('id', 'desc')
         ->with(['itens', 'motoboy', 'endereco']);
@@ -77,6 +88,10 @@ class Cliente extends Model
 
     public function cashBacks(){
         return $this->hasMany(CashBackCliente::class, 'cliente_id')->orderBy('id', 'desc');
+    }
+
+    public function creditosCliente(){
+        return $this->hasMany(CreditoCliente::class, 'cliente_id')->orderBy('id', 'desc');
     }
 
     public static function getClienteDelivery($hash){

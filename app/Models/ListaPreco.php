@@ -10,7 +10,8 @@ class ListaPreco extends Model
     use HasFactory;
 
     protected $fillable = [
-        'empresa_id', 'nome', 'ajuste_sobre', 'tipo', 'percentual_alteracao', 'tipo_pagamento', 'funcionario_id', 'status'
+        'empresa_id', 'nome', 'ajuste_sobre', 'tipo', 'percentual_alteracao', 'tipo_pagamento', 'funcionario_id', 'status',
+        'valor_alteracao'
     ];
 
     public function itens(){

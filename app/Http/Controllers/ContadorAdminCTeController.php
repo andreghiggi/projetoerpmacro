@@ -30,7 +30,7 @@ class ContadorAdminCTeController extends Controller
         })
         ->where('estado', 'aprovado')
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $contXml = $this->preparaXmls($start_date, $end_date, $empresaSelecionada);
         return view('contador.cte', compact('data', 'contXml'));

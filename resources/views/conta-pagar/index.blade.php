@@ -7,7 +7,7 @@
 </style>
 @endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -15,7 +15,7 @@
                     @can('conta_pagar_create')
                     <a href="{{ route('conta-pagar.create') }}" class="btn btn-success">
                         <i class="ri-add-circle-fill"></i>
-                        Nova conta a pagar
+                        Nova Conta Pagar
                     </a>
                     @endcan
                 </div>
@@ -24,10 +24,15 @@
                     {!!Form::open()->fill(request()->all())
                     ->get()
                     !!}
-                    <div class="row mt-3">
+                    <div class="row mt-3 g-2">
                         <div class="col-md-4">
                             {!!Form::select('fornecedor_id', 'Pesquisar por nome')->attrs(['class' => 'select2'])
                             ->options($fornecedor != null ? [$fornecedor->id => $fornecedor->info] : [])
+                            !!}
+                        </div>
+                        <div class="col-md-2">
+                            {!!Form::select('filtro_data', 'Filtro de data', ['data_vencimento' => 'Data de vencimento', 'data_pagamento' => 'Data de pagamento', 'created_at' => 'Data de cadastro'])
+                            ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
                         <div class="col-md-2">
@@ -35,7 +40,7 @@
                             !!}
                         </div>
                         <div class="col-md-2">
-                            {!!Form::date('end_date', 'Data Final')
+                            {!!Form::date('end_date', 'Data final')
                             !!}
                         </div>
 
@@ -47,7 +52,7 @@
                         </div>
                         @endif
                         <div class="col-md-2">
-                            {!!Form::select('status', 'Status', ['' => 'Todas', 1 => 'Pagas', 0 => 'Pendentes'])
+                            {!!Form::select('status', 'Status', ['' => 'Todas', 1 => 'Pagas', 0 => 'Pendentes', -1 => 'Vencidas'])
                             ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
@@ -56,7 +61,12 @@
                             ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
-                        <div class="col-md-2 text-left">
+                        <div class="col-md-2">
+                            {!!Form::select('categoria_conta_id', 'Categoria', ['' => 'Todas']+$categorias->pluck('nome', 'id')->all())
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
+                        <div class="col-md-4 text-left">
                             <br>
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
                             <a id="clear-filter" class="btn btn-danger" href="{{ route('conta-pagar.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
@@ -76,17 +86,21 @@
                                         </div>
                                     </th>
                                     @endcan
-                                    <th>Razão Social</th>
-                                    <th>Descrição</th>
+                                    <th data-label="Fornecedor">Fornecedor</th>
+                                    <th data-label="Descrição">Descrição</th>
                                     @if(__countLocalAtivo() > 1)
-                                    <th>Local</th>
+                                    <th data-label="Local">Local</th>
                                     @endif
-                                    <th>Valor Integral</th>
-                                    <th>Valor Pago</th>
-                                    <th>Data Cadastro</th>
-                                    <th>Data Vencimento</th>
-                                    <th>Data Pagamento</th>
-                                    <th>Estado</th>
+                                    <th data-label="Categoria">Categoria</th>
+                                    <th data-label="Valor Integral">Valor Integral</th>
+                                    <th data-label="Valor Pago">Valor Pago</th>
+                                    <th data-label="Desconto">Desconto</th>
+                                    <th data-label="Acréscimo">Acréscimo</th>
+                                    <th data-label="Data Cadastro">Data Cadastro</th>
+                                    <th data-label="Data Vencimento">Data Vencimento</th>
+                                    <th data-label="Data Pagamento">Data Pagamento</th>
+                                    <th data-label="Estado">Estado</th>
+                                    <th data-label="Compra">Compra</th>
                                     <th width="10%">Ações</th>
                                 </tr>
                             </thead>
@@ -100,38 +114,55 @@
                                         </div>
                                     </td>
                                     @endcan
-                                    <td>{{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}</td>
-                                    <td>{{ $item->descricao }}</td>
+                                    <td data-label="Fornecedor"><label style="width: 400px;">{{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}</label></td>
+                                    <td data-label="Descrição"><label style="width: 120px;">{{ $item->descricao }}</label></td>
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger">{{ $item->localizacao->descricao }}</td>
+                                    <td data-label="Local" class="text-danger">{{ $item->localizacao->descricao }}</td>
                                     @endif
-                                    <td>{{ __moeda($item->valor_integral) }}</td>
-                                    <td>{{ __moeda($item->valor_pago) }}</td>
-                                    <td>{{ __data_pt($item->created_at, 0) }}</td>
-                                    <td>
+                                    <td data-label="Categoria">{{ $item->categoria ? $item->categoria->nome : '--' }}</td>
+                                    <td data-label="Valor Integral">{{ __moeda($item->valor_integral) }}</td>
+                                    <td data-label="Valor Pago">{{ __moeda($item->valor_pago) }}</td>
+                                    <td data-label="Desconto">{{ __moeda($item->desconto) }}</td>
+                                    <td data-label="Acréscimo">{{ __moeda($item->acrescimo) }}</td>
+                                    <td data-label="Data Cadastro">{{ __data_pt($item->created_at, 0) }}</td>
+                                    <td data-label="Data Vencimento">
                                         {{ __data_pt($item->data_vencimento, 0) }}
                                         @if(!$item->status)
                                         <br>
                                         <span class="text-danger" style="font-size: 10px">{{ $item->diasAtraso() }}</span>
                                         @endif
                                     </td>
-                                    <td>{{ $item->status ? __data_pt($item->data_pagamento, false) : '--' }}</td>
-                                    <td style="width: 200px;">
+                                    <td data-label="Data Pagamento">{{ $item->status ? __data_pt($item->data_pagamento, false) : '--' }}</td>
+                                    <td data-label="Estado">
                                         @if($item->status)
-                                        <span class="btn btn-success position-relative me-lg-5 btn-sm">
+                                        <span class="btn btn-success position-relative btn-sm" style="width: 120px">
                                             <i class="ri-checkbox-line"></i> Pago
                                         </span>
                                         @else
-                                        <span class="btn btn-warning position-relative me-lg-5 btn-sm">
+                                        @if(strtotime($item->data_vencimento) < strtotime(date('Y-m-d')))
+                                        <span class="btn btn-danger position-relative btn-sm" style="width: 120px">
+                                            <i class="ri-alert-line"></i> Em atraso
+                                        </span>
+                                        @else
+                                        <span class="btn btn-warning position-relative btn-sm" style="width: 120px">
                                             <i class="ri-alert-line"></i> Pendente
                                         </span>
+                                        @endif
                                         @if($item->motivo_estorno)
                                         <span onclick="motivoEstorno('{{ $item->motivo_estorno }}')" class="badge bg-primary">estornada</span>
                                         @endif
                                         @endif
                                     </td>
+                                    <td data-label="Compra">
+                                        @if($item->nfe)
+                                        <a href="{{ route('nfe.show', [$item->nfe->id]) }}" class="btn btn-sm btn-primary">COMPRA</a>
+                                        #{{ $item->nfe->numero_sequencial }}
+                                        @else
+                                        --
+                                        @endif
+                                    </td>
                                     <td>
-                                        <form action="{{ route('conta-pagar.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 150px;">
+                                        <form action="{{ route('conta-pagar.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 250px;">
                                             @if(!$item->status)
                                             @method('delete')
                                             @can('conta_pagar_edit')
@@ -150,7 +181,6 @@
                                                 <i class="ri-money-dollar-box-line"></i>
                                             </a>
                                             @endcan
-                                            
                                             @else
                                             @if(!$item->motivo_estorno)
                                             <a title="Estornar conta" href="{{ route('conta-pagar.estornar', $item) }}" class="btn btn-info btn-sm text-white">
@@ -158,18 +188,28 @@
                                             </a>
                                             @endif
                                             @endif
+                                            @if($item->status)
+                                            <a title="Ver conta" class="btn btn-light btn-sm" href="{{ route('conta-pagar.show', [$item->id]) }}">
+                                                <i class="ri-eye-line"></i>
+                                            </a>
+                                            @endif
+                                            @if($item->arquivo != null)
+                                            <a title="Baixar arquivo" class="btn btn-dark btn-sm" href="{{ route('conta-pagar.download-file', [$item->id]) }}">
+                                                <i class="ri-attachment-line"></i>
+                                            </a>
+                                            @endif
                                         </form>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="11" class="text-center">Nada encontrado</td>
+                                    <td colspan="15" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="3">Soma da pagina</td>
+                                    <td colspan="4">Soma da página</td>
                                     <td>{{ __moeda($data->sum('valor_integral')) }}</td>
                                     <td>{{ __moeda($data->sum('valor_pago')) }}</td>
                                 </tr>
@@ -180,7 +220,7 @@
 
                     <br>
                     <div class="row">
-                        <div class="col-md-2">
+                        <div class="col-md-3 col-xl-2">
                             @can('conta_pagar_delete')
                             <form action="{{ route('conta-pagar.destroy-select') }}" method="post" id="form-delete-select">
                                 @method('delete')
@@ -193,16 +233,30 @@
                             @endcan
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3 col-xl-2">
                             @can('conta_pagar_edit')
                             <form action="{{ route('conta-pagar.pagar-select') }}" method="post" id="form-recebe-paga-select">
                                 @csrf
                                 <div></div>
-                                <button type="button" class="btn btn-success btn-sm w-100 btn-recebe-paga-all" disabled>
+                                <button class="btn btn-success btn-sm w-100 btn-recebe-paga-all" disabled>
                                     <i class="ri-check-line"></i> Pagar selecionados
                                 </button>
                             </form>
                             @endcan
+                        </div>
+
+                        <div class="col-md-3 col-xl-2 text-end">
+                            @if(request()->has('categoria_conta_id'))
+                            <form action="{{ route('conta-pagar.export-excel') }}" method="get">
+                                @foreach(request()->all() as $key => $value)
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endforeach
+                                <button type="submit" class="btn btn-dark btn-sm w-100">
+                                    <i class="ri-file-excel-line "></i> Exportar para Excel
+                                </button>
+                            </form>
+                            @endif
+
                         </div>
                     </div>
                 </div>

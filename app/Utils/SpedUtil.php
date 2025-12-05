@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\Fornecedor;
 
 class SpedUtil {
+
 	public function updateOrCreateC190($data, $std){
 		// if(sizeof($data) == 0){
 		// 	$data[] = $std;

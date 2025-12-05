@@ -17,8 +17,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('alerta:cron')->everyMinute();
         $schedule->command('cash-back:cron')->dailyAt('08:00');
         $schedule->command('app:boleto-cron')->monthly();
-        $schedule->command('app:sync-orders-conecta-venda')->everyFiveMinutes();
-        $schedule->command('app:sync-estoque')->everyTenMinutes();
+        $schedule->command('aniversario:cron')->hourly();
+
+        $schedule->command('fila-envio:cron')->dailyAt('08:00');
+        $schedule->command('reativar:cron')->dailyAt('09:00');
+
     }
 
     /**

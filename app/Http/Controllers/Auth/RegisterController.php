@@ -60,11 +60,14 @@ class RegisterController extends Controller
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'password' => ['required', 'string', 'min:6', 'confirmed'],
+                'captcha' => request()->captchaa == 1 ? ['required', 'captcha'] : []
             ],
             [
                 'password.min' => 'minímo de 6 caracteres',
                 'password.confirmed' => 'senhas não coencidem',
                 'email.unique' => 'email já utilizado',
+                'captcha.required' => 'Digite os caracteres',
+                'captcha.captcha' => 'Caracteres incorretos',
             ]
         );
     }
@@ -77,11 +80,14 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'plano_auto_cadastro' => $data['plano'] ?? null
         ]);
+
         if($data['email'] == env("MAILMASTER")){
             $user->assignRole('gestor_plataforma');
         }else{

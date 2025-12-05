@@ -11,12 +11,17 @@ class Troca extends Model
 
     protected $fillable = [
         'empresa_id', 'nfce_id', 'observacao', 'total', 'numero_sequencial', 'codigo', 'valor_troca', 'valor_original',
-        'tipo_pagamento'
+        'tipo_pagamento', 'nfe_id', 'caixa_id'
     ];
 
     public function nfce()
     {
         return $this->belongsTo(Nfce::class, 'nfce_id');
+    }
+
+    public function nfe()
+    {
+        return $this->belongsTo(Nfe::class, 'nfe_id');
     }
 
     public function cliente()

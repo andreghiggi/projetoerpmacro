@@ -21,7 +21,7 @@ class FuncionarioEventoController extends Controller
             });
         })
         ->groupBy('funcionarios.id')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('funcionario_evento.index', compact('data'));
     }
 

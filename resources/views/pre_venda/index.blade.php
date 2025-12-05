@@ -8,7 +8,7 @@
 @endsection
 @section('content')
 
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -66,7 +66,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-centered">
                             <thead class="table-dark">
                                 <tr>
@@ -85,47 +85,49 @@
                             <tbody>
                                 @foreach($data as $item)
                                 <tr @can('nfce_create') ondblclick="finalizar('{{$item->id}}')" @endcan>
-                                    <td width="200">{{ $item->codigo }}</td>
-                                    <td width="600">{{ $item->cliente_id ? $item->cliente->razao_social : 'Consumidor Final' }}</td>
+                                    <td data-label="Código">{{ $item->codigo }}</td>
+                                    <td data-label="Cliente">{{ $item->cliente_id ? $item->cliente->razao_social : 'Consumidor Final' }}</td>
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger">{{ $item->localizacao->descricao }}</td>
+                                    <td data-label="Local" class="text-danger">{{ $item->localizacao->descricao }}</td>
                                     @endif
-                                    <td width="200">{{ __data_pt($item->created_at) }}</td>
-                                    <td width="200">{{ $item->vendedor() }}</td>
-                                    <td width="200">{{ __moeda($item->valor_total) }}</td>
-                                    <td width="150">
+                                    <td data-label="Data">{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Funcionário">{{ $item->vendedor() }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->valor_total) }}</td>
+                                    <td data-label="Status">
                                         @if($item->status == false)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td style="width: 280px">
-                                        <form action="{{ route('pre-venda.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                    <td>
+                                        <form action="{{ route('pre-venda.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 220px">
                                             @method('delete')
                                             @csrf
                                             @if($item->status == 1)
-
                                             @can('pre_venda_delete')
+
+                                            <a class="btn btn-warning btn-sm" title="Editar" href="{{ route('pre-venda.edit', [$item->id]) }}">
+                                                <i class="ri-edit-line"></i>
+                                            </a>
+
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
+
                                             @endcan
                                             @endif
 
                                             @if($item->status == 0 && $item->venda_id != null && $item->tipo_finalizado == 'nfe')
-
                                             <a type="button" class="btn btn-light info btn-sm" title="Ver NFe" href="{{ route('nfe.show', $item->venda_id) }}">
                                                 <i class="ri-eye-line"></i>
                                             </a>
-                                            <a class="btn btn-primary btn-sm" title="Imprimir pedido" target="_blank" href="{{ route('nfe.imprimir', [$item->venda_id]) }}">
+                                            <a class="btn btn-primary btn-sm" title="Imprimir pré venda" target="_blank" href="{{ route('nfe.imprimir', [$item->venda_id]) }}">
                                                 <i class="ri-printer-line"></i>
                                             </a>
-
                                             @endif
 
                                             @if($item->status == 0 && $item->venda_id != null && $item->tipo_finalizado == 'nfce')
-
                                             <a type="button" class="btn btn-light info btn-sm" title="Ver NFCe" href="{{ route('nfce.show', $item->venda_id) }}">
                                                 <i class="ri-eye-line"></i>
                                             </a>
@@ -134,7 +136,6 @@
                                             <a class="btn btn-primary btn-sm" title="Imprimir NFCe" target="_blank" href="{{ route('nfce.imprimir', [$item->venda_id]) }}">
                                                 <i class="ri-printer-line"></i>
                                             </a>
-
                                             @elseif($item->tipo_finalizado == 'nfce' && $item->venda_id != null)
                                             <a class="btn btn-success btn-sm" title="Imprimir Pedido" target="_blank" href="{{ route('frontbox.imprimir-nao-fiscal', [$item->venda_id]) }}">
                                                 <i class="ri-printer-line"></i>
@@ -145,7 +146,6 @@
                                                 <i class="ri-printer-line"></i>
                                             </a>
                                             @endif
-
                                             @endif
                                             @endif
 
@@ -156,12 +156,17 @@
                                             </button>
                                             @endcan
                                             @endif
+
+                                            <a class="btn btn-primary btn-sm" title="Imprimir Pré Venda" target="_blank" href="{{ route('pre-venda.imprimir', [$item->codigo]) }}">
+                                                <i class="ri-printer-line"></i>
+                                            </a>
                                         </form>
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+
                     </div>
                 </div>
                 {!! $data->appends(request()->all())->links() !!}

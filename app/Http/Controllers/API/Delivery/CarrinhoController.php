@@ -73,6 +73,7 @@ class CarrinhoController extends Controller
         $config = MarketPlaceConfig::where('empresa_id', $carrinho->empresa_id)->first();
 
         $cliente = $carrinho->cliente;
+        // return $cliente->id;
 
         if($cliente){
             $cliente->razao_social = $request->nome;
@@ -128,6 +129,9 @@ class CarrinhoController extends Controller
         if($endereco){
             // $carrinho->endereco = $endereco;
             $carrinho->valor_frete = $endereco->bairro->valor_entrega;
+            if(($carrinho->itens->sum('sub_total') - $carrinho->desconto) >= $config->valor_entrega_gratis){
+                $carrinho->valor_frete = 0;
+            }
             $carrinho->valor_total = $carrinho->itens->sum('sub_total') + $carrinho->valor_frete - $carrinho->desconto;
             $carrinho->save();
 

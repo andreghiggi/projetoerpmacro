@@ -83,11 +83,15 @@ class Kernel extends HttpKernel
         'validaApiTokenSuperAdmin' => \App\Http\Middleware\ValidaApiTokenSuperAdmin::class,
         'validaSuporte' => \App\Http\Middleware\ValidaSuporte::class,
         'validaContrato' => \App\Http\Middleware\ValidaContrato::class,
+        'validaCardapio' => \App\Http\Middleware\ValidaCardapio::class,
+        'authApp' => \App\Http\Middleware\AuthApp::class,
+        'impersonate' => \App\Http\Middleware\Impersonate::class,
+        'impersonateContador' => \App\Http\Middleware\ImpersonateContador::class,
     ];
 
     protected $routeMiddleware = [
-        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
     ];
 }

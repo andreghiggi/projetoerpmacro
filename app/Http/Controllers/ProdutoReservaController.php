@@ -19,7 +19,7 @@ class ProdutoReservaController extends Controller
             return $q->where('status', $status);
         })
         ->where('reserva', 1)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('reservas.produtos.index', compact('data'));
 

@@ -46,6 +46,9 @@
                 @if($item->ponto_carne)
                 <h5>Ponto da carne: <label class="text-danger">{{ $item->ponto_carne }}</label></h5>
                 @endif
+                @if(isset($item->pedido->_mesa) && $item->pedido->_mesa)
+                <h4><label class="text-danger">{{ $item->pedido->_mesa->nome }}</label></h4>
+                @endif
 
                 <input type="hidden" name="estado" value="finalizado">
             </div>

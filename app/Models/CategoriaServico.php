@@ -26,4 +26,9 @@ class CategoriaServico extends Model
     {
         return $this->hasMany(Servico::class, 'categoria_id', 'id');
     }
+
+    public function servicosMarketplace()
+    {
+        return $this->hasMany(Servico::class, 'categoria_id', 'id')->where('marketplace', 1);
+    }
 }

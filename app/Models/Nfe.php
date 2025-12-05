@@ -17,9 +17,10 @@ class Nfe extends Model
         'natureza_id', 'observacao', 'api', 'aut_xml', 'referencia', 'tpNF', 'finNFe', 'fornecedor_id',
         'caixa_id', 'gerar_conta_receber', 'gerar_conta_pagar', 'chave_importada', 'orcamento', 'ref_orcamento',
         'data_emissao_saida', 'data_emissao_retroativa', 'bandeira_cartao', 'cnpj_cartao', 'cAut_cartao', 'tipo_pagamento',
-        'numero_sequencial', 'crt', 'local_id', 'user_id', 'data_entrega', 'funcionario_id'
+        'numero_sequencial', 'crt', 'local_id', 'user_id', 'data_entrega', 'funcionario_id',
+        'nome_entrega', 'documento_entrega', 'rua_entrega', 'numero_entrega', 'bairro_entrega', 'cep_entrega', 'complemento_entrega',
+        'cidade_id_entrega', 'marca'
     ];
-
 
     public function getInfoAttribute()
     {
@@ -51,6 +52,18 @@ class Nfe extends Model
         return $this->belongsTo(Funcionario::class, 'funcionario_id');
     }
 
+    public function vendedor()
+    {
+        $funcionario = Funcionario::find($this->funcionario_id);
+        if ($funcionario != null) return $funcionario->nome;
+        else return '--';
+    }
+
+    public function caixa()
+    {
+        return $this->belongsTo(Caixa::class, 'caixa_id');
+    }
+
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
@@ -64,6 +77,11 @@ class Nfe extends Model
     public function fornecedor()
     {
         return $this->belongsTo(Fornecedor::class, 'fornecedor_id');
+    }
+
+    public function cidadeEntrega()
+    {
+        return $this->belongsTo(Cidade::class, 'cidade_id_entrega');
     }
 
     public function localizacao()
@@ -96,10 +114,6 @@ class Nfe extends Model
         return $this->hasOne(PedidoMercadoLivre::class, 'nfe_id');
     }
 
-    public function pedidoConectaVenda()
-    {
-        return $this->hasOne(ConectaVendaPedido::class, 'nfe_id');
-    }
     public function pedidoNuvemShop()
     {
         return $this->hasOne(NuvemShopPedido::class, 'nfe_id');
@@ -127,7 +141,7 @@ class Nfe extends Model
 
     public function itens()
     {
-        return $this->hasMany(ItemNfe::class, 'nfe_id')->with(['produtoVariacao']);
+        return $this->hasMany(ItemNfe::class, 'nfe_id')->with(['produtoVariacao', 'produto']);
     }
 
     public function produtoUnicos()
@@ -138,6 +152,16 @@ class Nfe extends Model
     public function fatura()
     {
         return $this->hasMany(FaturaNfe::class, 'nfe_id');
+    }
+
+    public function contasReceber()
+    {
+        return $this->hasMany(ContaReceber::class, 'nfe_id');
+    }
+
+    public function troca()
+    {
+        return $this->hasMany(Troca::class, 'nfe_id');
     }
 
     public static function lastNumero($empresa)
@@ -236,7 +260,7 @@ class Nfe extends Model
     public function isItemValidade ()
     {
         foreach($this->itens as $i){
-            if($i->produto->alerta_validade > 0)
+            if($i->produto->alerta_validade > 0) 
                 return 1;
         }
         return 0;
@@ -248,5 +272,32 @@ class Nfe extends Model
         else if($estado == 'REJEITADO') return 'rejeitado';
         else if($estado == 'CANCELADO') return 'cancelado';
         else if($estado == 'APROVADO') return 'aprovado';
+        else return $estado;
+    }
+
+    public static function getTiposViaTransp(){
+        return [
+            '1' => 'Marítima',
+            '2' => 'Fluvial',
+            '3' => 'Lacustre',
+            '4' => 'Aérea',
+            '5' => 'Postal',
+            '6' => 'Ferroviária',
+            '7' => 'Rodoviária',
+            '8' => 'Conduto/Rede transmissão',
+            '9' => 'Meios próprios',
+            '10' => 'Entrada/Saída ficta',
+            '11' => 'Courier',
+            '12' => 'Em mãos',
+            '13' => 'Por reboque'
+        ];
+    }
+
+    public static function getTiposIntermedio(){
+        return [
+            '1' => 'Importação por conta própria',
+            '2' => 'Importação por conta e ordem',
+            '3' => 'Importação por encomenda'
+        ];
     }
 }

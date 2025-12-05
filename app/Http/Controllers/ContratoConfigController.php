@@ -56,7 +56,7 @@ class ContratoConfigController extends Controller
                 return $query->where('assinado', 1);
             }
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($empresa){
             $empresa = Empresa::findOrFail($empresa);

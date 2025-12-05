@@ -19,7 +19,7 @@ class TaxaCartaoController extends Controller
     public function index()
     {
         $data = TaxaPagamento::where('empresa_id', request()->empresa_id)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('taxa_cartao.index', compact('data'));
     }

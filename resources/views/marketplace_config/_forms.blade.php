@@ -177,6 +177,12 @@
         {!!Form::text('mercadopago_access_token', 'Mercado Pago Access Token')
         !!}
     </div>
+
+    <div class="col-md-4">
+        {!!Form::text('token_whatsapp', 'Token WhatsApp')
+        !!}
+        <h5 class="text-success mt-1">Para enviar mensagens de alertas de agendamento https://criarwhats.com</h5>
+    </div>
     <hr>
     <div class="col-md-3">
         <label>Token</label>
@@ -204,10 +210,10 @@
         ->attrs(['class' => 'tooltipp'])
         ->type('color')
         !!}
-        
     </div>
+    
     <hr>
-    <div class="card col-md-3 mt-3 form-input">
+    <div class="card col-md-3 mt-3 form-input" style="width: 210px">
         <div class="preview">
             <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
             @isset($item)

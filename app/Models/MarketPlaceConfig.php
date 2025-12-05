@@ -15,7 +15,8 @@ class MarketPlaceConfig extends Model
         'valor_entrega', 'latitude', 'longitude', 'valor_entrega_gratis', 'usar_bairros', 'status', 
         'notificacao_novo_pedido', 'mercadopago_public_key', 'mercadopago_access_token', 'tipo_divisao_pizza', 'logo',
         'fav_icon', 'tipos_pagamento', 'pedido_minimo', 'avaliacao_media', 'autenticacao_sms', 
-        'confirmacao_pedido_cliente', 'tipo_entrega', 'loja_id', 'cor_principal', 'email', 'funcionamento_descricao'
+        'confirmacao_pedido_cliente', 'tipo_entrega', 'loja_id', 'cor_principal', 'email', 'funcionamento_descricao', 
+        'token_whatsapp'
     ];
 
     protected $appends = [ 'logoApp' ];
@@ -71,7 +72,7 @@ class MarketPlaceConfig extends Model
             'Elo débito',
             'Pix',
             'Pix pelo App',
-            'Cartão pelo App',
+            // 'Cartão pelo App',
         ];
     }
 

@@ -46,7 +46,7 @@
 <body>
 	<h5 style="text-align:center; " class="mt-10">Impressão de pedido</h5>
 	<h5 class="mt-20" style="text-align:center; font-size: 12px;">{{ $config->nome }}</h5>
-	<h5 style="text-align:center; " class="mt-20">#{{$item->id}} - {{ $item->cliente->razao_social }}</h5>
+	<h5 style="text-align:center; " class="mt-20">#{{$item->numero_sequencial}} - {{ $item->cliente->razao_social }}</h5>
 	<h5 class="mt-20" style="text-align:center; font-size: 8px;">
 		{{ $config->rua }}, {{ $config->numero }} - {{ $config->bairro }}
 	</h5>
@@ -66,7 +66,7 @@
 		<tbody>
 			@foreach($item->itens as $i)
 			<tr>
-				@if(sizeof($i->pizzas) > 0)
+				@if(sizeof($i->pizzas) > 0 && str_contains($i->produto->nome, 'izza'))
 				<td>Pizza</td>
 				@else
 				<td>{{ $i->produto->nome }}</td>
@@ -107,7 +107,12 @@
 		</tbody>
 	</table>
 
-	<h6>Total: <strong>{{ __moeda($item->valor_total) }}</strong></h6>
+	@if($item->valor_entrega > 0)
+	<h6>Valor de entrega: <strong>R$ {{ __moeda($item->valor_entrega) }}</strong></h6>
+	@else
+	<h6></h6>
+	@endif
+	<h6 class="mt-25">Total: <strong>{{ __moeda($item->valor_total) }}</strong></h6>
 	<h6 class="mt-25">Total de itens: <strong>{{ sizeof($item->itens) }}</strong></h6>
 
 	@if($item->observacao != '')
@@ -124,5 +129,12 @@
 	<h6 class="mt-25">Troco para: <strong>R$ {{ __moeda($item->troco_para) }}</strong></h6>
 	@endif
 	<h6 class="mt-25">Tipo de pagamento: <strong>{{ $item->tipo_pagamento }}</strong></h6>
+	<h6 class="mt-25">Estado do pagamento: <strong>
+		@if($item->tipo_pagamento == 'Pix pelo App' && $item->status_pagamento == "approved")
+		APROVADO
+		@else
+		PENDENTE
+		@endif
+	</strong></h6>
 
 </body>

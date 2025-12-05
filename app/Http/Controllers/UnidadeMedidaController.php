@@ -37,7 +37,7 @@ class UnidadeMedidaController extends Controller
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('unidades_medida.index', compact('data'));
     }

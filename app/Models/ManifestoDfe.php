@@ -11,7 +11,7 @@ class ManifestoDfe extends Model
 
     protected $fillable = [
 		'chave', 'nome', 'documento', 'valor', 'num_prot', 'data_emissao',
-		'sequencia_evento', 'fatura_salva', 'tipo', 'nsu', 'empresa_id', 'compra_id'
+		'sequencia_evento', 'fatura_salva', 'tipo', 'nsu', 'empresa_id', 'compra_id', 'tpNF'
 	];
 
 	public function estado(){

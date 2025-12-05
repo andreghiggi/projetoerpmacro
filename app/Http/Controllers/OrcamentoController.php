@@ -51,7 +51,7 @@ class OrcamentoController extends Controller
         })
         
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $funcionarios = Funcionario::where('empresa_id', $request->empresa_id)
         ->where('status', 1)->get();
@@ -84,6 +84,7 @@ class OrcamentoController extends Controller
         __validaObjetoEmpresa($item);
 
         $config = Empresa::where('id', $item->empresa_id)->first();
+        $config = __objetoParaEmissao($config, $item->local_id);
 
         $p = view('orcamento.imprimir', compact('config', 'item'));
 
@@ -92,7 +93,7 @@ class OrcamentoController extends Controller
         $pdf = ob_get_clean();
         $domPdf->setPaper("A4");
         $domPdf->render();
-        $domPdf->stream("Orçamento de Venda $id.pdf", array("Attachment" => false));
+        $domPdf->stream("Orçamento de Venda $item->numero_sequencial.pdf", array("Attachment" => false));
     }
 
     public function show($id)
@@ -101,6 +102,7 @@ class OrcamentoController extends Controller
         __validaObjetoEmpresa($data);
 
         $config = Empresa::where('id', $data->empresa_id)->first();
+        $config = __objetoParaEmissao($config, $data->local_id);
 
         return view('orcamento.show', compact('config', 'data'));
     }
@@ -173,6 +175,15 @@ class OrcamentoController extends Controller
             unset($dataFatura['nfe_id']);
             // dd($dataFatura);
             FaturaNfce::create($dataFatura);
+        }
+        if(sizeof($item->fatura) == 0){
+            FaturaNfce::create([
+                'nfce_id' => $nfce->id,
+                'tipo_pagamento' => '01',
+                'data_vencimento' => date('Y-m-d'),
+                'valor' => $nfce->total,
+                'observacao' => ''
+            ]);
         }
 
         session()->flash("flash_success", "Orçamento transformado em venda NFCe!");
@@ -258,6 +269,8 @@ class OrcamentoController extends Controller
         $caixa = __isCaixaAberto();
         $isOrcamento = 1;
         
-        return view('nfe.edit', compact('item', 'transportadoras', 'cidades', 'naturezas', 'caixa', 'isOrcamento'));
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+        return view('nfe.edit', compact('item', 'transportadoras', 'cidades', 'naturezas', 'caixa', 'isOrcamento', 'funcionarios'));
     }
 }

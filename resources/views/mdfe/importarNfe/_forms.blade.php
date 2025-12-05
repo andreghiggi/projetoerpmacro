@@ -132,20 +132,24 @@
     </div>
     <hr>
     <div class="row mt-4">
-        <div class="col-md-4 row">
+        <div class="col-md-3 row">
             <button type="button" class="btn btn-outline-primary btn-gerais active px-6" onclick="selectDiv2('gerais')">INFORMAÇÕES GERAIS</button>
         </div>
-        <div class="col-md-4 row ms-auto">
+        <div class="col-md-3 row ms-auto">
             <button type="button" class="btn btn-outline-primary btn-transporte px-6" onclick="selectDiv2('transporte')">
-                INFORMAÇÕES TRANSPORTE</button>
+            INFORMAÇÕES TRANSPORTE</button>
         </div>
-        <div class="col-md-4 row m-auto">
+        <div class="col-md-3 row ms-auto">
+            <button type="button" class="btn btn-outline-primary btn-pagamento px-6" onclick="selectDiv2('pagamento')">
+            INFORMAÇÕES PAGAMENTO</button>
+        </div>
+        <div class="col-md-3 row m-auto">
             <button type="button" class="btn btn-outline-primary btn-descarregamento px-6" onclick="selectDiv2('descarregamento')">
-                INFORMAÇÕES DESCARREGAMENTO</button>
+            INFORMAÇÕES DESCARREGAMENTO</button>
         </div>
     </div>
     <hr>
-    {{-- div informações gerais --}}
+
     <div class="div-gerais row">
         <div class="card">
             <div class="row m-3">
@@ -177,7 +181,7 @@
                                 </tr>
                             </thead>
                             <tbody id="body" class="datatable-body">
-                                
+
                                 <tr class="dynamic-form">
                                     <td class="col-11">
                                         {!! Form::select('municipiosCarregamento[]', '', [null => 'Selecione'] + $cidades->pluck('info', 'id')->all())
@@ -267,7 +271,7 @@
             </div>
         </div>
     </div>
-    {{-- informações transporte --}}
+
     <div class="div-transporte d-none">
         <div class="card">
             <div class="row m-3">
@@ -410,7 +414,251 @@
             </div>
         </div>
     </div>
-    {{-- informações de descarregamento --}}
+
+    <dv class="div-pagamento d-none">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="row m-3">
+                        <h4>Grupo de Pagamento</h4>
+
+                        <div class="col-md-3">
+                            {!! Form::text('nome_pagador', 'Nome do pagador')->attrs(['class' => '']) !!}
+                        </div>
+                        <div class="col-md-3">
+                            {!! Form::tel('documento_pagador', 'Documento do pagador')->attrs(['class' => 'cpf_cnpj']) !!}
+                        </div>
+                        <div class="col-md-2">
+                            {!! Form::tel('valor_transporte', 'Valor do transporte')->attrs(['class' => 'moeda'])->value(isset($item) ? __moeda($item->valor_transporte) : '') !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!! Form::select('ind_pag', 'Indicador de pagamento', App\Models\Mdfe::indicadoresDePagamento())->attrs(['class' => 'form-select']) !!}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="row m-3">
+                        <h4>Componentes de Pagamento</h4>
+
+                        <div class="table-responsive mt-2">
+                            <table class="table table-striped table-dynamic table-componentes">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Valor</th>
+                                        <th>Descrição</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body" class="datatable-body">
+                                    @if(isset($item) && sizeof($item->componentes) > 0)
+                                    @foreach($item->componentes as $c)
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            {!! Form::select('tipo_componente[]', '', App\Models\Mdfe::tiposDeComponentes())
+                                            ->attrs(['class' => 'form-select'])->value($c->tipo) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::tel('valor_componente[]', '')->value(__moeda($c->valor))
+                                            ->attrs(['class' => 'moeda']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::text('descricao_componente[]', '')->value($c->descricao)
+                                            ->attrs(['class' => 'ignore']) !!}
+                                        </td>
+                                        <td>
+                                            <br>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @else
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            {!! Form::select('tipo_componente[]', '', App\Models\Mdfe::tiposDeComponentes())
+                                            ->attrs(['class' => 'form-select']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::tel('valor_componente[]', '')
+                                            ->attrs(['class' => 'moeda']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::text('descricao_componente[]', '')
+                                            ->attrs(['class' => 'ignore']) !!}
+                                        </td>
+                                        <td>
+                                            <br>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-dark btn-add-tr">
+                                    <i class="ri-add-line"></i>
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="row m-3">
+                        <h4>Parcelamento</h4>
+
+                        <div class="table-responsive mt-2">
+                            <table class="table table-striped table-dynamic table-parcelamento">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Valor</th>
+                                        <th>Vencimento</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body" class="datatable-body">
+                                    @if(isset($item) && sizeof($item->parcelamento) > 0)
+                                    @foreach($item->parcelamento as $p)
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            {!! Form::tel('valor_parcelamento[]', '')->value(__moeda($p->valor))
+                                            ->attrs(['class' => 'moeda']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::date('vencimento_parcelamento[]', '')->value($p->vencimento)
+                                            ->attrs(['class' => '']) !!}
+                                        </td>
+                                        <td>
+                                            <br>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @else
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            {!! Form::tel('valor_parcelamento[]', '')
+                                            ->attrs(['class' => 'moeda']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::date('vencimento_parcelamento[]', '')
+                                            ->attrs(['class' => '']) !!}
+                                        </td>
+                                        <td>
+                                            <br>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-dark btn-add-tr">
+                                    <i class="ri-add-line"></i>
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="row m-3">
+                        <h4>Dados Bancários</h4>
+
+                        <div class="table-responsive mt-2">
+                            <table class="table table-striped table-dynamic table-componentes">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Código do banco</th>
+                                        <th>Código da agência</th>
+                                        <th>CNPJ do IPEF</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body" class="datatable-body">
+                                    @if(isset($item) && sizeof($item->infosBancaria) > 0)
+                                    @foreach($item->infosBancaria as $i)
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            {!! Form::text('codigo_banco[]', '')->value($i->codigo_banco)
+                                            ->attrs(['class' => '']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::text('codigo_agencia[]', '')->value($i->codigo_agencia)
+                                            ->attrs(['class' => '']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::tel('cnpj_ipef[]', '')->value($i->cnpj_ipef)
+                                            ->attrs(['class' => 'cnpj ignore']) !!}
+                                        </td>
+                                        <td>
+                                            <br>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @else
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            {!! Form::text('codigo_banco[]', '')
+                                            ->attrs(['class' => '']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::text('codigo_agencia[]', '')
+                                            ->attrs(['class' => '']) !!}
+                                        </td>
+                                        <td>
+                                            {!! Form::tel('cnpj_ipef[]', '')
+                                            ->attrs(['class' => 'cnpj ignore']) !!}
+                                        </td>
+                                        <td>
+                                            <br>
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-dark btn-add-tr">
+                                    <i class="ri-add-line"></i>
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="div-descarregamento d-none">
         <div class="form-descarregamento">
             <div class="card">
@@ -468,16 +716,14 @@
                             <table class="table table-striped table-dynamic table-lacres">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th></th>
                                         <th style="width: 70%">Número lacre</th>
                                         <th>Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="body" class="datatable-body">
                                     <tr class="dynamic-form">
-                                        <td></td>
                                         <td class="col-md-5">
-                                            {!! Form::tel('numero_transporte[]', '')->attrs(['class' => 'numero_transporte input_lacres'])->value('0') !!}
+                                            {!! Form::tel('numero_transporte[]', '')->attrs(['class' => 'numero_transporte input_lacres']) !!}
                                         </td>
                                         <td>
                                             <br>
@@ -506,16 +752,14 @@
                             <table class="table table-striped table-dynamic table-lacres-carga">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th></th>
                                         <th style="width: 70%">Número lacre</th>
                                         <th>Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="body" class="datatable-body">
                                     <tr class="dynamic-form">
-                                        <td></td>
                                         <td class="col-md-5">
-                                            {!! Form::tel('numero_carga[]', '')->attrs(['class' => 'numero_carga input_lacres'])->value('0') !!}
+                                            {!! Form::tel('numero_carga[]', '')->attrs(['class' => 'numero_carga input_lacres']) !!}
                                         </td>
                                         <td>
                                             <br>
@@ -552,7 +796,7 @@
                 <h4>Dados do descarregamento</h4>
                 <div class="col-md-12 mt-3">
                     <button type="button" class="btn btn-info btn_info_desc">Adicionar informações do
-                        descarregamento</button>
+                    descarregamento</button>
                 </div>
             </div>
             <div class="table-responsive class-descarregamento mt-4">
@@ -561,52 +805,58 @@
                         <tr>
                             <th>Tipo transporte</th>
                             <th>Id unid transporte</th>
-                            <th>Quant rateio</th>
-                            <th>Quant rateio carga</th>
+                            <th>Quantidade rateio</th>
+                            <th>Quantidade rateio carga</th>
                             <th>NFe referência</th>
                             <th>CTe referência</th>
-                            <th>Mun descarrega</th>
+                            <th>Cidade descarregamento</th>
                             <th>Lacres de transp</th>
-                            <th>Lacres unid carga</th>
+                            <th>Lacres unid. carga</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody class="" id="">
-                        @isset($item)
-                        @foreach ($item->infoDescarga as $i)
+                        @isset($nfe->descarregamentos)
+                        @foreach ($nfe->descarregamentos as $i)
                         <tr>
                             <td>
-                                <input readonly type="sel" name="tp_und_transp_row[]" class="form-control" value="{{ $i->tp_unid_transp }}">
+                                <input type="hidden" name="tp_und_transp_row[]" class="form-control" value="1">
+                                <input style="width: 180px" readonly type="" class="form-control" value="{{ \App\Models\Mdfe::tiposUnidadeTransporte()[1] }}">
                             </td>
                             <td>
-                                <input readonly type="text" name="id_und_transp_row[]" class="form-control" value="{{ $i->id_unid_transp }}">
+                                <input style="width: 150px" readonly type="text" name="id_und_transp_row[]" class="form-control" value="{{ $i['placa'] }}">
                             </td>
                             <td>
-                                <input readonly type="tel" name="quantidade_rateio_row[]" class="form-control" value="{{ $i->quantidade_rateio }}">
+                                <input style="width: 150px" readonly type="tel" name="quantidade_rateio_row[]" class="form-control" value="{{ $i['quantidade'] }}">
                             </td>
                             <td>
-                                <input readonly type="tel" name="quantidade_rateio_carga_row[]" class="form-control" value="{{ $i->unidadeCarga->quantidade_rateio }}">
+                                <input style="width: 150px" readonly type="tel" name="quantidade_rateio_carga_row[]" class="form-control" value="">
                             </td>
                             <td>
-                                <input readonly type="tel" name="chave_nfe_row[]" class="form-control" value="{{ isset($i->nfe->chave) ? $i->nfe->chave : '' }}">
+                                <input style="width: 400px" readonly type="tel" name="chave_nfe_row[]" class="form-control" value="{{ $i['chave'] }}">
                             </td>
                             <td>
-                                <input readonly type="tel" name="chave_cte_row[]" class="form-control" value="{{ isset($i->cte->chave) ? $i->cte->chave : '' }}">
+                                <input style="width: 400px" readonly type="tel" name="chave_cte_row[]" class="form-control" value="">
                             </td>
                             <td>
-                                <input readonly type="tel" name="municipio_descarregamento" class="form-control" value="{{ $i->cidade->nome }}">
-                                <input readonly type="hidden" name="municipio_descarregamento_row[]" class="form-control" value="{{ $i->cidade->id }}">
+                                <input style="width: 250px" readonly type="text" name="municipio_descarregamento" class="form-control" value="{{ $i['cidade_nome'] }}">
+                                <input readonly type="hidden" name="municipio_descarregamento_row[]" class="form-control" value="{{ $i['cidade_id'] }}">
                             </td>
                             <td>
-                                <input readonly type="tel" name="lacres_transporte_row[]" class="form-control" value="{{ json_encode($i->lacresTransp->pluck('numero')->toArray()) }}">
+                                <input style="width: 150px" readonly type="tel" name="lacres_transporte_row[]" class="form-control" value="">
                             </td>
                             <td>
-                                <input readonly type="tel" name="lacres_unidade_row[]" class="form-control" value="{{ json_encode($i->lacresUnidCarga->pluck('numero')->toArray()) }}">
+                                <input style="width: 150px" readonly type="tel" name="lacres_unidade_row[]" class="form-control" value="">
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-danger btn-delete-row">
-                                    <i class="ri-delete-bin-line"></i>
-                                </button>
+                                <div style="width: 100px">
+                                    <button class="btn btn-sm btn-warning btn-edit-row" type="button">
+                                        <i class="ri-edit-line"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger btn-delete-row" type="button">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -632,6 +882,7 @@
         <button type="submit" disabled class="btn btn-success btn-salvarMdfe px-5">Salvar</button>
     </div>
 </div>
+@include('mdfe.partials.modal_edita_descarregamento')
 
 @section('js')
 <script src="/js/mdfe.js"></script>

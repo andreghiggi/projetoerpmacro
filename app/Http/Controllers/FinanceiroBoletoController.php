@@ -29,7 +29,7 @@ class FinanceiroBoletoController extends Controller
         ->when(!empty($empresa), function ($query) use ($empresa) {
             return $query->where('empresa_id', $empresa);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($empresa){
             $empresa = Empresa::findOrFail($empresa);
@@ -57,8 +57,10 @@ class FinanceiroBoletoController extends Controller
         $client = new \GuzzleHttp\Client();
         $config = ConfiguracaoSuper::first();
         $empresa = Empresa::findOrFail($request->empresa_boleto);
+
         try{
             if($empresa->asaas_id == null){
+
                 $dataCliente = [
                     'name' => $request->razao_social,
                     'cpfCnpj' => $request->cpf_cnpj,
@@ -142,7 +144,13 @@ class FinanceiroBoletoController extends Controller
                     'status' => 1,
                     'descricao' => 'Cadastro manual'
                 ]);
-                session()->flash("flash_success", "Boleto gerado!");
+
+                if($request->qtd_boletos > 1){
+                    $this->gerarQtdBoletos($config, $empresa, $endPoint, $request);
+                    session()->flash("flash_success", "Boletos gerados!");
+                }else{
+                    session()->flash("flash_success", "Boleto gerado!");
+                }
                 return redirect()->route('financeiro-boleto.index');
             }
         }catch(\GuzzleHttp\Exception\ClientException $e){
@@ -153,6 +161,82 @@ class FinanceiroBoletoController extends Controller
         }
 
         // dd($data);
+    }
+
+    private function gerarQtdBoletos($config, $empresa, $endPoint, $request){
+        $vencimento = $request->vencimento;
+        $dia = (int)\Carbon\Carbon::parse($vencimento)->format('d');
+        $mes = (int)\Carbon\Carbon::parse($vencimento)->format('m');
+        $ano = \Carbon\Carbon::parse($vencimento)->format('Y');
+
+        for($i=0; $i<$request->qtd_boletos-1; $i++){
+            sleep(1);
+            $mes++;
+            $dia = (int)$dia;
+            $mes = (int)$mes;
+            if($mes > 12){
+                $mes = 1;
+                $ano+=1;
+            }
+            if($mes == 2 && $dia > 28){
+                $dia = 28;
+            }
+            $mes = $mes < 10 ? "0$mes" : $mes;
+            $dia = $dia < 10 ? "0$dia" : $dia;
+            $vencimento = "$ano-$mes-$dia";
+
+            $dataBoleto = [
+                'customer' => $empresa->asaas_id,
+                'billingType' => 'BOLETO',
+                'value' => __convert_value_bd($request->valor),
+                'dueDate' => $vencimento
+            ];
+
+            if($request->juros){
+                $dataBoleto['interest'] = [
+                    'value' => $request->juros
+                ];
+            }
+
+            if($request->multa){
+                $dataBoleto['fine'] = [
+                    'value' => $request->multa
+                ];
+            }
+
+            $client = new \GuzzleHttp\Client();
+            $response = $client->request('POST', $endPoint, [
+                'body' => json_encode($dataBoleto),
+                'headers' => [
+                    'accept' => 'application/json',
+                    'access_token' => $config->asaas_token_boleto,
+                ],
+            ]);
+
+            $data = json_decode($response->getBody(),true);
+            if($data){
+                $boleto = [
+                    'empresa_id' => $empresa->id,
+                    'valor' => __convert_value_bd($request->valor),
+                    'vencimento' => $vencimento,
+                    'pdf_boleto' => $data['bankSlipUrl'],
+                    'valor_recebido' => 0,
+                    'juros' => $request->juros,
+                    'multa' => $request->multa,
+                    'status' => 0,
+                    'plano_id' => $request->plano_id,
+                    '_id' => $data['id']
+                ];
+                FinanceiroBoleto::create($boleto);
+                LogBoleto::create([
+                    'tipo' => 'geracao',
+                    'empresa_id' => $empresa->id,
+                    'status' => 1,
+                    'descricao' => 'Cadastro manual'
+                ]);
+            }
+        }
+
     }
 
     public function imprimir($id)
@@ -216,7 +300,7 @@ class FinanceiroBoletoController extends Controller
             $item->valor_recebido = __convert_value_bd($request->valor_recebido);
             $item->status = $request->status;
             $item->data_recebimento = $request->data_recebimento;
-            
+
             $item->save();
             session()->flash("flash_success", 'Boleto alterado!');
         } catch (\Exception $e) {
@@ -245,7 +329,7 @@ class FinanceiroBoletoController extends Controller
         ->when(!empty($empresa), function ($query) use ($empresa) {
             return $query->where('empresa_id', $empresa);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($empresa){
             $empresa = Empresa::findOrFail($empresa);

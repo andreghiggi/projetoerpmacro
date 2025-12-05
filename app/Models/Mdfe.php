@@ -17,9 +17,21 @@ class Mdfe extends Model
 		'chave', 'protocolo', 'empresa_id', 'produto_pred_nome', 'produto_pred_ncm',
 		'produto_pred_cod_barras', 'cep_carrega', 'cep_descarrega', 'tp_carga',
 		'latitude_carregamento', 'longitude_carregamento', 'latitude_descarregamento',
-		'longitude_descarregamento', 'local_id', 'tipo_modal'
+		'longitude_descarregamento', 'local_id', 'tipo_modal',
+		'nome_pagador', 'documento_pagador', 'ind_pag', 'valor_transporte'
 	];
 
+	public function componentes(){
+		return $this->hasMany(ComponenteMdfe::class, 'mdfe_id');
+	}
+
+	public function parcelamento(){
+		return $this->hasMany(ParcelamentoMdfe::class, 'mdfe_id');
+	}
+
+	public function infosBancaria(){
+		return $this->hasMany(InformacaoBancariaMdfe::class, 'mdfe_id');
+	}
 	
 	public function empresa()
 	{
@@ -129,6 +141,22 @@ class Mdfe extends Model
 			'5' => 'Aeronave',
 			'6' => 'Vagão',
 			'7' => 'Outros'
+		];
+	}
+
+	public static function indicadoresDePagamento(){
+		return [
+			0 => 'A vista',
+			1 => 'A prazo',
+			2 => 'Outros',
+		];
+	}
+
+	public static function tiposDeComponentes(){
+		return [
+			'01' => 'Frete',
+			'02' => 'Pedágio',
+			'03' => 'Outros',
 		];
 	}
 

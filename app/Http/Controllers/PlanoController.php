@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Plano;
 use App\Models\Segmento;
+use App\Models\Empresa;
 use App\Utils\UploadUtil;
 use App\Utils\ModuloUtil;
 
@@ -21,13 +22,21 @@ class PlanoController extends Controller
 
     public function index(Request $request)
     {
+        $contador_id = $request->contador_id;
         $data = Plano::when(!empty($request->nome), function ($q) use ($request) {
             return $q->where(function ($quer) use ($request) {
                 return $quer->where('nome', 'LIKE', "%$request->nome%");
             });
         })
-        ->paginate(env("PAGINACAO"));
-        return view('planos.index', compact('data'));
+        ->when($contador_id, function ($query) use ($contador_id) {
+            return $query->where('contador_id', $contador_id);
+        })
+        ->paginate(__itensPagina());
+
+        $contadores = Empresa::where('tipo_contador', 1)
+        ->orderBy('nome')->get();
+
+        return view('planos.index', compact('data', 'contadores'));
     }
 
     public function create()
@@ -148,6 +157,6 @@ class PlanoController extends Controller
         } catch (\Exception $e) {
             session()->flash('flash_error', 'Algo deu errado:' . $e->getMessage());
         }
-        return redirect()->route('planos.index');
+        return redirect()->back();
     }
 }

@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Agendamentos'])
 @section('content')
 
-<div class="mt-3">
+<div class="mt-1">
     <input type="hidden" id="agendamentos" value="{{ json_encode($agendamentos) }}">
     <div class="row">
         <div class="card">

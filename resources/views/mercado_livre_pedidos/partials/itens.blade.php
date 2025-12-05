@@ -2,7 +2,7 @@
     <td width="250">
         <select class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
             <option value="{{ $prod->produto_id }}">{{ $prod->produto->nome }}</option>
-
+            
         </select>
     </td>
     <td width="80">

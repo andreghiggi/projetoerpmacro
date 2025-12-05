@@ -25,11 +25,11 @@ class VeiculoController extends Controller
             });
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('veiculos.index', compact('data'));
     }
 
-   
+    
     public function create()
     {
         $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)

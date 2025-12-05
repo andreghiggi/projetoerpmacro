@@ -27,6 +27,7 @@ class CategoriaProdutoController extends Controller
         })
         ->where('categoria_id', $request->categoria_id)
         ->get();
+
         return response()->json($data, 200);
     }
 }

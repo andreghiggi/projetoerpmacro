@@ -14,6 +14,7 @@ use App\Models\Transportadora;
 use App\Models\NaturezaOperacao;
 use App\Models\Empresa;
 use App\Models\Nfe;
+use App\Models\Funcionario;
 use NFePHP\DA\NFe\Danfe;
 
 class PedidoMercadoLivreController extends Controller
@@ -328,8 +329,10 @@ class PedidoMercadoLivreController extends Controller
         $numeroNfe = Nfe::lastNumero($empresa);
 
         $isPedidoMercadoLivre = 1;
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
+
         return view('nfe.create', compact('item', 'cidades', 'transportadoras', 'naturezas', 'isPedidoMercadoLivre', 'numeroNfe',
-            'caixa'));
+            'caixa', 'funcionarios'));
     }
 
     public function setCliente(Request $request, $id){

@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'CRM'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -71,7 +71,7 @@
                             <input type="hidden" name="end_date" value="{{ request()->end_date }}">
                             <input type="hidden" name="status" value="{{ request()->status }}">
 
-                            <button type="submit" class="btn btn-sm btn-primary">
+                            <button type="button" class="btn btn-sm btn-primary btn-print">
                                 <i class="ri-printer-line"></i>
                                 Imprimir
                             </button>
@@ -166,6 +166,11 @@
 <script type="text/javascript">
     $('.btn-excel').click(() => {
         $('#inp-excel').val(1)
+        $('#form-print').submit()
+    })
+
+    $('.btn-print').click(() => {
+        $('#inp-excel').val(-1)
         $('#form-print').submit()
     })
 </script>

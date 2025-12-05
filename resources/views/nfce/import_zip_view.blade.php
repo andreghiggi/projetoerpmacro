@@ -8,14 +8,12 @@
 
 <div class="card mt-1">
     <div class="card-header">
-        <h4>Visualizando arquivos para NFCe</h4>
+        <h4>Visualizando arquivos para NFCe <strong class="badge bg-danger">{{ sizeof($data) }}</strong></h4>
         <div style="text-align: right; margin-top: -35px;">
             <a href="{{ route('nfce.import-zip') }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar
             </a>
         </div>
-
-
     </div>
     
     <div class="card-footer">

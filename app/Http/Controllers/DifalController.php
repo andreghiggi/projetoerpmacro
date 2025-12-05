@@ -7,13 +7,13 @@ use App\Models\Difal;
 
 class DifalController extends Controller
 {
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $data = Difal::where('empresa_id', request()->empresa_id)
         ->when(!empty($request->cfop), function ($q) use ($request) {
             return $q->where('cfop', 'LIKE', "%$request->cfop%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('difal.index', compact('data'));
     }
 

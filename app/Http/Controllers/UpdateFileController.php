@@ -119,6 +119,7 @@ class UpdateFileController extends Controller
             'config' => '/',
             'js' => '/public',
             'css' => '/public',
+            'imgs' => '/public',
             'delivery' => '/public',
             'food-files' => '/public',
         ];

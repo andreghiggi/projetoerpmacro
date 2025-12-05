@@ -1,8 +1,9 @@
 <div id="pagamento_multiplo" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="standard-modalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="standard-modalLabel">Pagamento Múltiplo <strong class="total-venda-modal text-danger">@isset($item) {{__moeda($item->valor_total)}}@endif</strong></h4>
+            <div class="modal-header text-white bg-success">
+
+                <h4 class="modal-title" id="standard-modalLabel">Pagamento Múltiplo <strong class="total-venda-modal text-danger">@isset($item) {{ __moeda($item->valor_total) }}@endif</strong></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -80,15 +81,25 @@
                             </tr>
                         </tfoot>
                     </table>
-                    <div class="mt-3">
-                        <h6 style="color: rgb(218, 19, 19); size:25px" class="mt-2">Diferença: 
-                            <strong class="sum-restante"></strong>
-                        </h6>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6 class="mt-2 text-danger">Valor restante: 
+                                <strong class="sum-restante"></strong>
+                            </h6>
+                        </div>
+                        <div class="col-md-6 div-troco-modal d-none">
+                            <h6 class="mt-2 text-primary">Troco: 
+                                <strong class="sum-troco"></strong>
+                            </h6>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary btn-modal-multiplo" data-bs-dismiss="modal">Salvar</button>
+                <button type="button" class="btn btn-success btn-modal-multiplo" data-bs-dismiss="modal">
+                    <i class="ri-checkbox-circle-line"></i>
+                    Salvar
+                </button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

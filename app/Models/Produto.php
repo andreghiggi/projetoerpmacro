@@ -22,16 +22,17 @@ class Produto extends Model
 		'delivery', 'valor_delivery', 'variacao_modelo_id', 'valor_ecommerce', 'percentual_desconto', 'descricao_ecommerce',
 		'largura', 'comprimento', 'altura', 'peso', 'ecommerce', 'destaque_ecommerce', 'hash_ecommerce', 'texto_ecommerce',
 		'destaque_delivery', 'hash_delivery', 'texto_delivery', 'mercado_livre_id', 'mercado_livre_valor', 'mercado_livre_link',
-		'mercado_livre_youtube', 'mercado_livre_descricao', 'mercado_livre_status', 'mercado_livre_categoria',
-		'mercado_livre_tipo_publicacao', 'conecta_venda_id', 'conecta_venda_descricao', 'conecta_venda_valor', 'conecta_venda_status','conecta_venda_qtd_minima',
-        'conecta_venda_multiplicador', 'solicita_observacao', 'combo', 'margem_combo', 'nuvem_shop_id', 'nuvem_shop_valor',
-		'texto_nuvem_shop', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'reserva', 'percentual_lucro', 'codigo_barras2',
+		'mercado_livre_youtube', 'mercado_livre_descricao', 'mercado_livre_status', 'mercado_livre_categoria', 
+		'mercado_livre_tipo_publicacao', 'combo', 'margem_combo', 'nuvem_shop_id', 'nuvem_shop_valor',
+		'texto_nuvem_shop', 'modBCST', 'pMVAST', 'pICMSST', 'redBCST', 'reserva', 'percentual_lucro', 'codigo_barras2', 
 		'codigo_barras3', 'sub_categoria_id', 'valor_atacado', 'quantidade_atacado', 'oferta_delivery',
 		'woocommerce_id', 'woocommerce_slug', 'woocommerce_link', 'woocommerce_valor', 'woocommerce_type',
-		'woocommerce_status', 'woocommerce_descricao', 'woocommerce_stock_status', 'categorias_woocommerce', 'tipo_unico',
-		'balanca_pdv', 'mercado_livre_modelo', 'valor_minimo_venda', 'exportar_balanca', 'referencia_xml', 'tipo_dimensao',
+		'woocommerce_status', 'woocommerce_descricao', 'woocommerce_stock_status', 'categorias_woocommerce', 'tipo_unico', 
+		'balanca_pdv', 'mercado_livre_modelo', 'valor_minimo_venda', 'exportar_balanca', 'referencia_xml', 'tipo_dimensao', 
 		'espessura', '_id_import', 'observacao', 'observacao2', 'observacao3', 'observacao4', 'tipo_producao',
-		'numero_sequencial', 'valor_prazo'
+		'numero_sequencial', 'valor_prazo', 'ifood_id', 'vendizap_id', 'vendizap_valor', 'destaque_cardapio', 'oferta_cardapio',
+		'sub_variacao_modelo_id', 'peso_bruto', 'local_armazenamento', 'pICMSEfet', 'pRedBCEfet',
+		'cst_ibscbs', 'cclass_trib', 'perc_ibs_uf', 'perc_ibs_mun', 'perc_cbs', 'perc_dif', 'tipo_item_sped', 'prazo_garantia'
 	];
 
 	protected $appends = [ 'imgApp' ];
@@ -42,47 +43,18 @@ class Produto extends Model
 
 	public function getImgAppAttribute()
 	{
-		// @NOTE:
-		// Removendo o que existia, e buscando pela função nova imagens()
-		return $this->imagens()[0];
-
-		// $imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
-		// if(!$imagem == ""){
-		// 	return env("APP_URL") . "/imgs/no-image.png";
-		// }
-		// return env("APP_URL") . "/uploads/produtos/$imagem->imagem";
+		if($this->imagem == ""){
+			return env("APP_URL") . "/imgs/no-image.png";
+		}
+		return env("APP_URL") . "/uploads/produtos/$this->imagem";
 	}
 
 	public function getImgAttribute()
 	{
-		// @NOTE:
-		// Removendo o que existia, e buscando pela função nova imagens()
-		return $this->imagens()[0];
-
-		// $imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
-		// if(!$imagem){
-		// 	return "/imgs/no-image.png";
-		// }
-		// return "/uploads/produtos/$imagem->imagem";
-	}
-
-	public function imagens( $url_completa = false )
-	{
-		$url = $url_completa ? env("APP_URL") : '';
-		$imagem = ProdutoImagens::where([
-			["produto_id", $this->id],
-			["produto_variacao_id", 0],
-		])
-		->orderBy('ordem')->get();
-		
-		$imagens = array_map( function($img) use($url) {
-			return "$url/uploads/produtos/$img[imagem]";	
-		} ,$imagem->toArray()  );
-
-		if($imagem->isEmpty()){
-			return ["$url/imgs/no-image.png"];
+		if($this->imagem == ""){
+			return "/imgs/no-image.png";
 		}
-		return $imagens;
+		return "/uploads/produtos/$this->imagem";
 	}
 
 	public function estoqueAtual(){
@@ -94,21 +66,25 @@ class Produto extends Model
 				$estoque = Estoque::where('produto_id', $this->id)
 				->where('produto_variacao_id', $v->id)->first();
 				if($estoque){
-					$valores .= $v->descricao . " - QTD:" . number_format($estoque->quantidade, 0) . ", ";
+					$valores .= $v->descricao . " - QTD:" . number_format($estoque->quantidade, 0, '.', '') . ", ";
 				}
 			}
 			$valores = substr($valores, 0, strlen($valores)-2);
 			return $valores;
 		}else{
 			if($this->unidadeDecimal()){
-				return number_format($this->estoque->quantidade, 0);
+				return number_format($this->estoque->quantidade, 3, '.', '');
 			}
 		}
-		return number_format($this->estoque->quantidade, 3);
+		return number_format($this->estoque->quantidade, 0, '.', '');
 	}
 
 	public function estoque(){
 		return $this->hasOne(Estoque::class, 'produto_id');
+	}
+
+	public function ibpt(){
+		return $this->hasOne(ProdutoIbpt::class, 'produto_id');
 	}
 
 	public function estoqueTotal($local_id){
@@ -124,15 +100,56 @@ class Produto extends Model
 		}
 
 		if($this->unidadeDecimal()){
-			return number_format($soma, 0);
+			return number_format($soma, 0, '.', '');
 		}
-		return number_format($soma, 3);
+		return number_format($soma, 3, '.', '');
 	}
 
-	public function validaEstoqueDelivery(){
+	public function validaEstoque(){
+		if($this->gerenciar_estoque == 1){
+			if(!$this->estoque || $this->estoque->quantidade <= 0){
+				return 0;
+			}
+		}
+
+		return 1;
+	}
+
+	public function estoqueTotalProduto(){
+		$estoques = Estoque::where('produto_id', $this->id)->get();
+
+		$soma = 0;
+		foreach($estoques as $e){
+			$soma += $e->quantidade;
+		}
+
+		if($this->unidadeDecimal()){
+			return number_format($soma, 0, '.', '');
+		}
+		return number_format($soma, 3, '.', '');
+	}
+
+	public function validaEstoqueDelivery($empresa_id){
+		if($this->empresa_id != $empresa_id){
+			return 0;
+		}
 		if(!$this->gerenciar_estoque) return 1;
 		if($this->estoque && $this->estoque->quantidade > 0) return 1;
 		return 0;
+	}
+
+	public function promocoes()
+	{
+		return $this->hasMany(PromocaoProduto::class);
+	}
+
+	public function precoComPromocao()
+	{
+		return $this->promocoes()
+		->where('status', true)
+		->whereDate('data_inicio', '<=', now())
+		->whereDate('data_fim', '>=', now())
+		->first();
 	}
 
 	public function locais()
@@ -205,7 +222,7 @@ class Produto extends Model
 	public function galeria(){
 		return $this->hasMany(GaleriaProduto::class, 'produto_id');
 	}
-
+	
 	public function movimentacoes(){
 		return $this->hasMany(MovimentacaoProduto::class, 'produto_id');
 	}
@@ -251,7 +268,7 @@ class Produto extends Model
 	public function valoresPizza(){
 		$str = '';
 		foreach($this->pizzaValores as $pizza){
-			$str .= $pizza->tamanho->nome . " R$ " . __moeda($pizza->valor) . "<br>";
+			$str .= $pizza->tamanho->nome . " R$ " . __moeda($pizza->valor) . "<br>"; 
 		}
 		return $str;
 	}
@@ -260,7 +277,7 @@ class Produto extends Model
 		$str = '';
 		foreach($this->pizzaValores as $key => $pizza){
 			if($key == 0){
-				$str .= "À partir de - R$ " . __moeda($pizza->valor);
+				$str .= "À partir de - R$ " . __moeda($pizza->valor); 
 			}
 		}
 		return $str;
@@ -289,9 +306,11 @@ class Produto extends Model
 	{
 
 		$prod = null;
-		$prod = Produto::where('referencia_xml', $referencia)
-		->where('empresa_id', $empresa_id)
-		->first();
+		if($referencia != null && $referencia != 0){
+			$prod = Produto::where('referencia', $referencia)
+			->where('empresa_id', $empresa_id)
+			->first();
+		}
 
 		if ($prod != null) return $prod;
 
@@ -299,7 +318,12 @@ class Produto extends Model
 			$prod = Produto::where('nome', (string)$nome)
 			->where('empresa_id', $empresa_id)
 			->first();
-			if ($prod) {
+
+			if($prod && $ean == 'SEM GTIN'){
+				return $prod;
+			}
+
+			if ($prod && $ean != 'SEM GTIN' && $prod->codigo_barras == $ean) {
 				return $prod;
 			}
 		}
@@ -307,6 +331,7 @@ class Produto extends Model
 		if (!$prod) {
 			$prod = Produto::where('codigo_barras', $ean)
 			->where('codigo_barras', '!=', 'SEM GTIN')
+			->where('codigo_barras', '!=', '')
 			->where('empresa_id', $empresa_id)
 			->first();
 		} else {
@@ -314,7 +339,7 @@ class Produto extends Model
 				return null;
 			}
 		}
-
+		
 		return $prod;
 	}
 
@@ -424,6 +449,14 @@ class Produto extends Model
 	public static function listaCST_IPI()
 	{
 		return [
+			'00' => 'Entrada com Recuperação de Crédito',
+			'01' => 'Entrada Tributada com Alíquota Zero',
+			'02' => 'Entrada Isenta',
+			'03' => 'Entrada não Tributada',
+			'04' => 'Entrada Imune',
+			'05' => 'Entrada com Suspensão',
+			'49' => 'Outras Entradas',
+			
 			'50' => '50 - Saída Tributada',
 			'51' => '51 - Saída Tributável com Alíquota Zero',
 			'52' => '52 - Saída Isenta',
@@ -912,15 +945,35 @@ class Produto extends Model
 
 	}
 
-	public function descricao(){
-        if($this->produto_variacao_id == null){
-            return $this->nome;
-        }
-        if($this->produtoVariacao){
-            return $this->nome . " - " . $this->produtoVariacao->descricao;
-        }
+	public static function listaCSTCbsIbs(){
+		return [
+			'000' => '000 - Tributação integral',
+			'010' => '010 - Tributação com alíquotas uniformes - operações setor financeiro',
+			'011' => '011 - Tributação com alíquotas uniformes reduzidas em 60% ou 30%',
+			'200' => '200 - Alíquota zero, Alíquota zero apenas CBS e reduzida em 60% para IBS, reduzida em 80%, 70%, 60%, 50%, 40%, 30%',
+			'210' => '210 - Alíquota reduzida em 50% com redutor de base de cálculo, reduzida em 70% com redutor de base de cálculo',
+			'220' => '220 - Alíquota fixa',
+			'221' => '221 - Alíquota fixa proporcional',
+			'400' => '400 - Isenção',
+			'410' => '410 - Imunidade e não incidência',
+		];
+	}
 
-        return $this->nome;
-    }
+	public static function tipoItemSped(){
+		return [
+			'00' => 'Mercadoria para Revenda',
+			'01' => 'Matéria-prima',
+			'02' => 'Embalagem',
+			'03' => 'Produto em Processo',
+			'04' => 'Produto Acabado',
+			'05' => 'Subproduto',
+			'06' => 'Produto Intermediário',
+			'07' => 'Material de Uso e Consumo',
+			'08' => 'Ativo Imobilizado',
+			'09' => 'Serviços',
+			'10' => 'Outros insumos',
+			'99' => 'Outra'
+		];
+	}
 
 }

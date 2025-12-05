@@ -5,8 +5,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Nfce;
+use App\Models\Nfe;
 use App\Models\Troca;
 use App\Models\Produto;
+use App\Models\Caixa;
 use App\Models\ItemTroca;
 use App\Models\Cliente;
 use App\Models\CreditoCliente;
@@ -33,31 +35,41 @@ class TrocaController extends Controller
     }
 
     public function store(Request $request){
-        $nfce = Nfce::findOrFail($request->venda_id);
+        if($request->tipo == 'nfce'){
+            $item = Nfce::findOrFail($request->venda_id);
+        }else{
+            $item = Nfe::findOrFail($request->venda_id);
+        }
 
         try{
 
             if($request->cliente_id){
-                $nfce->cliente_id = $request->cliente_id;
+                $item->cliente_id = $request->cliente_id;
             }
+
+            $caixa = Caixa::where('usuario_id', $request->usuario_id)
+            ->where('status', 1)
+            ->first();
 
             $troca = Troca::create([
                 'empresa_id' => $request->empresa_id,
-                'nfce_id' => $request->venda_id,
+                'nfce_id' => $request->tipo == 'nfce' ? $item->id : null,
+                'nfe_id' => $request->tipo == 'nfe' ? $item->id : null,
+                'caixa_id' => $caixa->id,
                 'observacao' => '',
                 'numero_sequencial' => $this->getLastNumero($request->empresa_id),
                 'codigo' => Str::random(8),
                 'valor_troca' => __convert_value_bd($request->valor_total),
-                'valor_original' => $nfce->total,
-                'tipo_pagamento' => $request->tipo_pagamento ? $request->tipo_pagamento : $nfce->tipo_pagamento
+                'valor_original' => $item->total,
+                'tipo_pagamento' => $request->tipo_pagamento ? $request->tipo_pagamento : $item->tipo_pagamento
             ]);
 
-            $nfce->total = __convert_value_bd($request->valor_total);
-            $nfce->save();
+            $item->total = __convert_value_bd($request->valor_total);
+            $item->save();
 
-            foreach($nfce->itens as $i){
+            foreach($item->itens as $i){
                 if ($i->produto->gerenciar_estoque) {
-                    $this->util->incrementaEstoque($i->produto_id, $i->quantidade, null, $nfce->local_id);
+                    $this->util->incrementaEstoque($i->produto_id, $i->quantidade, null, $item->local_id);
                 }
             }
 
@@ -67,7 +79,7 @@ class TrocaController extends Controller
                     $quantidade = __convert_value_bd($request->quantidade[$i]);
                     $add = 1;
                     $qtd = 0;
-                    foreach($nfce->itens as $itemNfce){
+                    foreach($item->itens as $itemNfce){
                         if($itemNfce->produto_id == $produto_id && $itemNfce->quantidade == $quantidade){
                             $add = 0;
                         }else{
@@ -81,31 +93,35 @@ class TrocaController extends Controller
                         ItemTroca::create([
                             'produto_id' => $produto_id,
                             'quantidade' => $quantidade,
-                            'troca_id' => $troca->id
+                            'troca_id' => $troca->id,
+                            'valor_unitario' => __convert_value_bd($request->valor_unitario[$i]),
+                            'sub_total' => __convert_value_bd($request->subtotal_item[$i]),
                         ]);
                     }
                     $product = Produto::findOrFail($produto_id);
                     if ($product->gerenciar_estoque) {
-                        $this->util->reduzEstoque($product->id, $quantidade, null, $troca->nfce->local_id);
+                        $this->util->reduzEstoque($product->id, $quantidade, null, $item->local_id);
                     }
                 }
             }
 
-            if($request->valor_credito > 0 && $request->cliente_id && $troca->tipo_pagamento == '00'){
+            if($request->valor_credito > 0 && $request->cliente_id){
                 $cliente = Cliente::findOrFail($request->cliente_id);
                 CreditoCliente::create([
                     'valor' => $request->valor_credito,
-                    'cliente_id' => $cliente->id
+                    'cliente_id' => $cliente->id,
+                    'troca_id' => $troca->id,
+                    'status' => 1
                 ]);
 
-                $cliente->valor_credito += $request->valor_credito;
+                $cliente->valor_credito += __convert_value_bd($request->valor_credito);
                 $cliente->save();
             }
-            __createLog($request->empresa_id, 'PDV Troca', 'cadastrar', "#$troca->numero_sequencial - R$ " . __moeda($troca->valor_troca));
+            __createLog($request->empresa_id, 'Troca', 'cadastrar', "#$troca->numero_sequencial - R$ " . __moeda($troca->valor_troca));
 
             return response()->json($troca, 200);
         } catch (\Exception $e) {
-            __createLog($request->empresa_id, 'PDV Troca', 'erro', $e->getMessage());
+            __createLog($request->empresa_id, 'Troca', 'erro', $e->getMessage());
             return response()->json($e->getMessage() . ", line: " . $e->getLine() . ", file: " . $e->getFile(), 401);
         }
     }

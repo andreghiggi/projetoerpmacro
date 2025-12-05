@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -48,6 +47,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     @yield('css')
+
+    <link rel="stylesheet" href="/food-files/css/extend.css">
 
 </head>
 <body>
@@ -333,7 +334,7 @@
                                 <div align="center">
                                     <span>
 
-                                        @if($funcionamento)
+                                        @if($funcionamento && $funcionamento->aberto)
                                         <div class="text-success" style="font-weight:bold">
                                             <i class="lni lni-restaurant"></i>
                                             Aberto para pedidos
@@ -593,7 +594,6 @@
     </div>
 
     <div class="modal modal-loading" tabindex="-1" role="dialog">
-        
     </div>
 
     <script src="/food-files/js/bootstrap.min.js"></script>
@@ -610,6 +610,7 @@
 
 </body>
 <script>
+    
     let prot = window.location.protocol;
     let host = window.location.host;
     const path_url = prot + "//" + host + "/";

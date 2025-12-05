@@ -21,7 +21,7 @@ class CarrosselCardapioController extends Controller
         ->when(!empty($request->produto_id), function ($q) use ($request) {
             return $q->where('produto_id', $request->produto_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('carrossel.index', compact('data'));
     }

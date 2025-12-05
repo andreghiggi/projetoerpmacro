@@ -31,7 +31,7 @@ class FuncionarioController extends Controller
                 return $quer->where('nome', 'LIKE', "%$request->nome%");
             });
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('funcionario.index', compact('data'));
     }
 

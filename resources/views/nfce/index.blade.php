@@ -7,7 +7,7 @@
 </style>
 @endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -120,40 +120,37 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->numero_sequencial }}</td>
-                                    <td>{{ $item->cliente ? $item->cliente->razao_social : ($item->cliente_nome != "" ? $item->cliente_nome : "--") }}</td>
-                                    <td>{{ $item->cliente ? $item->cliente->cpf_cnpj : ($item->cliente_cpf_cnpj != "" ? $item->cliente_cpf_cnpj : "--") }}</td>
+                                    <td data-label="#"> {{ $item->numero_sequencial }}</td>
+                                    <td data-label="Cliente">{{ $item->cliente ? $item->cliente->razao_social : ($item->cliente_nome != "" ? $item->cliente_nome : "--") }}</td>
+                                    <td data-label="CPF/CNPJ">{{ $item->cliente ? $item->cliente->cpf_cnpj : ($item->cliente_cpf_cnpj != "" ? $item->cliente_cpf_cnpj : "--") }}</td>
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger">{{ $item->localizacao->descricao }}</td>
+                                    <td data-label="Local" class="text-danger">{{ $item->localizacao->descricao }}</td>
                                     @endif
-                                    <td>{{ $item->numero }}</td>
-                                    <td>{{ $item->numero_serie }}</td>
-                                    <td>{{ number_format($item->total, 2, ',', '.') }}</td>
-                                    <td width="150">
+                                    <td data-label="Número">{{ $item->numero }}</td>
+                                    <td data-label="Número Série">{{ $item->numero_serie }}</td>
+                                    <td data-label="Valor">{{ number_format($item->total, 2, ',', '.') }}</td>
+                                    <td data-label="Estado">
                                         @if($item->estado == 'aprovado')
-                                        <span class="btn btn-success text-white btn-sm w-100">aprovado</span>
+                                        <span class="btn btn-success text-white btn-sm">APROVADO</span>
                                         @elseif($item->estado == 'cancelado')
-                                        <span class="btn btn-danger text-white btn-sm w-100">cancelado</span>
+                                        <span class="btn btn-danger text-white btn-sm">CANCELADO</span>
                                         @elseif($item->estado == 'rejeitado')
-                                        <span class="btn btn-warning text-white btn-sm w-100">rejeitado</span>
+                                        <span class="btn btn-warning text-white btn-sm">REJEITADO</span>
                                         @else
-                                        <span class="btn btn-info text-white btn-sm w-100">novo</span>
+                                        <span class="btn btn-info text-white btn-sm">NOVO</span>
                                         @endif
                                     </td>
-                                    <td>{{ $item->ambiente == 2 ? 'Homologação' : 'Produção' }}</td>
-
-                                    <td><label style="width: 120px">{{ __data_pt($item->created_at) }}</label></td>
-                                    <td><label style="width: 120px">{{ __data_pt($item->data_emissao) }}</label></td>
+                                    <td data-label="Ambiente">{{ $item->ambiente == 2 ? 'Homologação' : 'Produção' }}</td>
+                                    <td data-label="Data de cadastro"><label style="width: 120px">{{ __data_pt($item->created_at) }}</label></td>
+                                    <td data-label="Data de emissão"><label style="width: 120px">{{ $item->data_emissao ? __data_pt($item->data_emissao) : '--' }}</label></td>
                                     <td>
                                         <form action="{{ route('nfce.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 320px">
                                             @method('delete')
                                             @csrf
-
                                             @if($item->estado == 'aprovado')
                                             <a class="btn btn-primary btn-sm" title="Imprimir NFCe" target="_blank" href="{{ route('nfce.imprimir', [$item->id]) }}">
                                                 <i class="ri-printer-line"></i>
                                             </a>
-
                                             @can('nfce_transmitir')
                                             <button title="Cancelar NFCe" type="button" class="btn btn-danger btn-sm" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-close-circle-line"></i>
@@ -171,7 +168,6 @@
                                                 <i class="ri-edit-line"></i>
                                             </a>
                                             @endcan
-
                                             <a target="_blank" title="XML temporário" class="btn btn-light btn-sm" href="{{ route('nfce.xml-temp', $item->id) }}">
                                                 <i class="ri-file-line"></i>
                                             </a>
@@ -180,51 +176,47 @@
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                             @endcan
-
                                             @can('nfce_transmitir')
                                             <button title="Transmitir NFCe" type="button" class="btn btn-success btn-sm" onclick="transmitir('{{$item->id}}')">
                                                 <i class="ri-send-plane-fill"></i>
                                             </button>
                                             @endcan
                                             @endif
-
                                             @if($item->estado == 'aprovado' || $item->estado == 'cancelado')
                                             <button title="Consultar NFCe" type="button" class="btn btn-light btn-sm" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-search-eye-line"></i>
                                             </button>
                                             @endif
-
                                             @can('nfce_edit')
                                             <a title="Alterar estado fiscal" class="btn btn-danger btn-sm" href="{{ route('nfce.alterar-estado', $item->id) }}">
                                                 <i class="ri-arrow-up-down-line"></i>
                                             </a>
                                             @endcan
-                                            <a class="btn btn-ligth btn-sm" title="Detalhes" href="{{ route('nfce.show', $item->id) }}"><i class="ri-eye-line"></i></a>
-
+                                            <a class="btn btn-ligth btn-sm" title="Detalhes" href="{{ route('nfce.show', $item->id) }}">
+                                                <i class="ri-eye-line"></i>
+                                            </a>
                                             <a class="btn btn-danger btn-sm" title="DANFCE Temporária" target="_blank" href="{{ route('nfce.danfce-temporaria', [$item->id]) }}">
                                                 <i class="ri-printer-fill"></i>
                                             </a>
-
                                             @if($item->estado == 'aprovado')
                                             <button title="Enviar Email" type="button" class="btn btn-light btn-sm" onclick="enviarEmail('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-mail-send-line"></i>
                                             </button>
-
                                             <a title="Download XML" href="{{ route('nfce.download-xml', [$item->id]) }}" class="btn btn-dark btn-sm">
                                                 <i class="ri-download-line"></i>
                                             </a>
                                             @endif
-
                                         </form>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">Nada encontrado</td>
+                                    <td colspan="11" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>

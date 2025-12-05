@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Adicional;
+use App\Models\CategoriaAdicional;
 
 class AdicionalController extends Controller
 {
@@ -16,19 +17,33 @@ class AdicionalController extends Controller
             });
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('adicional.index', compact('data'));
     }
 
     public function create()
     {
-        return view('adicional.create');
+        $categorias = CategoriaAdicional::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        if(sizeof($categorias) == 0){
+            session()->flash("flash_warning", "Cadastre uma categorial para adicional");
+            return redirect()->route('categoria-adicional.create');
+        }
+        return view('adicional.create', compact('categorias'));
     }
 
     public function edit($id)
     {
         $item = Adicional::findOrFail($id);
-        return view('adicional.edit', compact('item'));
+        $categorias = CategoriaAdicional::where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+
+        if(sizeof($categorias) == 0){
+            session()->flash("flash_warning", "Cadastre uma categorial para adicional");
+            return redirect()->route('categoria-adicional.create');
+        }
+        return view('adicional.edit', compact('item', 'categorias'));
     }
 
     public function store(Request $request)

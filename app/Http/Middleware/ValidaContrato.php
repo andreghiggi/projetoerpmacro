@@ -58,7 +58,8 @@ class ValidaContrato
 		}
 
 		$dif = strtotime(date("Y-m-d H:i:s")) - strtotime($contrato->created_at);
-		$dif = floor($dif / (60 * 60 * 24 * 30));
+		// $dif = floor($dif / (60 * 60 * 24 * 30));
+		$dif = floor($dif / (60 * 60 * 24));
 		if($dif >= $config->limite_dias_assinar){
 			session()->flash("flash_warning", "Assine o contrato para continuar o uso do sistema!");
 			return redirect()->route('assinar-contrato.index');

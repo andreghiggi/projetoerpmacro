@@ -17,6 +17,7 @@ use App\Models\Ibpt;
 use NFePHP\NFe\Factories\Contingency;
 use App\Models\Contigencia;
 use NFePHP\Common\Soap\SoapCurl;
+use NFePHP\NFe\MakeDev;
 
 class NFeService{
 
@@ -48,7 +49,7 @@ class NFeService{
 		$contigencia = $this->getContigencia();
 		if($contigencia != null){
 			$contingency = new Contingency($contigencia->status_retorno);
-			dd($contingency);
+			// dd($contingency);
 			$this->tools->contingency = $contingency;
 		}
 	}
@@ -64,7 +65,10 @@ class NFeService{
 
 	public function gerarXml($item){
 
-		$nfe = new Make();
+		// $nfe = new Make();
+		// $nfe = new MakeDev();
+		$schema = 'PL_010_V1';
+		$nfe = new MakeDev($schema);
 		$stdInNFe = new \stdClass();
 		$stdInNFe->versao = '4.00';
 		$stdInNFe->Id = null;
@@ -106,6 +110,7 @@ class NFeService{
 		if($item->data_emissao_saida){
 			$stdIde->dhSaiEnt = $item->data_emissao_saida.date("\TH:i:sP");
 		}
+		
 		$stdIde->tpNF = $item->tpNF;
 		$stdIde->idDest = $emitente->cidade->uf == $contact->cidade->uf ? 1 : 2;
 
@@ -154,9 +159,11 @@ class NFeService{
 		$stdEnderEmit->xCpl = $emitente->complemento;
 		$stdEnderEmit->xBairro = $emitente->bairro;
 		$stdEnderEmit->cMun = $emitente->cidade->codigo;
-		$stdEnderEmit->xMun = $emitente->cidade->nome;
+		$stdEnderEmit->xMun = $this->retiraAcentos($emitente->cidade->nome);
 		$stdEnderEmit->UF = $emitente->cidade->uf;
 		$stdEnderEmit->CEP = preg_replace('/[^0-9]/', '', $emitente->cep);
+		$stdEnderEmit->fone = preg_replace('/[^0-9]/', '', $emitente->celular);
+
 		$stdEnderEmit->cPais = '1058';
 		$stdEnderEmit->xPais = 'BRASIL';
 		$enderEmit = $nfe->tagenderEmit($stdEnderEmit); // fim tag do emitente
@@ -169,26 +176,29 @@ class NFeService{
 				$stdDest->indIEDest = "2";
 			} else {
 				$stdDest->indIEDest = "1";
+				$stdDest->IE = preg_replace('/[^0-9]/', '', $contact->ie);
 			}
 		} else {
 			$stdDest->indIEDest = "9";
-		}
-
-		if($contact->codigo_pais != '1058'){
-			$stdDest->indIEDest = "9";
-			$stdDest->idEstrangeiro = $contact->id_estrangeiro;
 		}
 
 		$cpf_cnpj = preg_replace('/[^0-9]/', '', $contact->cpf_cnpj);
 
 		if (strlen($cpf_cnpj) == 14) {
 			$stdDest->CNPJ = $cpf_cnpj;
-			$ie = preg_replace('/[^0-9]/', '', $contact->ie);
-			$stdDest->IE = $ie;
 		} else {
 			$stdDest->CPF = $contact->cpf_cnpj;
 		}
 
+		if($contact->codigo_pais != '1058' && $contact->codigo_pais != null){
+			$stdDest->indIEDest = "9";
+			$stdDest->idEstrangeiro = $contact->id_estrangeiro;
+			$stdDest->IE = null;
+			$stdDest->CPF = null;
+			$stdDest->CNPJ = null;
+		}
+
+		
 		$dest = $nfe->tagdest($stdDest);
 
 		$stdEnderDest = new \stdClass();
@@ -197,7 +207,7 @@ class NFeService{
 		$stdEnderDest->xCpl = $contact->complemento;
 		$stdEnderDest->xBairro = $contact->bairro;
 		$stdEnderDest->cMun = $contact->cidade->codigo;
-		$stdEnderDest->xMun = $contact->cidade->nome;
+		$stdEnderDest->xMun = $this->retiraAcentos($contact->cidade->nome);
 		$stdEnderDest->UF = $contact->cidade->uf;
 		$stdEnderDest->fone = preg_replace('/[^0-9]/', '', $contact->telefone);
 		$stdEnderDest->CEP = preg_replace('/[^0-9]/', '', $contact->cep);
@@ -215,6 +225,35 @@ class NFeService{
 		}
 
 		$enderDest = $nfe->tagenderDest($stdEnderDest);
+
+		if($item->rua_entrega != ""){
+			$stdEnderDestEntrega = new \stdClass();
+
+			$stdEnderDestEntrega->xLgr = $this->retiraAcentos($item->rua_entrega);
+			$stdEnderDestEntrega->nro = $this->retiraAcentos($item->numero_entrega);
+			$stdEnderDestEntrega->xBairro = $this->retiraAcentos($item->bairro_entrega);
+
+			$stdEnderDestEntrega->cMun = $item->cidadeEntrega->codigo;
+			$stdEnderDestEntrega->xMun = $this->retiraAcentos($item->cidadeEntrega->nome);
+			$stdEnderDestEntrega->UF = $item->cidadeEntrega->uf;
+
+			$cep = preg_replace('/[^0-9]/', '', $item->cep_entrega);
+
+			$stdEnderDestEntrega->CEP = $cep;
+			$stdEnderDestEntrega->cPais = "1058";
+			$stdEnderDestEntrega->xPais = "BRASIL";
+
+			$cnpj_cpf = preg_replace('/[^0-9]/', '', $item->documento_entrega);
+			$stdEnderDestEntrega->xNome = $item->nome_entrega;
+
+			if(strlen($cnpj_cpf) == 14){
+				$stdEnderDestEntrega->CNPJ = $cnpj_cpf;
+			}else{
+				$stdEnderDestEntrega->CPF = $cnpj_cpf;
+			} 
+
+			$enderDestEntrega = $nfe->tagentrega($stdEnderDestEntrega);
+		}
 
 		//fim tag destinatario endereço
 
@@ -239,6 +278,9 @@ class NFeService{
 		$somaVICMSST = 0;
 		$somaApCredito = 0;
 		$somavFCPST = 0;
+		$itemContImportacao = 0;
+		$somavAFRMM = 0;
+		$somaII = 0;
 
 		foreach ($item->itens as $itemCont => $i) {
 
@@ -247,26 +289,43 @@ class NFeService{
 			$stdProd = new \stdClass(); // tag produto inicio
 			$stdProd->item = $itemCont;
 
+			if($i->variacao_id){
+				$i->produto->codigo_barras = $i->produtoVariacao->codigo_barras;
+			}
+
 			$validaEan = $this->validate_EAN13Barcode($i->produto->codigo_barras);
 			$stdProd->cEAN = $validaEan ? $i->produto->codigo_barras : 'SEM GTIN';
 			$stdProd->cEANTrib = $validaEan ? $i->produto->codigo_barras : 'SEM GTIN';
+
+			$cest = $i->produto->cest;
+			$cest = str_replace(".", "", $cest);
+			if(strlen($cest) > 1){
+				$stdProd->cest = $cest;
+			}
 			$stdProd->cProd = $i->produto->id;
 			if($i->produto->numero_sequencial){
 				$stdProd->cProd = $i->produto->numero_sequencial;
 			}
-			$stdProd->xProd = $i->descricao();
+
+			if($i->produto->referencia){
+				$stdProd->cProd = $i->produto->referencia;
+			}
+
+			$stdProd->xProd = $this->retiraAcentos($i->descricao());
 			$stdProd->NCM = preg_replace('/[^0-9]/', '', $i->ncm);
 
 			$ibpt = Ibpt::getItemIbpt($emitente->cidade->uf, preg_replace('/[^0-9]/', '', $i->ncm));
+			$usarIbpt = 1;
 			if($stdIde->finNFe == 4){
-				$ibpt = null;
+				$usarIbpt = 0;
 			}
 
 			if($configGeral && $configGeral->usar_ibpt == 0){
-				$ibpt = null;
+				$usarIbpt = 0;
 			}
 
 			$stdProd->CFOP = $i->cfop;
+
 			if($item->natureza->sobrescrever_cfop == 1){
 				if($stdIde->tpNF == 1){
 					if($emitente->cidade->uf != $contact->cidade->uf && $item->natureza->cfop_outro_estado){
@@ -306,7 +365,6 @@ class NFeService{
 			}
 
 			if($item->valor_frete > 0){
-
 				if($itemCont < $totalItens){
 					$somaFrete += $vFt = 
 					$this->format($item->valor_frete/$totalItens, 2);
@@ -322,31 +380,6 @@ class NFeService{
 			if($i->nItemPed != ""){
 				$stdProd->nItemPed = $i->nItemPed;
 			}
-
-			// if($item->desconto > 0.01){
-
-			// 	if($itemCont < $totalItens){
-			// 		$totalVenda = $item->total;
-
-			// 		$media = (((($stdProd->vProd - $totalVenda)/$totalVenda))*100);
-			// 		$media = 100 - ($media * -1);
-
-			// 		$tempDesc = ($item->desconto*$media)/100;
-
-			// 		if($tempDesc > 0.01){
-			// 			$somaDesconto += $tempDesc;
-			// 			$stdProd->vDesc = $this->format($tempDesc);
-			// 		}else{
-			// 			$somaDesconto = $venda->desconto;
-			// 			$stdProd->vDesc = $this->format($somaDesconto);
-			// 		}
-
-			// 	}else{
-			// 		if(($item->desconto - $somaDesconto) > 0.01){
-			// 			$stdProd->vDesc = $this->format($item->desconto - $somaDesconto, 2);
-			// 		}
-			// 	}
-			// }
 
 			if($item->desconto > 0.01 && $somaDesconto < $item->desconto){
 
@@ -420,29 +453,56 @@ class NFeService{
 			$stdImposto = new \stdClass();
 			$stdImposto->item = $itemCont;
 
-			if($ibpt != null){
+			if($usarIbpt == 1){
+				if($i->produto->ibpt){
 
-				$vProd = $stdProd->vProd;
+					$vProd = $stdProd->vProd;
+					if($i->produto->origem == 1 || $i->produto->origem == 2){
+						$federal = $this->format(($vProd*($i->produto->ibpt->importado/100)), 2);
+					}else{
+						$federal = $this->format(($vProd*($i->produto->ibpt->nacional/100)), 2);
+					}
+					$somaFederal += $federal;
 
-				if($i->produto->origem == 1 || $i->produto->origem == 2){
-					$federal = $this->format(($vProd*($ibpt->importado_federal/100)), 2);
+					$estadual = $this->format(($vProd*($i->produto->ibpt->estadual/100)), 2);
+					$somaEstadual += $estadual;
+
+					$municipal = $this->format(($vProd*($i->produto->ibpt->municipal/100)), 2);
+					$somaMunicipal += $municipal;
+
+					$soma = $federal + $estadual + $municipal;
+					$stdImposto->vTotTrib = $soma;
+
+					$obsIbpt = " FONTE: " . $i->produto->ibpt->fonte ?? '';
+					$obsIbpt .= " VERSAO: " . $i->produto->ibpt->versao ?? '';
+					$obsIbpt .= " | ";
 
 				}else{
-					$federal = $this->format(($vProd*($ibpt->nacional_federal/100)), 2);
+					if($ibpt != null){
+
+						$vProd = $stdProd->vProd;
+
+						if($i->produto->origem == 1 || $i->produto->origem == 2){
+							$federal = $this->format(($vProd*($ibpt->importado_federal/100)), 2);
+
+						}else{
+							$federal = $this->format(($vProd*($ibpt->nacional_federal/100)), 2);
+						}
+						$somaFederal += $federal;
+
+						$estadual = $this->format(($vProd*($ibpt->estadual/100)), 2);
+						$somaEstadual += $estadual;
+
+						$municipal = $this->format(($vProd*($ibpt->municipal/100)), 2);
+						$somaMunicipal += $municipal;
+
+						$soma = $federal + $estadual + $municipal;
+						$stdImposto->vTotTrib = $soma;
+
+						$obsIbpt = " FONTE: " . $ibpt->versao ?? '';
+						$obsIbpt .= " | ";
+					}
 				}
-				$somaFederal += $federal;
-
-				$estadual = $this->format(($vProd*($ibpt->estadual/100)), 2);
-				$somaEstadual += $estadual;
-
-				$municipal = $this->format(($vProd*($ibpt->municipal/100)), 2);
-				$somaMunicipal += $municipal;
-
-				$soma = $federal + $estadual + $municipal;
-				$stdImposto->vTotTrib = $soma;
-
-				$obsIbpt = " FONTE: " . $ibpt->versao ?? '';
-				$obsIbpt .= " | ";
 			}
 			$imposto = $nfe->tagimposto($stdImposto); // tag imposto
 
@@ -458,7 +518,6 @@ class NFeService{
 			if ($stdEmit->CRT == 1 || $stdEmit->CRT == 4) {
 
 				$stdICMS = new \stdClass();
-
 				$stdICMS->item = $itemCont; 
 				$stdICMS->orig = $i->produto->origem;
 				$stdICMS->CSOSN = $i->cst_csosn;
@@ -475,15 +534,15 @@ class NFeService{
 
 						$tempB = 100 - $i->perc_red_bc;
 						$v = $stdProd->vProd * ($tempB/100);
-						$v += $stdProd->vFrete;
+						$v += ($stdProd->vFrete ?? 0);
 						$VBC += $stdICMS->vBC = number_format($v,2,'.','');
-						$stdICMS->pICMS = $this->format($i->perc_icms);
-						$somaICMS += $stdICMS->vICMS = (($stdProd->vProd - $stdProd->vDesc) * ($tempB/100)) * ($stdICMS->pICMS/100);
-						$stdICMS->pRedBC = $this->format($i->produto->pRedBC);
+						$stdICMS->pICMS = $this->format($i->perc_icms, 4);
+						$somaICMS += $stdICMS->vICMS = (($stdProd->vProd - ($stdProd->vDesc ?? 0)) * ($tempB/100)) * ($stdICMS->pICMS/100);
+						$stdICMS->pRedBC = $i->produto->pRedBC ? $this->format($i->produto->pRedBC) : 0;
 					}else{
 						if($i->cst_csosn > 103){
-							$VBC += $stdICMS->vBC = $stdProd->vProd + $stdProd->vFrete + $stdProd->vOutro - $stdProd->vDesc;
-							$stdICMS->pICMS = $this->format($i->perc_icms);
+							$VBC += $stdICMS->vBC = $stdProd->vProd + ($stdProd->vFrete ?? 0) + ($stdProd->vOutro ?? 0) - ($stdProd->vDesc ?? 0);
+							$stdICMS->pICMS = $this->format($i->perc_icms, 4);
 							$somaICMS += $stdICMS->vICMS = $stdICMS->vBC * ($stdICMS->pICMS/100);
 						}
 					}
@@ -493,6 +552,10 @@ class NFeService{
 
 				if($i->cst_csosn == 900){
 					$stdICMS->modBC = 0;
+					if(!isset($stdICMS->pICMS)){
+						$stdICMS->pICMS = 0;
+						$stdICMS->vICMS = 0;
+					}
 				}
 				
 				if($i->cst_csosn == 201 || $i->cst_csosn == 202){
@@ -507,25 +570,28 @@ class NFeService{
 					$stdICMS->pCredSN = $this->format($emitente->perc_ap_cred);
 					$somaApCredito += $stdICMS->vCredICMSSN = $this->format($stdProd->vProd*($emitente->perc_ap_cred/100));
 				}else{
-					$stdICMS->pCredSN = 0;
-					$stdICMS->vCredICMSSN = 0;
+					if($stdICMS->CSOSN == 101){
+						$stdICMS->pCredSN = 0;
+						$stdICMS->vCredICMSSN = 0;
+					}
 				}
 
+				$usaICMSST = __usaICMSST($emitente, $i->cst_csosn, $stdProd->CFOP);
 
-				if($stdIde->finNFe == 4){
+				if($stdIde->finNFe == 4 && $usaICMSST){
 					if($i->modBCST){
 						$stdICMS->modBCST = $i->modBCST;
 					}
-					if($i->pMVAST){
+					if($i->pMVAST > 0){
 						$stdICMS->pMVAST = $i->pMVAST;
 					}
-					if($i->vBCST){
+					if($i->vBCST > 0){
 						$stdICMS->vBCST = $i->vBCST;
 					}
-					if($i->pICMSST){
+					if($i->pICMSST > 0){
 						$stdICMS->pICMSST = $i->pICMSST;
 					}
-					if($i->vICMSST){
+					if($i->vICMSST > 0){
 						$stdICMS->vICMSST = $i->vICMSST;
 					}
 					if($i->vBCFCPST > 0){
@@ -538,10 +604,17 @@ class NFeService{
 						$somavFCPST += $stdICMS->vFCPST = $i->vFCPST;
 					}
 				}
+
 				if(isset($stdICMS->vICMSST)){
 					$somaVICMSST += $stdICMS->vICMSST;
 				}
 				
+				if ((int)$stdICMS->CSOSN < 101 && (int)$stdICMS->CSOSN != 61) {
+					return [
+						'erros_xml' => "Xml mal formado, CST inválido no item $itemCont"
+					];
+				}
+
 				if($i->cst_csosn == 61){
 					$stdICMS->CST = $i->cst_csosn;
 					$stdICMS->qBCMonoRet = $this->format($stdProd->qTrib);
@@ -568,25 +641,27 @@ class NFeService{
 				$stdICMS->orig = $i->produto->origem;
 				$stdICMS->CST = $i->cst_csosn;
 				$stdICMS->modBC = 0;
-				$stdICMS->vBC = $stdProd->vProd - $stdProd->vDesc;
+				$stdICMS->vBC = $stdProd->vProd - ($stdProd->vDesc ?? 0);
 
 				if($i->vbc_icms > 0){
 					$stdICMS->vBC = $i->vbc_icms;
 				}
-				$stdICMS->pICMS = $this->format($i->perc_icms);
+				$stdICMS->pICMS = $this->format($i->perc_icms, 4);
 				if($stdICMS->pICMS == 0){
 					$stdICMS->vBC = 0;
 				}
-				$stdICMS->vICMS = $stdICMS->vBC * ($stdICMS->pICMS/100);
 
+				$stdICMS->vICMS = $this->format($stdICMS->vBC * ($stdICMS->pICMS/100));
+				// dd($stdICMS->pICMS);
 				if($i->perc_red_bc > 0){
+
 					$stdICMS->pRedBC = $this->format($i->perc_red_bc);
 					$tempB = 100 - $i->perc_red_bc;
 					$v = $stdProd->vProd * ($tempB/100);
-					$v += $stdProd->vFrete;
+					$v += ($stdProd->vFrete ?? 0);
 					$stdICMS->vBC = number_format($v,2,'.','');
-					$stdICMS->pICMS = $this->format($i->perc_icms);
-					$stdICMS->vICMS = ($stdProd->vProd * ($tempB/100)) * ($stdICMS->pICMS/100);
+					$stdICMS->pICMS = $this->format($i->perc_icms, 4);
+					$stdICMS->vICMS = $this->format($stdProd->vProd * ($tempB/100)) * ($stdICMS->pICMS/100);
 
 					if($i->cst_csosn != '60'){
 						$VBC += $stdICMS->vBC;
@@ -594,7 +669,6 @@ class NFeService{
 					}
 
 				}else{
-
 					if($i->cst_csosn != '60'){
 						$VBC += $stdICMS->vBC;
 						$somaICMS += $stdICMS->vICMS;
@@ -610,13 +684,37 @@ class NFeService{
 				}
 				
 				if($i->cst_csosn == 60){
-					$stdICMS->vBCSTRet = 0.00;
-					$stdICMS->vICMSSTRet = 0.00;
-					$stdICMS->vBCSTDest = 0.00;
-					$stdICMS->vICMSSTDest = 0.00;
+					// $stdICMS->vBCSTRet = 0.00;
+					// $stdICMS->vICMSSTRet = 0.00;
+					// $stdICMS->vBCSTDest = 0.00;
+					// $stdICMS->vICMSSTDest = 0.00;
+					$stdICMS->pRedBCEfet = $i->produto->pRedBCEfet ?? 0;
+
+					$stdICMS->vBCEfet = $stdProd->vProd - ($stdProd->vDesc ?? 0);
+					$stdICMS->pICMSEfet = $i->produto->pICMSEfet;
+					$stdICMS->vICMSEfet = $stdICMS->vBCEfet * ($stdICMS->pICMSEfet / 100);
+
+					$stdICMS->pICMSEfet = $i->produto->pICMSEfet;
+					$stdICMS->vICMSSubstituto = $i->vICMSSubstituto;
+
+					if($i->pST > 0){
+						$stdICMS->pST = $i->pST;
+
+						$stdICMS->vBCSTRet = 0.00;
+						$stdICMS->vICMSSTRet = 0.00;
+						$stdICMS->vBCSTDest = 0.00;
+						$stdICMS->vICMSSTDest = 0.00;
+					}
+				}
+
+				if((int)$stdICMS->CST >= 101){
+					return [
+						'erros_xml' => "Xml mal formado, CST inválido no item $itemCont"
+					];
 				}
 
 				if($stdIde->finNFe == 4){
+
 					if($i->modBCST){
 						$stdICMS->modBCST = $i->modBCST;
 					}
@@ -653,7 +751,8 @@ class NFeService{
 					$stdICMS->vICMSMonoRet = $this->format($i->produto->adRemICMSRet*$stdProd->qTrib, 4);
 				}
 
-				if($i->cst_csosn == 60){
+				$usaICMSST = __usaICMSST($emitente, $i->cst_csosn, $stdProd->CFOP);
+				if($usaICMSST){
 					$ICMS = $nfe->tagICMSST($stdICMS);
 				}else{
 					$ICMS = $nfe->tagICMS($stdICMS);
@@ -662,9 +761,9 @@ class NFeService{
 
 			//PIS
 
-			$vbcPis = $stdICMS->vBC;
+			$vbcPis = ($stdICMS->vBC ?? 0);
 			if($emitente->exclusao_icms_pis_cofins){
-				$vbcPis -= $stdICMS->vICMS;
+				$vbcPis -= ($stdICMS->vICMS ?? 0);
 			}
 
 			if($i->vbc_pis > 0){
@@ -682,14 +781,14 @@ class NFeService{
 			$stdPIS->CST = $i->cst_pis;
 
 			$stdPIS->vBC = $this->format($i->perc_pis) > 0 ? $vbcPis : 0.00;
-			$stdPIS->pPIS = $this->format($i->perc_pis);
+			$stdPIS->pPIS = $this->format($i->perc_pis, 4);
 			$stdPIS->vPIS = $this->format($vbcPis * ($i->perc_pis / 100));
 			$PIS = $nfe->tagPIS($stdPIS);
 
 			//COFINS
-			$vbcCofins = $stdICMS->vBC;
+			$vbcCofins = ($stdICMS->vBC ?? 0);
 			if($emitente->exclusao_icms_pis_cofins){
-				$vbcCofins -= $stdICMS->vICMS;
+				$vbcCofins -= ($stdICMS->vICMS ?? 0);
 			}
 
 			if($i->vbc_cofins > 0){
@@ -705,11 +804,44 @@ class NFeService{
 			$stdCOFINS->item = $itemCont;
 			$stdCOFINS->CST = $i->cst_cofins;
 			$stdCOFINS->vBC = $this->format($i->perc_cofins) > 0 ? $vbcCofins : 0.00;
-			$stdCOFINS->pCOFINS = $this->format($i->perc_cofins);
+			$stdCOFINS->pCOFINS = $this->format($i->perc_cofins, 4);
 			$stdCOFINS->vCOFINS = $this->format($vbcCofins * ($i->perc_cofins / 100));
 			$COFINS = $nfe->tagCOFINS($stdCOFINS);
 
-			$vbcIpi = $stdProd->vProd;
+			//ibs e cbs
+			if($i->produto->cst_ibscbs && $i->produto->cclass_trib){
+
+				$stdIBSCBS = new \stdClass();
+				$stdIBSCBS->item = $itemCont;
+				$stdIBSCBS->CST = $i->produto->cst_ibscbs;
+				$stdIBSCBS->cClassTrib = $i->produto->cclass_trib;
+				$stdIBSCBS->vBC = $stdProd->vProd;
+
+				// if($i->produto->perc_ibs_uf > 0){
+				$stdIBSCBS->gIBSUF_pIBSUF = $i->produto->perc_ibs_uf;
+				$stdIBSCBS->gIBSUF_vIBSUF = $stdIBSCBS->vBC * ($stdIBSCBS->gIBSUF_pIBSUF/100);
+				// }
+
+				// if($i->produto->perc_ibs_mun > 0){
+				$stdIBSCBS->gIBSMun_pIBSMun = $i->produto->perc_ibs_mun;
+				$stdIBSCBS->gIBSMun_vIBSMun = $stdIBSCBS->vBC * ($stdIBSCBS->gIBSMun_pIBSMun/100);
+				// }
+
+				// if($i->produto->perc_cbs > 0){
+				$stdIBSCBS->gCBS_pCBS = $i->produto->perc_cbs;
+				$stdIBSCBS->gCBS_vCBS = $stdIBSCBS->vBC * ($stdIBSCBS->gCBS_pCBS/100);
+				// }
+
+				if($i->produto->perc_dif > 0){
+					$stdIBSCBS->gIBSUF_pDif = $i->produto->perc_dif;
+					$stdIBSCBS->gIBSUF_vDif = $stdIBSCBS->vBC * ($stdIBSCBS->gIBSUF_pDif/100);
+				}
+				$IBSCBS = $nfe->tagIBSCBS($stdIBSCBS);
+				// dd($stdIBSCBS);
+			}
+
+			// $vbcIpi = $stdProd->vProd;
+			$vbcIpi = $stdProd->vProd + ($stdProd->vOutro ?? 0) + ($stdProd->vFrete ?? 0) - ($stdProd->vDesc ?? 0);
 			if($i->vbc_ipi > 0){
 				$vbcIpi = $i->vbc_ipi;
 			}
@@ -735,8 +867,8 @@ class NFeService{
 			$std->cEnq = $i->cEnq;
 			$std->CST = $i->cst_ipi;
 			$std->vBC = $this->format($i->perc_ipi) > 0 ? $vbcIpi : 0.00;
-			$std->pIPI = $this->format($i->perc_ipi);
-			$somaIpi += $std->vIPI = $stdProd->vProd * $this->format(($i->perc_ipi / 100));
+			$std->pIPI = $this->format($i->perc_ipi, 4);
+			$somaIpi += $std->vIPI = $this->format($vbcIpi* ($i->perc_ipi / 100));
 			$std->qUnid = null;
 			$std->vUnid = null;
 
@@ -778,14 +910,70 @@ class NFeService{
 				$nfe->tagorigComb($stdOrigComb);
 			}
 
-			$cest = $i->produto->cest;
-			$cest = str_replace(".", "", $cest);
-			$stdProd->CEST = $cest;
-			if(strlen($cest) > 0){
+			// $cest = $i->produto->cest;
+			// $cest = str_replace(".", "", $cest);
+			// $stdProd->CEST = $cest;
+			// if(strlen($cest) > 0){
+			// 	$std = new \stdClass();
+			// 	$std->item = $itemCont; 
+			// 	$std->CEST = $cest;
+			// 	$nfe->tagCEST($std);
+			// }
+
+			if($stdIde->tpNF == 0 && $i->nDI != null && $i->dDI != null){
 				$std = new \stdClass();
-				$std->item = $itemCont; 
-				$std->CEST = $cest;
-				$nfe->tagCEST($std);
+				$std->item = $itemCont;
+				$std->nDI = $i->nDI;
+				$std->dDI = $i->dDI;
+				$std->xLocDesemb = $i->cidadeDesembarque->nome;
+				$std->UFDesemb = $i->cidadeDesembarque->uf;
+
+				$std->dDesemb = $i->dDesemb;
+
+				$std->tpViaTransp = $i->tpViaTransp;
+				if($i->vAFRMM > 0){
+					$somavAFRMM += $std->vAFRMM = $this->format($i->vAFRMM);
+				}
+				$std->tpIntermedio = $i->tpIntermedio;
+				if($i->documento){
+					$doc = preg_replace('/[^0-9]/', '', $i->documento);
+					if(strlen($doc) == 14){
+						$std->CNPJ = $doc;
+					}else{
+						$std->CPF = $doc;
+					}
+				}
+				if($i->UFTerceiro){
+					$std->UFTerceiro = $i->UFTerceiro;
+				}
+
+				if($i->cExportador){
+					$std->cExportador = $i->cExportador;
+				}
+
+				$nfe->tagDI($std);
+
+				if($i->nAdicao){
+					$itemContImportacao++;
+					$std2 = new \stdClass();
+					$std2->item = $itemCont;
+					$std2->nDI = $i->nDI;
+					$std2->nSeqAdic = $itemContImportacao;
+					$std2->nAdicao = $i->nAdicao;
+					$std2->cFabricante = $i->cFabricante;
+
+					$nfe->tagadi($std2);
+				}
+
+				if($i->vBCII > 0){
+					$stdII = new \stdClass();
+					$stdII->item = $itemCont;
+					$stdII->vBC = $i->vBCII;
+					$stdII->vDespAdu = $i->vDespAdu;
+					$somaII += $stdII->vII = $i->vII;
+					$stdII->vIOF = $i->vIOF;
+					$nfe->tagII($stdII);
+				}
 			}
 
 			if($stdIde->idDest == 2 && $stdIde->indFinal == 1 && $stdEmit->CRT == 3){
@@ -794,7 +982,7 @@ class NFeService{
 				->where('empresa_id', $item->empresa_id)
 				->where('uf', $stdEnderDest->UF)->first();
 
-				if($difal){
+				if($difal && $stdICMS->vBC){
 
 					$std = new \stdClass();
 					$std->item = $itemCont; 
@@ -833,13 +1021,13 @@ class NFeService{
 		$stdICMSTot->vCOFINS = 0.00;
 		$stdICMSTot->vOutro = 0.00;
 
-		$stdICMSTot->vNF = $this->format($somaProdutos + $somaVICMSST + $somaIpi + $item->valor_frete + $somavFCPST - $stdICMSTot->vDesc);
+		$stdICMSTot->vNF = $this->format($somaProdutos + $somaVICMSST + $somaIpi + $item->valor_frete + $somavFCPST - $stdICMSTot->vDesc + $item->acrescimo + $somaII);
 		$stdICMSTot->vTotTrib = 0.00;
 		$ICMSTot = $nfe->tagICMSTot($stdICMSTot);
 
 		$stdTransp = new \stdClass();
 
-		$stdTransp->modFrete = $item->tipo;
+		$stdTransp->modFrete = $item->tipo !== null ? $item->tipo : 9;
 
 		$transp = $nfe->tagtransp($stdTransp);
 
@@ -877,6 +1065,8 @@ class NFeService{
 			$stdVol->nVol = $item->numeracao_volumes;
 			$stdVol->pesoL = $item->peso_liquido;
 			$stdVol->pesoB = $item->peso_bruto;
+			$stdVol->marca = $item->marca;
+
 			$vol = $nfe->tagvol($stdVol);
 		}
 
@@ -907,50 +1097,79 @@ class NFeService{
 			$nfe->taginfRespTec($stdResp);
 		}
 
+		if($configGeral && strlen($configGeral->resp_tec_cpf_cnpj) > 0){
+
+			$stdResp = new \stdClass();
+			$doc = preg_replace('/[^0-9]/', '', $configGeral->resp_tec_cpf_cnpj);
+
+			if (strlen($doc) == 14) $stdResp->CNPJ = $doc;
+			else $stdResp->CPF = $doc;
+
+			$stdResp->xContato = $configGeral->resp_tec_nome;
+			$stdResp->email = $configGeral->resp_tec_email;
+			$stdResp->fone = preg_replace('/[^0-9]/', '', $configGeral->resp_tec_telefone);
+			$nfe->taginfRespTec($stdResp);
+		}
+
 		//Fatura
 		$stdFat = new \stdClass();
 		$stdFat->nFat = $stdIde->nNF;
-		$stdFat->vOrig = $this->format($item->itens->sum('sub_total') + $item->valor_frete + $item->acrescimo);
+		$stdFat->vOrig = $this->format($item->itens->sum('sub_total') + $item->valor_frete + $item->acrescimo + $somaIpi);
 		$stdFat->vDesc = $this->format($item->desconto);
-		$stdFat->vLiq = $this->format($item->total);
+		// $stdFat->vLiq = $this->format($item->total);
+		$stdFat->vLiq = $stdFat->vOrig - $stdFat->vDesc;
 
 		$fatura = $nfe->tagfat($stdFat);
-
-		$contFatura = 1;
-
-		foreach ($item->fatura as $ft) {
-			if($ft->valor > 0){
-				$stdDup = new \stdClass();
-				$stdDup->nDup = "00" . $contFatura;
-				$stdDup->dVenc = substr($ft->data_vencimento, 0, 10);
-				$stdDup->vDup = $this->format($ft->valor);
-
-				$nfe->tagdup($stdDup);
-				$contFatura++;
-			}
-		}
 
 		$stdPag = new \stdClass();
 		$pag = $nfe->tagpag($stdPag);
 
+		$dataAtual = date('Y-m-d H:i');
+		$vendaAvista = 1;
 		if(sizeof($item->fatura) > 0){
 			foreach ($item->fatura as $ft) {
-
 				$stdDetPag = new \stdClass();
 				$stdDetPag->tPag = $ft->tipo_pagamento;
 				if($stdDetPag->tPag == '06'){
 					$stdDetPag->tPag = '05'; 
 				}
 				$stdDetPag->vPag = $this->format($ft->valor);
-				$stdDetPag->indPag = 1;
+				$stdDetPag->indPag = 0;
+				if($ft->valor > 0 && (strtotime($ft->data_vencimento) > strtotime(date('Y-m-d')))){
+					$stdDetPag->indPag = 1;
+					$vendaAvista = 0;
+				}
+
+				if($stdDetPag->tPag == '03' || $stdDetPag->tPag == '04' || $stdDetPag->tPag == '17'){
+					$stdDetPag->tBand = '01';
+					$stdDetPag->tpIntegra = 2;
+				}
+
 				$detPag = $nfe->tagdetPag($stdDetPag);
 			}
 		}else{
+
 			$stdDetPag = new \stdClass();
 			$stdDetPag->tPag = 90;
 			$stdDetPag->vPag = 0;
-			$stdDetPag->indPag = 1;
+			$stdDetPag->indPag = 0;
 			$detPag = $nfe->tagdetPag($stdDetPag);
+		}
+
+		$contFatura = 1;
+		if($vendaAvista == 0){
+			foreach ($item->fatura as $ft) {
+
+				if($ft->valor > 0){
+					$stdDup = new \stdClass();
+					$stdDup->nDup = "00" . $contFatura;
+					$stdDup->dVenc = substr($ft->data_vencimento, 0, 10);
+					$stdDup->vDup = $this->format($ft->valor);
+
+					$nfe->tagdup($stdDup);
+					$contFatura++;
+				}
+			}
 		}
 
 		$stdInfoAdic = new \stdClass();
@@ -1006,13 +1225,13 @@ class NFeService{
 				'xml' => $nfe->getXML(),
 				'numero' => $stdIde->nNF
 			];
+
 			return $arr;
 		}catch(\Exception $e){
 			return [
 				'erros_xml' => $nfe->getErrors()
 			];
 		}
-
 	}
 
 	private function validate_EAN13Barcode($ean)
@@ -1058,45 +1277,97 @@ class NFeService{
 		return number_format((float) $number, $dec, ".", "");
 	}
 
+	private function retiraAcentos($texto){
+		return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/", "/(ç)/"),explode(" ","a A e E i I o O u U n N c"),$texto);
+	}
+
 	public function sign($xml){
 		return $this->tools->signNFe($xml);
 	}
 
-	public function transmitir($signXml, $chave){
-		try{
+	// public function transmitir($signXml, $chave){
+	// 	try{
+	// 		$idLote = str_pad(100, 15, '0', STR_PAD_LEFT);
+	// 		$resp = $this->tools->sefazEnviaLote([$signXml], $idLote, 1);
+
+	// 		$st = new Standardize();
+	// 		$std = $st->toStd($resp);
+	// 		sleep($this->timeout);
+	// 		if ($std->cStat != 103 && $std->cStat != 104) {
+	// 			return [
+	// 				'erro' => 1,
+	// 				'error' => "[$std->cStat] - $std->xMotivo"
+	// 			];
+	// 		}
+	// 		sleep(1);
+	// 		try {
+	// 			$xml = Complements::toAuthorize($signXml, $resp);
+	// 			file_put_contents(public_path('xml_nfe/').$chave.'.xml',$xml);
+	// 			return [
+	// 				'erro' => 0,
+	// 				'success' => $std->protNFe->infProt->nProt
+	// 			];
+	// 			// $this->printDanfe($xml);
+	// 		} catch (\Exception $e) {
+	// 			return [
+	// 				'erro' => 1,
+	// 				'error' => $st->toArray($resp),
+	// 				'recibo' => $resp
+	// 			];
+	// 		}
+
+	// 	} catch(\Exception $e){
+	// 		return [
+	// 			'erro' => 1,
+	// 			'error' => $e->getMessage()
+	// 		];
+	// 	}
+	// }
+
+	public function transmitir($signXml, $chave)
+	{
+		try {
 			$idLote = str_pad(100, 15, '0', STR_PAD_LEFT);
-			$resp = $this->tools->sefazEnviaLote([$signXml], $idLote);
+			$resp = $this->tools->sefazEnviaLote([$signXml], $idLote, 1);
 
 			$st = new Standardize();
 			$std = $st->toStd($resp);
-			sleep($this->timeout);
-			if ($std->cStat != 103) {
+
+			if (!in_array($std->cStat, [103, 104])) {
 				return [
 					'erro' => 1,
-					'error' => "[$std->cStat] - $std->xMotivo"
-				];
-			}
-			$recibo = $std->infRec->nRec;
-			
-			$protocolo = $this->tools->sefazConsultaRecibo($recibo);
-			sleep(1);
-			try {
-				$xml = Complements::toAuthorize($signXml, $protocolo);
-				file_put_contents(public_path('xml_nfe/').$chave.'.xml',$xml);
-				return [
-					'erro' => 0,
-					'success' => $recibo
-				];
-				// $this->printDanfe($xml);
-			} catch (\Exception $e) {
-				return [
-					'erro' => 1,
-					'error' => $st->toArray($protocolo),
-					'recibo' => $recibo
+					'error' => "[{$std->cStat}] - {$std->xMotivo}"
 				];
 			}
 
-		} catch(\Exception $e){
+			sleep($this->timeout);
+        	// Se cStat = 204 (duplicidade)
+			if ($std->cStat == 204) {
+				$consulta = $this->tools->sefazConsultaChave($chave);
+				$stdc = $st->toStd($consulta);
+
+				if (isset($stdc->protNFe->infProt->nProt)) {
+					return [
+						'erro' => 0,
+						'success' => $stdc->protNFe->infProt->nProt,
+						'msg' => 'NFe já autorizada anteriormente.'
+					];
+				}
+
+				return [
+					'erro' => 1,
+					'error' => 'Duplicidade detectada mas sem protocolo retornado.'
+				];
+			}
+			$xml = Complements::toAuthorize($signXml, $resp);
+			file_put_contents(public_path('xml_nfe/') . $chave . '.xml', $xml);
+
+			return [
+				'erro' => 0,
+				'success' => $std->protNFe->infProt->nProt ?? null
+			];
+
+		} catch (\Exception $e) {
 			return [
 				'erro' => 1,
 				'error' => $e->getMessage()

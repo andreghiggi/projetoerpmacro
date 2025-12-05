@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Registro de Software'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
 	<div class="card">
 		<div class="card-body">
 			<a target="_blank" href="https://busca.inpi.gov.br/pePI/jsp/programas/ProgramaSearchBasico.jsp">https://busca.inpi.gov.br/pePI/jsp/programas/ProgramaSearchBasico.jsp</a>

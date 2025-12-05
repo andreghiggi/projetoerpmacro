@@ -16,10 +16,15 @@ class ReservaController extends Controller
         $empresa_id = $request->empresa_id;
 
         $reservas = Reserva::where('empresa_id', $empresa_id)
-        ->whereDate('data_checkin', '>=', $data_checkin)
-        ->whereDate('data_checkout', '<=', $data_checkout)
+        ->where(function ($query) use ($data_checkin, $data_checkout) {
+            $query->whereDate('data_checkin', '<', $data_checkout)
+            ->whereDate('data_checkout', '>', $data_checkin);
+        })
+        ->where('estado', '!=', 'cancelado')
         ->pluck('acomodacao_id')
         ->all();
+
+        // return response()->json($reservas, 200);
 
         $data = Acomodacao::where('empresa_id', request()->empresa_id)
         ->whereNotIn('id', $reservas)

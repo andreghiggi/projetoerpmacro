@@ -11,7 +11,7 @@
         value="{{ $item['vencimento'] }}">
 	</td>
 	<td>
-		<input readonly type="text" name="valor_integral_row[]" class="form-control valor_integral"
+		<input  type="text" name="valor_integral_row[]" class="form-control valor_integral"
         value="{{ __moeda($item['valor']) }}">
 	</td>
     <td>

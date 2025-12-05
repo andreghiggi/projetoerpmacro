@@ -1,18 +1,21 @@
 <div class="row g-2">
     <div class="col-md-1">
-        {!!Form::text('numero_sequencial', 'Código', __getUltimoNumeroSequencial(request()->empresa_id, 'fornecedors')+1)->readonly()
+        {!!Form::text('numero_sequencial', 'Código', isset($item) ? $item->numero_sequencial : __getUltimoNumeroSequencial(request()->empresa_id, 'fornecedors')+1 )->readonly()
         !!}
+        
     </div>
     <div class="col-md-2">
         {!!Form::text('cpf_cnpj', 'CPF/CNPJ')->attrs(['class' => 'cpf_cnpj'])->required()
         !!}
     </div>
     <div class="col-md-3">
-        {!!Form::text('razao_social', 'Razão Social')->attrs(['class' => ''])->required()
+        {!!Form::text('razao_social', 'Razão Social')->required()
+        ->attrs(['data-contador' => true, 'maxlength' => 60])
         !!}
     </div>
     <div class="col-md-3">
-        {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => ''])->required()
+        {!!Form::text('nome_fantasia', 'Nome Fantasia')
+        ->attrs(['data-contador' => true, 'maxlength' => 60])
         !!}
     </div>
     <div class="col-md-2">
@@ -34,6 +37,26 @@
     <div class="col-md-3">
         {!! Form::text('email', 'Email')->attrs(['class' => ''])->type('email') !!}
     </div>
+
+    <div class="col-md-2">
+        {!!Form::text('cep', 'CEP')->attrs(['class' => 'cep'])->required()
+        !!}
+    </div>
+    
+    <div class="col-md-3">
+        {!!Form::text('rua', 'Rua')->attrs(['maxlength' => '60'])->required()
+        !!}
+    </div>
+    <div class="col-md-1">
+        {!!Form::text('numero', 'Número')->required()
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::text('bairro', 'Bairro')->attrs(['class' => ''])->required()
+        !!}
+    </div>
+
     <div class="col-md-3">
         @isset($item)
         {!!Form::select('cidade_id', 'Cidade')
@@ -47,24 +70,8 @@
         !!}
         @endisset
     </div>
-    <div class="col-md-4">
-        {!!Form::text('rua', 'Rua')->attrs(['maxlength' => '60'])->required()
-        !!}
-    </div>
-    <div class="col-md-1">
-        {!!Form::text('numero', 'Número')->required()
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::text('cep', 'CEP')->attrs(['class' => 'cep'])->required()
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::text('bairro', 'Bairro')->attrs(['class' => ''])->required()
-        !!}
-    </div>
 
-     <div class="col-md-2">
+    <div class="col-md-2">
         {!!Form::select('codigo_pais', 'País', ['' => 'Selecione'] + __getPaises())
         ->attrs(['class' => 'select2'])
         !!}
@@ -81,7 +88,7 @@
     </div>
 
     @if(!isset($item))
-    <div class="col-md-3 mt-3">
+    <div class="col-md-3 mt-4">
         {!!Form::checkbox('insere_cliente', 'Cadastrar também como cliente')
         !!}
     </div>
@@ -93,6 +100,7 @@
 </div>
 
 @section('js')
+<script type="text/javascript" src="/js/busca_cep.js"></script>
 <script>
 
     $(document).on("blur", "#inp-cpf_cnpj", function () {

@@ -131,11 +131,23 @@ class HomeController extends Controller
         ->where('ecommerce', 1)->get();
 
         $produtos = [];
+
         foreach($data as $item){
             if($item->gerenciar_estoque){
-
-                if($item->estoque && $item->estoque->quantidade > 0){
-                    array_push($produtos, $item);
+                if(sizeof($item->variacoes) > 0){
+                    $pushArray = 0;
+                    foreach($item->variacoes as $v){
+                        if($v->estoque && $v->estoque->quantidade > 0){
+                            $pushArray = 1;
+                        }
+                    }
+                    if($pushArray == 1){
+                        array_push($produtos, $item);   
+                    }
+                }else{
+                    if($item->estoque && $item->estoque->quantidade > 0){
+                        array_push($produtos, $item);
+                    }
                 }
             }else{
                 array_push($produtos, $item);

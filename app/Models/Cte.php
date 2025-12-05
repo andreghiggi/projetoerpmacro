@@ -21,7 +21,7 @@ class Cte extends Model
         'status_pagamento', 'ambiente', 'cfop', 'api', 'local_id', 'tipo_servico', 'referencia_cte',
         'doc_anterior', 'emitente_anterior', 'tp_doc_anterior', 'serie_anterior', 'n_doc_anterior', 'data_emissao_anterior',
         'uf_anterior', 'ie_anterior', 'cpf_cnpj_tomador', 'ie_tomador', 'razao_social_tomador', 'nome_fantasia_tomador',
-        'telefone_tomador', 'email_tomador'
+        'telefone_tomador', 'email_tomador', 'tipo_cte'
     ];
 
     public function getTomador()
@@ -51,6 +51,15 @@ class Cte extends Model
             '2' => 'Redespacho',
             '3' => 'Redespacho Intermediário',
             '4' => 'Serviço Vinculado a Multimodal'
+        ];
+    }
+
+    public static function tiposDeCte(){
+        return [
+            '0' => 'CT-e Normal',
+            '1' => 'CT-e de Complemento de Valores', 
+            '2' => 'CT-e de Anulação',
+            '3' => 'CT-e Substituto',
         ];
     }
 

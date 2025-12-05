@@ -4,11 +4,16 @@
 <div class="card mt-1">
     <div class="card-header">
         <h4>Apontar Itens</h4>
-        <h5 class="text-danger">#{{ $item->numero_sequencial }} - REF: {{ $item->referencia }}</h5>
+        <div class="col-12 mt-2">
+            <br>
+            <h5 class="text-danger">#{{ $item->numero_sequencial }} - REF: {{ $item->referencia }}</h5>
+        </div>
         <a class="btn btn-dark" href="{{ route('inventarios.itens', [$item->id]) }}">
             <i class="ri-file-list-2-fill"></i>
             Ver itens apontados
         </a>
+
+        
         <div style="text-align: right; margin-top: -35px;">
             <a href="{{ route('inventarios.index') }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar

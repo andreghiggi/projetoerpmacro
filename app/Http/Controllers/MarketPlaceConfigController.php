@@ -37,7 +37,6 @@ class MarketPlaceConfigController extends Controller
 
         $this->__validate($request, $item ? $item->id : null);
 
-
         if(!isset($request->tipos_pagamento)){
             $request->tipos_pagamento = [];
         }
@@ -124,7 +123,7 @@ class MarketPlaceConfigController extends Controller
         }
 
         if($item->loja_id == null){
-            session()->flash("flash_warning", "Defina o compra Loja ID!");
+            session()->flash("flash_warning", "Defina o Loja ID!");
             return redirect()->route('config-marketplace.index');
         }
 

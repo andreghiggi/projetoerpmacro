@@ -46,7 +46,8 @@ class ConfigCardapioController extends Controller
             }
             $request->merge([
                 'logo' => $file_name_logo,
-                'fav_icon' => $file_name_fav
+                'fav_icon' => $file_name_fav,
+                'percentual_taxa_servico' => $request->percentual_taxa_servico ?? 0,
             ]);
 
             $item->fill($request->all())->save();
@@ -65,7 +66,8 @@ class ConfigCardapioController extends Controller
 
             $request->merge([
                 'logo' => $file_name_logo,
-                'fav_icon' => $file_name_fav
+                'fav_icon' => $file_name_fav,
+                'percentual_taxa_servico' => $request->percentual_taxa_servico ?? 0,
             ]);
 
             ConfiguracaoCardapio::create($request->all());
@@ -84,4 +86,9 @@ class ConfigCardapioController extends Controller
         ];
         $this->validate($request, $rules, $messages);
     }
+
+    public function download(){
+        return response()->download(public_path('app.apk'));
+    }
+    
 }

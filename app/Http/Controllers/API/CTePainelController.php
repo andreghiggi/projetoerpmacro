@@ -159,7 +159,7 @@ class CTePainelController extends Controller
                 "tpAmb" => (int)$empresa->ambiente,
                 "razaosocial" => $empresa->nome,
                 "siglaUF" => $empresa->cidade->uf,
-                "cnpj" => $empresa->cpf_cnpj,
+                "cnpj" => $cnpj,
                 "schemes" => "PL_009_V4",
                 "versao" => "4.00",
             ], $empresa);
@@ -184,11 +184,16 @@ class CTePainelController extends Controller
                     return response()->json("[$cStat] $motivo", 401);
                 }
             } else {
-                $arr = $doc['data'];
-                $cStat = $arr['infEvento']['cStat'];
-                $motivo = $arr['infEvento']['xMotivo'];
-                
-                return response()->json("[$cStat] $motivo", $doc['status']);
+
+                try{
+                    $arr = $doc['data'];
+                    $cStat = $arr['infEvento']['cStat'];
+                    $motivo = $arr['infEvento']['xMotivo'];
+
+                    return response()->json("[$cStat] $motivo", $doc['status']);
+                }catch(\Exception $e){
+                    return response()->json($doc, 401);
+                }
             }
         } else {
             return response()->json('Consulta não encontrada', 404);
@@ -208,7 +213,7 @@ class CTePainelController extends Controller
             "tpAmb" => (int)$empresa->ambiente,
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
-            "cnpj" => $empresa->cpf_cnpj,
+            "cnpj" => $cnpj,
             "schemes" => "PL_009_V4",
             "versao" => "4.00",
         ], $empresa);

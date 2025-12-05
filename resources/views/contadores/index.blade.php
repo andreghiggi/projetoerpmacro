@@ -1,20 +1,24 @@
-@extends('layouts.app', ['title' => 'Contadores'])
+@extends('layouts.app', ['title' => 'Representante/Contador'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
-                <div class="col-md-12">
-                    <a href="{{ route('contadores.create') }}" class="btn btn-success">
-                        <i class="ri-add-circle-fill"></i>
-                        Novo Contador
-                    </a>
-
-                    <a href="{{ route('escritorio-contabils') }}" class="btn btn-dark float-end">
-                        <i class="ri-file-list-fill"></i>
-                        Listar escritórios contábeis
-                    </a>
-
+                <div class="row">
+                    <div class="col-md-2 col-12 mt-1">
+                        <a href="{{ route('contadores.create') }}" class="btn btn-success w-100">
+                            <i class="ri-add-circle-fill"></i>
+                            Novo
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                    </div>
+                    <div class="col-md-2 col-12 mt-1">
+                        <a href="{{ route('escritorio-contabils') }}" class="btn btn-dark w-100 float-end">
+                            <i class="ri-file-list-fill"></i>
+                            Listar escritórios contábeis
+                        </a>
+                    </div>
                 </div>
                 <hr class="mt-3">
                 <div class="col-lg-12">

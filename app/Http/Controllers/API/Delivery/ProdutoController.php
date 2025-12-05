@@ -11,6 +11,7 @@ use App\Models\TamanhoPizza;
 use App\Models\MarketPlaceConfig;
 use App\Models\ProdutoPizzaValor;
 use App\Models\DestaqueMarketPlace;
+use App\Models\CategoriaAdicional;
 
 class ProdutoController extends Controller
 {
@@ -82,8 +83,17 @@ class ProdutoController extends Controller
             $tipoPizza = 1;
         }
 
+        $categoriasAdicional = CategoriaAdicional::where('categoria_adicionals.empresa_id', $item->empresa_id)
+        ->where('categoria_adicionals.status', 1)
+        ->select('categoria_adicionals.*')
+        ->join('adicionals', 'adicionals.categoria_id', '=', 'categoria_adicionals.id')
+        ->join('produto_adicionals', 'produto_adicionals.adicional_id', '=', 'adicionals.id')
+        ->where('produto_adicionals.produto_id', $item->id)
+        ->groupBy('categoria_adicionals.id')
+        ->get();
+
         return view('food.partials.produto_modal', 
-            compact('item', 'config', 'maximo_sabores_pizza', 'tamanhosPizza', 'tipoPizza'))->render();
+            compact('item', 'config', 'maximo_sabores_pizza', 'tamanhosPizza', 'tipoPizza', 'categoriasAdicional'))->render();
     }
 
     public function pesquisaPizza(Request $request){
@@ -96,12 +106,13 @@ class ProdutoController extends Controller
         ->when(!is_numeric($request->pesquisa), function ($q) use ($request) {
             return $q->where('produtos.nome', 'LIKE', "%$request->pesquisa%");
         })
+        ->where('produtos.status', 1)
         ->join('categoria_produtos', 'categoria_produtos.id', '=', 'produtos.categoria_id')
         ->where('categoria_produtos.tipo_pizza', 1)
         ->get();
 
         foreach($data as $i){
-            $pizza = ProdutoPizzaValor::where('produto_id', $request->produto_id)
+            $pizza = ProdutoPizzaValor::where('produto_id', $i->id)
             ->where('tamanho_id', $tamanho_id)->first();
             $i->valor_pizza = 0;
             if($pizza){
@@ -124,10 +135,9 @@ class ProdutoController extends Controller
         $sabores_selecionados = $request->sabores_selecionados ?? [];
 
         if(sizeof($sabores_selecionados)+1 > $tamanho->maximo_sabores){
-            return response()->json("Selecione até $tamanho->maximo_sabores sabores", 401);
+            return response()->json("Selecione até $tamanho->maximo_sabores sabor(es)", 404);
         }
         array_push($sabores, $pizzaPrincipal);
-
 
         $pizza = ProdutoPizzaValor::where('produto_id', $pizzaPrincipal->id)
         ->where('tamanho_id', $tamanho_id)->first();

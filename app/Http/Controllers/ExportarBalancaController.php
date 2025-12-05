@@ -10,6 +10,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportarBalancaController extends Controller
 {
+
+    public function index(){
+        return view('exportar_balanca.index');
+
+    }
     // Método para exportar para Toledo MGV5
     public function exp_bal_toledo_mgv5()
     {
@@ -32,11 +37,12 @@ class ExportarBalancaController extends Controller
     private function exportar($modelo)
     {	
         // Obtém o ID da empresa do usuário autenticado
-        $empresaId = auth()->user()->empresa->empresa_id;
+        $empresaId = request()->empresa_id;
 
         // Consulta os produtos filtrando pela empresa
-        $produtos = Produto::where('exportar_balanca', 1)
+        $produtos = Produto::where('status', 1)
         ->where('empresa_id', $empresaId)
+        ->where('codigo_barras', '!=', '')
         ->get();
 
         // Nome do arquivo com base no modelo
@@ -230,4 +236,5 @@ class ExportarBalancaController extends Controller
 		// Verifique se está gerando a linha corretamente
         return $codigoSetor . PHP_EOL;
     }
+
 }

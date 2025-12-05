@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Manifesto'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -11,6 +11,9 @@
                             <i class="ri-refresh-line"></i>
                             Nova Consulta de Documentos
                         </a>
+
+                        <h4 class="text-end text-muted">Total de importaçoes <strong class="text-success">R$ {{ __moeda($totalGeral) }}</strong></h4>
+                        <h4 class="text-end text-muted">Total da pagina <strong class="text-primary">R$ {{ __moeda($totalPagina) }}</strong></h4>
                     </div>
                 </div>
                 <hr class="mt-3">
@@ -38,6 +41,17 @@
                             ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
+
+                        <div class="col-md-2">
+                            {!!Form::select('tpNf', 'Tipo da NFe',
+                            [
+                            '' => 'Todos',
+                            0 => 'Devolução',
+                            1 => 'Compra',
+                            ])
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
                         <div class="col-lg-4 col-12">
                             <br>
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
@@ -58,37 +72,40 @@
                                     <th>Num. Protocolo</th>
                                     <th>Chave</th>
                                     <th>Estado</th>
+                                    <th>Tipo da NFe</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($data as $item)
                                 <tr>
-                                    <td>{{ $item->nome }}</td>
-                                    <td>{{ $item->documento }}</td>
-                                    <td>{{ __moeda($item->valor) }}</td>
-                                    <td>{{ __data_pt($item->data_emissao) }}</td>
-                                    <td>{{ $item->num_prot }}</td>
-                                    <td>{{ $item->chave }}</td>
-                                    <td>{{ $item->estado() }}</td>
-                                    <td>
+                                    <td data-label="Nome">{{ $item->nome }}</td>
+                                    <td data-label="Documento">{{ $item->documento }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->valor) }}</td>
+                                    <td data-label="Data">{{ __data_pt($item->data_emissao) }}</td>
+                                    <td data-label="Num. Protocolo">{{ $item->num_prot }}</td>
+                                    <td data-label="Chave">{{ $item->chave }}</td>
+                                    <td data-label="Estado">{{ $item->estado() }}</td>
+                                    <td data-label="Tipo da NFe">{{ $item->tpNF != null ? ($item->tpNF == 0 ? 'Devolução' : 'Compra') : '' }}</td>
+                                    <td class="row g-1">
                                         @if($item->tipo == 1 || $item->tipo == 2)
-                                        <a href="{{ route('manifesto.download', [$item->id]) }}" class="btn btn-success btn-sm w-100">Completa</a>
-                                        <a target="_blank" href="{{ route('manifesto.danfe', [$item->id]) }}" class="btn btn-primary btn-sm w-100 mt-1">Imprimir</a>
-
+                                        <a style="width: 150px" href="{{ route('manifesto.download', [$item->id]) }}" class="btn btn-success btn-sm">Completa</a>
+                                        <a style="width: 150px" target="_blank" href="{{ route('manifesto.danfe', [$item->id]) }}" class="btn btn-primary btn-sm">Imprimir</a>
                                         @elseif($item->tipo == 3)
-                                        <a class="btn btn-danger w-100">Desconhecida</a>
+                                        <a style="width: 150px" class="btn btn-danger">Desconhecida</a>
                                         @elseif($item->tipo == 4)
-                                        <a class="btn btn-warning w-100">Não realizada</a>
+                                        <a style="width: 150px" class="btn btn-warning">Não realizada</a>
                                         @endif
+
                                         @if($item->tipo != 2)
-                                        <a class="btn btn-info btn-sm w-100 mt-1" onclick="setChave('{{$item->chave}}')" data-toggle="modal" data-target="#modal-evento">Manifestar</a>
+                                        <a style="width: 150px" class="btn btn-info btn-sm" onclick="setChave('{{$item->chave}}')" data-toggle="modal" data-target="#modal-evento">Manifestar</a>
                                         @endif
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+
                     </div>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>

@@ -26,7 +26,7 @@ class CategoriaProdutoController extends Controller
         })
         ->where('categoria_id', null)
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('categoria_produtos.index', compact('data'));
     }
 
@@ -49,6 +49,14 @@ class CategoriaProdutoController extends Controller
     public function store(Request $request)
     {
         try {
+
+            $categoria = CategoriaProduto::where('nome', $request->nome)
+            ->where('empresa_id', $request->empresa_id)->first();
+
+            if($categoria != null){
+                session()->flash("flash_warning", 'Já existe uma categoria com este nome');
+                return redirect()->back();
+            }
 
             if ($request->ecommerce) {
                 $request->merge([
@@ -110,7 +118,7 @@ class CategoriaProdutoController extends Controller
             __createLog(request()->empresa_id, 'Categoria de Produto', 'erro', $e->getMessage());
             session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
         }
-        return redirect()->route('categoria-produtos.index');
+        return redirect()->back();
     }
 
     public function destroySelecet(Request $request)
@@ -131,6 +139,6 @@ class CategoriaProdutoController extends Controller
         }
 
         session()->flash("flash_success", "Total de itens removidos: $removidos!");
-        return redirect()->route('categoria-produtos.index');
+        return redirect()->back();
     }
 }

@@ -44,7 +44,7 @@ class CrmController extends Controller
         ->when(!empty($status), function ($query) use ($status) {
             return $query->where('status', $status);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $cliente = null;
         $fornecedor = null;

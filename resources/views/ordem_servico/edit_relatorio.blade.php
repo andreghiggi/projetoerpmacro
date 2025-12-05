@@ -5,7 +5,7 @@
     <div class="card-header">
         <h4>Editar Relatório</h4>
         <div style="text-align: right; margin-top: -35px;">
-            <a href="{{ route('ordem-servico.index') }}" class="btn btn-danger btn-sm px-3">
+            <a href="{{ route('ordem-servico.show', $ordem->id) }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar
             </a>
         </div>

@@ -75,9 +75,10 @@
     </div>
 
     <div class="col-md-2">
-        {!!Form::select('status', 'Status', [1 => 'Ativo', 0 => 'Desativado'])
+        {!!Form::select('status', 'Ativo', [1 => 'Sim', 0 => 'Não'])
+        ->required()
         ->attrs(['class' => 'form-select'])
-        ->disabled(isset($firstLocation) && $firstLocation ? true : false)
+        ->disabled($naoDesativar)
         !!}
     </div>
 
@@ -233,7 +234,7 @@
         !!}
     </div>
     <hr>
-    <div class="col-md-4">
+    <div class="col-md-3">
         {!!Form::text('csc', 'CSC')
         ->attrs(['class' => 'form-control'])
         !!}
@@ -244,8 +245,13 @@
         !!}
     </div>
     
-    <div class="col-md-3">
+    <div class="col-md-2">
         {!!Form::select('ambiente', 'Ambiente', [2 => 'Homologação', 1 => 'Produção'])
+        ->attrs(['class' => 'form-select'])
+        !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::select('substituto_tributario', 'Substituto tributário', [0 => 'Não', 1 => 'Sim'])
         ->attrs(['class' => 'form-select'])
         !!}
     </div>
@@ -255,8 +261,8 @@
         ->attrs(['class' => 'cnpj'])
         !!}
     </div>
-
-    <div class="card col-md-3 mt-3 form-input">
+    <div class="col-12"></div>
+    <div class="card col-md-3 mt-3 form-input" style="width: 210px">
         <h5>Selecionar imagem</h5>
         <div class="preview">
             <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>

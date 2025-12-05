@@ -19,7 +19,7 @@ class MotoboyController extends Controller
             return $q->where('status', $request->status);
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('motoboys.index', compact('data'));
     }
 

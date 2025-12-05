@@ -13,11 +13,13 @@ use App\Models\ContaEmpresa;
 use App\Models\Empresa;
 use App\Models\Cliente;
 use App\Models\SangriaCaixa;
+use App\Models\ItemServicoNfce;
 use App\Models\ItemContaEmpresa;
 use App\Models\SuprimentoCaixa;
 use App\Models\UsuarioEmissao;
 use App\Models\Caixa;
 use App\Models\User;
+use App\Models\OrdemServico;
 use App\Models\Localizacao;
 use Illuminate\Support\Facades\DB;
 use App\Utils\EstoqueUtil;
@@ -26,6 +28,8 @@ use App\Models\ComissaoVenda;
 use App\Models\Funcionario;
 use App\Models\ConfigGeral;
 use App\Models\MargemComissao;
+use Dompdf\Dompdf;
+use Illuminate\Support\Str;
 
 class VendaController extends Controller
 {
@@ -48,33 +52,26 @@ class VendaController extends Controller
                     $cliente = Cliente::findOrFail($request->cliente_id);
                 }
 
+                $natureza_id = $empresa->natureza_id_pdv;
+
+                if($request->caixa_id){
+                    $caixa = Caixa::find($request->caixa_id);
+                }
+                if($caixa == null){
+                    $caixa = Caixa::where('usuario_id', $request->usuario_id)->where('status', 1)->first();
+                }
+                $empresa = __objetoParaEmissao($empresa, $caixa->local_id);
+
                 if ($empresa->ambiente == 2) {
                     $numero = $empresa->numero_ultima_nfce_homologacao+1;
                 } else {
                     $numero = $empresa->numero_ultima_nfce_producao+1;
                 }
 
-                $caixa = Caixa::where('usuario_id', $request->usuario_id)->where('status', 1)->first();
-
                 $chaveSat = "";
-                // if(isset($request->chave_sat) && isset($request->xml_sat)){
-                //     if (!is_dir(public_path('xml_sat'))) {
-                //         mkdir(public_path('xml_sat'), 0777, true);
-                //     }
-                //     $chaveSat = $request->chave_sat;
-                //     $xml = $request->xml_sat;
-                //     file_put_contents(public_path('xml_sat/').$chaveSat.'.xml', $xml);
-                // }
 
                 $chaveNfce = "";
                 $estado = 'novo';
-                // if(isset($request->chave_nfce) && isset($request->xml_nfce) && isset($request->numero_nfce)){
-                //     $chaveNfce = $request->chave_nfce;
-                //     $xml = $request->xml_nfce;
-                //     $numero = $request->numero_nfce;
-                //     $estado = 'aprovado';
-                //     file_put_contents(public_path('xml_nfce/').$chaveNfce.'.xml', $xml);
-                // }
 
                 $numeroSerieNfce = $empresa->numero_serie_nfce ? $empresa->numero_serie_nfce : 1;
                 $configUsuarioEmissao = UsuarioEmissao::where('usuario_empresas.empresa_id', request()->empresa_id)
@@ -111,8 +108,8 @@ class VendaController extends Controller
                     'local_id' => $caixa->local_id,
                     'tipo_pagamento' => sizeof($request->fatura) == 0 ? $request->tipo_pagamento : '99',
                     'dinheiro_recebido' => $request->valor_recebido,
-                    'troco' => 0,
-                    'natureza_id' => $empresa->natureza_id_pdv,
+                    'troco' => $request->troco ?? 0,
+                    'natureza_id' => $natureza_id,
                     'bandeira_cartao' => isset($request->dados_cartao['bandeira']) ? $request->dados_cartao['bandeira'] : '',
                     'cAut_cartao' => isset($request->dados_cartao['codigo']) ? $request->dados_cartao['codigo'] : '',
                     'cnpj_cartao' => isset($request->dados_cartao['cnpj']) ? $request->dados_cartao['cnpj'] : '',
@@ -277,15 +274,31 @@ public function bandeirasCartao(){
     return response()->json($data, 200);
 }
 
-public function tiposPagamento(){
-    $tipos = Nfce::tiposPagamento();
+public function tiposPagamento(Request $request){
+    $tiposPagamento = Nfce::tiposPagamento();
+
+    $config = ConfigGeral::where('empresa_id', $request->empresa_id)->first();
+    $tiposPagamento = Nfce::tiposPagamento();
+
+    if($config != null){
+        $config->tipos_pagamento_pdv = $config != null && $config->tipos_pagamento_pdv ? json_decode($config->tipos_pagamento_pdv) : [];
+        $temp = [];
+        if(sizeof($config->tipos_pagamento_pdv) > 0){
+            foreach($tiposPagamento as $key => $t){
+                if(in_array($t, $config->tipos_pagamento_pdv)){
+                    $temp[$key] = $t;
+                }
+            }
+            $tiposPagamento = $temp;
+        }
+    }
     $data = [];
 
     array_push($data, [
         'id' => '',
         'nome' => 'Selecione'
     ]);
-    foreach($tipos as $key => $t){
+    foreach($tiposPagamento as $key => $t){
         array_push($data, [
             'id' => $key,
             'nome' => $t
@@ -295,7 +308,8 @@ public function tiposPagamento(){
 }
 
 public function getCaixa(Request $request){
-    $item = Caixa::where('usuario_id', $request->usuario_id)->where('status', 1)->first();
+    $item = Caixa::where('usuario_id', $request->usuario_id)->where('status', 1)
+    ->first();
     return response()->json($item, 200);
 }
 
@@ -325,7 +339,7 @@ public function storeCaixa(Request $request){
         $local_id = null;
         $user = User::findOrFail($request->usuario_id);
         if(!$request->local_id){
-            
+
             if(sizeof($user->locais) > 0){
                 $local_id = $user->locais[0]->localizacao_id;
             }
@@ -441,6 +455,9 @@ public function getVendasCaixa(Request $request){
         
         foreach($vendas as $v){
             $v->tipo_pagamento = Nfce::getTipoPagamento($v->tipo_pagamento);
+            foreach($v->fatura as $ft){
+                $ft->tipo_pagamento = Nfce::getTipoPagamento($ft->tipo_pagamento);
+            }
         }
 
         $suprimentos = SuprimentoCaixa::where('caixa_id', $request->caixa_id)
@@ -546,7 +563,202 @@ private function dataChart($empresa_id, $usuario_id){
         'labels' => $labels,
         'values' => $values,
     ];
+}
 
+public function fecharCaixa(Request $request){
+    try{
+        $item = Caixa::where('usuario_id', $request->usuario_id)->where('status', 1)->first();
+        $item->status = 0;
+        $item->valor_fechamento = $request->valor_fechamento;
+        $item->valor_dinheiro = $request->valor_dinheiro ? __convert_value_bd($request->valor_dinheiro) : 0;
+        $item->valor_cheque = $request->valor_cheque ? __convert_value_bd($request->valor_cheque) : 0;
+        $item->valor_outros = $request->valor_outros ? __convert_value_bd($request->valor_outros) : 0;
+        $item->observacao .= " " . $request->observacao ?? '';
+        $item->data_fechamento = date('Y-m-d h:i:s');
+
+        $fileUrl = $this->imprimir($item);
+        $item->save();
+
+        $item->fileUrl = $fileUrl;
+        
+        return response()->json($item, 200);
+    }catch(\Exception $e){
+        return response()->json($e->getMessage(), 403);
+    }
+}
+
+private function imprimir($item)
+{
+
+    $config = Empresa::where('id', $item->empresa_id)->first();
+    $nfce = Nfce::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)
+    ->get();
+    $nfe = Nfe::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)
+    ->get();
+    $ordens = OrdemServico::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)
+    ->get();
+
+    $compras = Nfe::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)->where('tpNF', 0)
+    ->where('orcamento', 0)
+    ->get();
+
+    $data = $this->agrupaDados($nfce, $nfe, $ordens, $compras);
+    $somaTiposPagamento = $this->somaTiposPagamento($data);
+
+    $usuario = User::findOrFail($item->usuario_id);
+
+    $sangrias = SangriaCaixa::where('caixa_id', $item->id)->get();
+
+    $suprimentos = SuprimentoCaixa::where('caixa_id', $item->id)->get();
+    $somaServicos = ItemServicoNfce::join('nfces', 'nfces.id', '=', 'item_servico_nfces.nfce_id')
+    ->where('nfces.empresa_id', $item->empresa_id)->where('nfces.caixa_id', $item->id)
+    ->sum('sub_total');
+
+    $totalVendas = Nfe::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)->where('tpNF', 1)
+    ->where('orcamento', 0)
+    ->join('fatura_nves', 'fatura_nves.nfe_id', '=', 'nves.id')
+    ->sum('total');
+
+    $totalVendas +=  Nfce::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)
+    ->sum('total');
+
+    $totalCompras = Nfe::where('empresa_id', $item->empresa_id)->where('caixa_id', $item->id)->where('tpNF', 0)
+    ->where('orcamento', 0)
+    ->sum('total');
+
+    $produtos = $this->totalizaProdutos($data);
+    $p = view('caixa.imprimir', compact(
+        'item',
+        'data',
+        'usuario',
+        'somaTiposPagamento',
+        'config',
+        'sangrias',
+        'somaServicos',
+        'suprimentos',
+        'totalCompras',
+        'totalVendas',
+        'produtos'
+    ));
+
+    $domPdf = new Dompdf(["enable_remote" => true]);
+    $domPdf->loadHtml($p);
+    $domPdf->setPaper("A4", "landscape");
+    $domPdf->render();
+    // $domPdf->stream("Relatório de caixa.pdf");
+    if (!is_dir(public_path('pdf_caixa_temp'))) {
+        mkdir(public_path('pdf_caixa_temp'), 0777, true);
+    }
+    $fileName = Str::random(50).".pdf";
+    $dir = public_path('pdf_caixa_temp/') . $fileName;
+    file_put_contents($dir, $domPdf->output());
+    return env("APP_URL")."/pdf_caixa_temp/".$fileName;
+}
+
+private function agrupaDados($nfce, $nfe, $ordens, $compras)
+{
+    $temp = [];
+    foreach ($nfe as $v) {
+        $v->tipo = 'Pedido';
+        $v->receita = 1;
+        array_push($temp, $v);
+    }
+    foreach ($nfce as $v) {
+        $v->tipo = 'PDV';
+        $v->receita = 1;
+        array_push($temp, $v);
+    }
+
+    if($ordens != null){
+        foreach ($ordens as $v) {
+            $v->tipo = 'OS';
+            $v->receita = 0;
+            array_push($temp, $v);
+        }
+    }
+
+    if($compras != null){
+        foreach ($compras as $v) {
+            $v->tipo = 'Compra';
+            $v->receita = 0;
+            array_push($temp, $v);
+        }
+    }
+
+    usort($temp, function($a, $b){
+        return $a['created_at'] < $b['created_at'] ? 1 : -1;
+    });
+    return $temp;
+}
+
+private function somaTiposPagamento($vendas)
+{
+    $tipos = $this->preparaTipos();
+
+    foreach ($vendas as $v) {
+            // dd($v);
+        if ($v->estado != 'cancelado' && $v->receita == 1) {
+            if ($v->fatura && sizeof($v->fatura) > 0) {
+                if ($v->fatura) {
+                    foreach ($v->fatura as $f) {
+                        if(isset($tipos[trim($f->tipo_pagamento)])){
+                            $tipos[trim($f->tipo_pagamento)] += $f->valor;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $tipos;
+}
+
+private function preparaTipos()
+{
+    $temp = [];
+    foreach (Nfce::tiposPagamento() as $key => $tp) {
+        $temp[$key] = 0;
+    }
+    return $temp;
+}
+
+private function totalizaProdutos($vendas){
+    $produtos = [];
+    $produtos_id = [];
+    foreach($vendas as $v){
+        foreach($v->itens as $item){
+            if(!in_array($item->produto_id, $produtos_id)){
+                $quantidade = $item->quantidade;
+                if($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID'){
+                    $quantidade = number_format($item->quantidade, 0);
+                }
+                $p = [
+                    'id' => $item->produto->id,
+                    'nome' => $item->produto->nome,
+                    'quantidade' => $quantidade,
+                    'valor_venda' => $item->produto->valor_unitario,
+                    'valor_compra' => $item->produto->valor_compra
+                ];
+                array_push($produtos, $p);
+                array_push($produtos_id, $item->produto_id);
+            }else{
+                    //atualiza
+                for($i=0; $i<sizeof($produtos); $i++){
+                    if($produtos[$i]['id'] == $item->produto_id){
+                        $produtos[$i]['quantidade'] += $item->quantidade;
+
+                        if($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID'){
+                            $produtos[$i]['quantidade'] = number_format($produtos[$i]['quantidade'], 0);
+                        }else{
+                            $produtos[$i]['quantidade'] = number_format($produtos[$i]['quantidade'], 3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $produtos;
 }
 
 }

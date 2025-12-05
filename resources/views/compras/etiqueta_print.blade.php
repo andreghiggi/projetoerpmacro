@@ -13,23 +13,34 @@
 			@endif
 
 			@if($item['nome_produto'])
-			<span style="display: block !important; font-size: {{$tamanho_fonte}}px">
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
 				{{$item['nome']}}
 			</span>
 			@endif
 			@if($item['cod_produto'])
-			<span style="display: block !important; margin-top: 3px; font-size: {{$tamanho_fonte}}px">
+			<span style="display: block !important; margin-top: {{$distancia_entre_linhas}}px; font-size: {{$tamanho_fonte}}px">
 				ID: <b>{{$item['codigo']}}</b>
 			</span>
 			@endif
 			<img class="center-block" style="max-width:90%; !important;height: {{$tamanho_codigo}}mm !important;" src="/barcode/{{$item['rand']}}.png">
 			@if($item['codigo_barras_numerico'])
-			<span style="display: block !important; font-size: {{$tamanho_fonte}}px;">{{$item['codigo_barras']}}</span>
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px;">{{$item['codigo']}}</span>
 			@endif
 			
 			@if($item['valor_produto'])
-			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: 4px;">
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
 				<b>R$ {{number_format($item['valor'], 2, ',', '.')}}</b>
+			</span>
+			@endif
+			@if($valor_atacado)
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
+				<b>R$ {{number_format($item['valor_atacado'], 2, ',', '.')}}</b>
+			</span>
+			@endif
+
+			@if($referencia)
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
+				<b>REF:{{ $item['referencia'] }}</b>
 			</span>
 			@endif
 		</div>

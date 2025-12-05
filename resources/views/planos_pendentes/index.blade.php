@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Planos Pendentes'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">

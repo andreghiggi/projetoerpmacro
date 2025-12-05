@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
 use InvalidArgumentException;
 use NFePHP\NFe\Common\Standardize;
 use NFePHP\DA\NFe\Danfe;
-
+use App\Models\PadraoTributacaoProduto;
 use App\Models\ProdutoLocalizacao;
 use App\Models\Localizacao;
 
@@ -37,18 +37,25 @@ class ManifestoController extends Controller
         $start_date = $request->start_date;
         $end_date = $request->end_date;
         $tipo = $request->tipo;
+        $tpNf = $request->tpNf;
 
-        $data = ManifestoDfe::where('empresa_id', $request->empresa_id)
+        $query = ManifestoDfe::where('empresa_id', $request->empresa_id)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('data_emissao', '>=', $start_date);
         })
         ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('data_emissao', '<=', $end_date);
         })
-        ->orderBy('data_emissao', 'desc')
-        ->paginate(getenv("PAGINACAO"));
+        ->when($tpNf !== null, function ($q) use ($tpNf) {
+            return $q->where('tpNf', $tpNf);
+        });
 
-        return view('manifesto.index', compact('data'));
+        $data = $query->orderBy('data_emissao', 'desc')
+        ->paginate(__itensPagina());
+
+        $totalGeral = $query->sum('valor');
+        $totalPagina = $data->sum('valor');
+        return view('manifesto.index', compact('data', 'totalGeral', 'totalPagina'));
     }
 
     public function novaConsulta()
@@ -231,8 +238,7 @@ class ManifestoController extends Controller
         $doc = __mask($doc, $mask);
 
         $dataFornecedor = [
-
-            'empresa_id' => request()   ->empresa_id,
+            'empresa_id' => request()->empresa_id,
             'razao_social' => $xml->NFe->infNFe->emit->xNome,
             'nome_fantasia' => $xml->NFe->infNFe->emit->xFant,
             'cpf_cnpj' => $doc,
@@ -258,9 +264,9 @@ class ManifestoController extends Controller
         foreach ($xml->NFe->infNFe->det as $item) {
 
             $produto = Produto::verificaCadastrado(
-                $item->prod->cEAN,
-                $item->prod->xProd,
-                $item->prod->cProd,
+                (string)$item->prod->cEAN,
+                (string)$item->prod->xProd,
+                (string)$item->prod->cProd,
                 request()->empresa_id
             );
 
@@ -326,7 +332,16 @@ class ManifestoController extends Controller
                 $barcode = '';
             }
             $prod->codigo_barras = $produto == null ? $barcode : $produto->codigo_barras;
-            $prod->valor_venda = $produto == null ? $vVenda : $produto->valor_venda;
+
+            $prod->codigo_barras2 = $produto == null ? '' : $produto->codigo_barras2;
+            $prod->sub_categoria_id = $produto == null ? 0 : $produto->sub_categoria_id;
+            $prod->sub_categoria_nome = $produto != null && $produto->subcategoria ? $produto->subcategoria->nome : '';
+            $prod->referencia = $produto == null ? '' : $produto->referencia;
+            $prod->valor_atacado = $produto == null ? 0 : $produto->valor_atacado;
+            $prod->quantidade_atacado = $produto == null ? '' : $produto->quantidade_atacado;
+            $prod->valor_minimo_venda = $produto == null ? 0 : $produto->valor_minimo_venda;
+
+            $prod->valor_venda = $produto == null ? $vVenda : $produto->valor_unitario;
             $prod->valor_compra = $produto == null ? $vCompra : $produto->valor_compra;
             $prod->margem = $lucroPadraoProduto;
             $prod->categoria_id = $produto == null ? 0 : $produto->categoria_id;
@@ -402,6 +417,7 @@ class ManifestoController extends Controller
             'vProd' => (float)$xml->NFe->infNFe->total->ICMSTot->vNF,
             'indPag' => (int)$xml->NFe->infNFe->ide->indPag,
             'nNf' => (int)$xml->NFe->infNFe->ide->nNF,
+            'tpNF' => (int)$xml->NFe->infNFe->ide->tpNF,
             'vFrete' => $vFrete,
             'vDesc' => $vDesc,
             'contSemRegistro' => $contSemRegistro,
@@ -457,20 +473,26 @@ class ManifestoController extends Controller
             return redirect()->route('natureza-operacao.create');
         }
         $lucroPadraoProduto = 0;
-        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
-        if($configGeral != null){
-            $lucroPadraoProduto = $configGeral->percentual_lucro_produto;
+        $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+        if($config != null){
+            $lucroPadraoProduto = $config->percentual_lucro_produto;
         }
 
         $isCompra = 1;
 
-        $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)->get();
+        $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)
+        ->where('categoria_id', null)
+        ->get();
         $marcas = Marca::where('empresa_id', request()->empresa_id)->get();
 
         $unidades = UnidadeMedida::where('empresa_id', request()->empresa_id)
         ->where('status', 1)->get();
+
+        $padroes = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->get();
+
         return view('compras.import_xml', compact('dadosXml', 'transportadoras', 'cidades', 'naturezas', 'fornecedor', 
-            'lucroPadraoProduto', 'isCompra', 'configGerenciaEstoque', 'unidades', 'categorias', 'marcas', 'caixa'));
+            'lucroPadraoProduto', 'isCompra', 'configGerenciaEstoque', 'unidades', 'categorias', 'marcas', 'caixa', 'config',
+            'padroes'));
 
     }
 

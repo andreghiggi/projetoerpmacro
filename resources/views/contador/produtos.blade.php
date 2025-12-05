@@ -15,7 +15,7 @@
                             {!!Form::text('nome', 'Pesquisar por nome')
                             !!}
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             {!!Form::tel('codigo_barras', 'Pesquisar por Código de barras')
                             !!}
                         </div>
@@ -81,7 +81,10 @@
                                     </td>
                                     <td>{{ __moeda($item->valor_unitario) }}</td>
                                     <td>{{ __moeda($item->valor_compra) }}</td>
-                                    <td>
+                                    <td style="width: 120px;">
+                                        <a class="btn btn-warning btn-sm" href="{{ route('contador-empresa-produtos.edit', [$item->id]) }}">
+                                            <i class="ri-edit-line"></i>
+                                        </a>
                                         <a class="btn btn-dark btn-sm" href="{{ route('contador-empresa-produtos.show', [$item->id]) }}">
                                             <i class="ri-eye-line"></i>
                                         </a>

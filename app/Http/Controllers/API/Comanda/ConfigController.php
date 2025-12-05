@@ -10,6 +10,7 @@ use App\Models\ConfiguracaoCardapio;
 class ConfigController extends Controller
 {
     public function setConfig(Request $request){
+
         $item = ConfiguracaoCardapio::where('api_token', $request->token)
         ->first();
 
@@ -24,6 +25,9 @@ class ConfigController extends Controller
         if($funcionario == null){
             return response()->json("Funcionário não encontrado " . $request->codigo_operador, 401);
         }
+
+        $item->app_name = env("APP_NAME");
+        $item->app_description = env("APP_DESCRIPTION");
 
         return response()->json($item, 200);
     }

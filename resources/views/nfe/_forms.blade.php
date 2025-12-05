@@ -1,5 +1,3 @@
-
-
 @if(__countLocalAtivo() > 1 && __escolheLocalidade())
 <div class="row mb-2">
     <div class="col-md-3">
@@ -39,12 +37,12 @@
         <input type="hidden" name="pedido_mercado_livre_id" value="{{$item->id}}">
         @endif
 
-        @isset($isPedidoNuvemShop)
-        <input type="hidden" name="pedido_nuvem_shop_id" value="{{$item->id}}">
+        @isset($isPedidoVendiZap)
+        <input type="hidden" name="pedido_vendizap_id" value="{{$item->id}}">
         @endif
 
-        @isset($isPedidoConectaVenda)
-            <input type="hidden" name="pedido_conecta_venda_id" value="{{$item->id}}">
+        @isset($isPedidoNuvemShop)
+        <input type="hidden" name="pedido_nuvem_shop_id" value="{{$item->id}}">
         @endif
 
         @isset($cotacao)
@@ -64,6 +62,7 @@
         <input type="hidden" name="orcamento_id[]" value="{{ $i }}">
         @endforeach
         @endif
+        <input type="hidden" id="lista_id" value="" name="lista_id">
 
         <ul class="nav nav-tabs nav-primary" role="tablist">
             <li class="nav-item" role="presentation">
@@ -240,7 +239,7 @@
                                 @endcan
                             </div>
                         </div>
-
+                        
                         <hr class="mt-3">
                         <div class="row d-cliente">
                             <div class="col-md-3">
@@ -326,10 +325,15 @@
             <div class="tab-pane fade" id="produtos" role="tabpanel">
                 <div class="card">
                     <div class="row m-3">
-
+                        @isset($funcionarios)
+                        <div class="col-md-3 col-12">
+                            <button type="button" class="btn btn-sm btn-light w-100 mt-1" data-bs-toggle="modal" data-bs-target="#lista_precos"><i class="ri-cash-line"></i> Lista de preços</button>
+                        </div>
+                        <h5 class="mt-3 text-muted lista_selecionada"></h5>
+                        @endif
                         <div class="table-responsive">
                             <table class="table table-dynamic table-produtos" style="width: 2800px">
-                                <thead>
+                                <thead class="table-dark">
                                     <tr>
                                         <th class="sticky-col first-col">Produto</th>
                                         <th>Quantidade</th>
@@ -358,14 +362,16 @@
                                     @if(isset($item))
 
                                     @foreach ($item->itens as $key => $prod)
+
                                     @isset($isOrdemServico)
                                     @include('ordem_servico.partials.itens', ['prod' => $prod])
                                     @elseif(isset($isPedidoEcommerce))
                                     @include('pedido_ecommerce.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @elseif(isset($isPedidoMercadoLivre))
                                     @include('mercado_livre_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
-                                    @elseif(isset($isPedidoConectaVenda))
-                                        @include('conecta_venda_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
+                                    @elseif(isset($isPedidoVendiZap))
+                                    @include('vendizap_pedidos.partials.itens', ['prod' => $prod])
+
                                     @elseif(isset($isReserva))
                                     @include('mercado_livre_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @elseif(isset($isPedidoWoocommerce))
@@ -373,7 +379,7 @@
                                     @elseif(isset($isPedidoNuvemShop))
                                     @include('woocommerce_pedidos.partials.itens', ['prod' => $prod, 'cfop_estadual' => $item->cliente->cidade->uf])
                                     @else
-                                        
+
                                     <tr class="dynamic-form">
                                         <td class="sticky-col first-col">
                                             <input type="hidden" class="_key" name="_key[]" value="{{ $key }}">
@@ -400,11 +406,21 @@
                                             @if($prod->variacao_id)
                                             <span>variação: <strong>{{ $prod->produtoVariacao->descricao }}</strong></span>
                                             @endif
-                                        
                                             <input name="variacao_id[]" type="hidden" value="{{ $prod->variacao_id }}">
                                             <div style="width: 500px;"></div>
                                             @if(isset($prod->itensDimensao) && sizeof($prod->itensDimensao) > 0)
                                             <a onclick="alterarDimensoesItem('{{ $prod->id }}', '{{ $key }}')" href="#!">Alterar dimensões</a>
+                                            @endif
+
+                                            @isset($isCompra)
+                                            <input type="hidden" value="{{ $prod->dadosImportacaoEdit() }}" name="dados_importacao[]" class="dados_importacao">
+                                            <a href="#!" class="mt-1 adiciona-di">Definir dados de importação</a>
+                                            @endif
+
+                                            @if(!isset($isCompra))
+                                            <input type="hidden" value="{{ $prod->descricao }}" name="descricao[]" class="descricao_item">
+                                            <a href="#!" class="mt-1 alterar-descricao">Alterar descrição do item</a>
+                                            <p class="text-danger nova_descricao">{{ $prod->descricao }}</p>
                                             @endif
                                         </td>
                                         <td width="80">
@@ -426,7 +442,7 @@
                                             <input style="width: 120px" value="{{ $prod->perc_cofins }}" class="form-control percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
                                         </td>
                                         <td width="120">
-                                            <input style="width: 120px" value="{{ $prod->perc_ipi }}" class="form-control percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
+                                            <input style="width: 120px" value="{{ $prod->perc_ipi }}" class="form-control percentual perc_ipi" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
                                         </td>
                                         <td width="120">
                                             <input style="width: 120px" value="{{ $prod->perc_red_bc }}" class="form-control percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
@@ -511,6 +527,17 @@
                                             </select>
                                             <div style="width: 400px;"></div>
                                             <input name="variacao_id[]" type="hidden" value="">
+
+                                            @isset($isCompra)
+                                            <input type="hidden" name="dados_importacao[]" class="dados_importacao">
+                                            <a href="#!" class="mt-1 adiciona-di">Definir dados de importação</a>
+                                            @endif
+
+                                            @if(!isset($isCompra))
+                                            <input type="hidden" value="" name="descricao[]" class="descricao_item">
+                                            <a href="#!" class="mt-1 alterar-descricao">Alterar descrição do item</a>
+                                            <p class="text-danger nova_descricao"></p>
+                                            @endif
                                         </td>
                                         <td width="120">
                                             <input style="width: 120px" class="form-control qtd next" type="tel" name="quantidade[]" id="inp-quantidade">
@@ -531,7 +558,7 @@
                                             <input style="width: 120px" class="form-control percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
                                         </td>
                                         <td width="120">
-                                            <input style="width: 120px" class="form-control percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
+                                            <input style="width: 120px" class="form-control percentual perc_ipi" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
                                         </td>
                                         <td width="120">
                                             <input style="width: 120px" class="form-control percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
@@ -611,6 +638,7 @@
                         </div>
                         <div class="mt-3">
                             <h5>Total de Produtos: <strong class="total_prod">R$</strong></h5>
+                            <h5 class="d-none h5-ipi">Total de IPI: <strong class="total_ipi">R$ 0,00</strong></h5>
                         </div>
                         <input type="hidden" class="total_prod" name="valor_produtos" id="" value="">
 
@@ -626,7 +654,7 @@
                             !!}
                         </div>
                         <hr class="mt-3">
-                        <div class="row">
+                        <div class="row g-2">
                             <div class="col-md-3">
                                 {!!Form::text('razao_social_transp', 'Razão Social')
                                 ->value(isset($item->transportadora) ? $item->transportadora->razao_social : '')
@@ -653,104 +681,162 @@
                                 ->value(isset($item->transportadora) ? $item->transportadora->antt : '')
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::tel('rua_transp', 'Rua')
                                 ->value(isset($item->transportadora) ? $item->transportadora->rua : '')
                                 !!}
                             </div>
-                            <div class="col-md-1 mt-3">
+                            <div class="col-md-1">
                                 {!!Form::tel('numero_transp', 'Número')
                                 ->value(isset($item->transportadora) ? $item->transportadora->numero : '')
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::select('cidade_transp', 'Cidade')
                                 ->attrs(['class' => 'select2 cidade_select2'])
                                 ->options(isset($item->transportadora) && isset($item->transportadora->cidade) ? [$item->transportadora->cidade_id => $item->transportadora->cidade->nome] : [])
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
+                            <div class="col-md-2">
                                 {!!Form::tel('cep_transp', 'CEP')
                                 ->attrs(['class' => 'cep'])
                                 ->value(isset($item->transportadora) ? $item->transportadora->cep : '')
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::text('email_transp', 'E-mail')
                                 ->value(isset($item->transportadora) ? $item->transportadora->email : '')
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
+                            <div class="col-md-2">
                                 {!!Form::tel('telefone_transp', 'Telefone')
                                 ->attrs(['class' => 'fone'])
                                 ->value(isset($item->transportadora) ? $item->transportadora->telefone : '')
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::text('bairro_transp', 'Bairro')
                                 ->value(isset($item->transportadora) ? $item->transportadora->bairro : '')
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::text('complemento_transp', 'Complemento')
                                 ->value(isset($item->transportadora) ? $item->transportadora->complemento : '')
                                 !!}
                             </div>
                             <hr class="mt-3">
                             <h4 class="mt-3">Informações do Frete</h4>
-                            <div class="col-md-2 mt-2">
+                            <div class="col-md-2">
                                 {!!Form::tel('valor_frete', 'Valor do Frete')
                                 ->attrs(['class' => 'moeda valor_frete'])
                                 ->value(isset($item) ? __moeda($item->valor_frete) : (isset($cotacao) ? __moeda($cotacao->valor_frete) : ''))
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-2">
+                            <div class="col-md-2">
                                 {!!Form::tel('qtd_volumes', 'Qtd de Volumes')
                                 ->attrs(['class' => ''])
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-2">
+                            <div class="col-md-2">
                                 {!!Form::tel('numeracao_volumes', 'Número de Volumes')
                                 ->attrs(['class' => ''])
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-2">
+                            <div class="col-md-2">
                                 {!!Form::tel('peso_bruto', 'Peso Bruto')
                                 ->attrs(['class' => 'peso'])
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-2">
+                            <div class="col-md-2">
                                 {!!Form::tel('peso_liquido', 'Peso Líquido')
                                 ->attrs(['class' => 'peso'])
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::text('especie', 'Espécie')
                                 ->attrs(['class' => ''])
                                 !!}
                             </div>
-                            <div class="col-md-3 mt-3">
+                            <div class="col-md-3">
+                                {!!Form::text('marca', 'Marca')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+                            <div class="col-md-3">
                                 {!!Form::select('tipo', 'Tipo', App\Models\Nfe::tiposFrete())
                                 ->attrs(['class' => 'form-select'])
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
+                            <div class="col-md-2">
                                 {!!Form::text('placa', 'Placa')
                                 ->attrs(['class' => 'placa'])
                                 !!}
                             </div>
-                            <div class="col-md-1 mt-3">
+                            <div class="col-md-1">
                                 {!!Form::select('uf', 'UF', App\Models\Cidade::estados())
                                 ->attrs(['class' => 'form-select'])
                                 !!}
                             </div>
+
+                            @if(!isset($isCompra))
+                            <hr class="mt-3">
+                            <h4 class="mt-3">Endereço de Entrega</h4>
+                            <div class="col-md-12">
+                                {!!Form::checkbox('endereco_entrega_dados_cliente', 'Usar dados do cliente')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+
+                            <div class="col-md-3">
+                                {!!Form::tel('nome_entrega', 'Nome')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+                            <div class="col-md-3">
+                                {!!Form::tel('documento_entrega', 'CPF\CNPJ')
+                                ->attrs(['class' => 'cpf_cnpj'])
+                                !!}
+                            </div>
+                            <div class="col-md-4">
+                                {!!Form::tel('rua_entrega', 'Rua')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+                            <div class="col-md-2">
+                                {!!Form::tel('numero_entrega', 'Número')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+                            <div class="col-md-2">
+                                {!!Form::tel('bairro_entrega', 'Bairro')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+                            <div class="col-md-3">
+                                {!!Form::select('cidade_id_entrega', 'Cidade')
+                                ->attrs(['class' => 'cidade_select2'])
+                                ->options(isset($item) && $item->cidadeEntrega ? [ $item->cidadeEntrega->id => $item->cidadeEntrega->info ] : [])
+                                !!}
+                            </div>
+                            <div class="col-md-2">
+                                {!!Form::tel('cep_entrega', 'CEP')
+                                ->attrs(['class' => 'cep'])
+                                !!}
+                            </div>
+
+                            <div class="col-md-4">
+                                {!!Form::tel('complemento_entrega', 'Complemento')
+                                ->attrs(['class' => ''])
+                                !!}
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
             <div class="tab-pane fade show" id="fatura" role="tabpanel">
                 <div class="card">
-                    <div class="row m-3">
+                    <div class="row g-2 m-2">
                         <div class="col-md-3">
                             {!!Form::select('natureza_id', 'Natureza de Operação', ['' => 'Selecione'] + $naturezas->pluck('descricao', 'id')->all())
                             ->attrs(['class' => 'form-select'])
@@ -775,8 +861,9 @@
                             ->attrs(['class' => ''])
                             !!}
                         </div>
+
                         @if(__isPlanoFiscal())
-                        @if(isset($isOrdemServico) || isset($isPedidoEcommerce) || isset($isPedidoMercadoLivre) || isset($isReserva))
+                        @if(isset($isOrdemServico) || isset($isPedidoEcommerce) || isset($isPedidoMercadoLivre) || isset($isReserva) || isset($isPedidoVendiZap))
                         <div class="col-md-2 mt-3">
                             {!!Form::tel('numero_nfe', 'Número NFe')
                             ->required()
@@ -796,7 +883,7 @@
                             {!!Form::tel('referencia', 'Referência NFe')
                             !!}
                         </div>
-
+                        
                         <div class="col-md-2 mt-3">
                             {!!Form::date('data_emissao_saida', 'Data Emissão Saída')
                             !!}
@@ -806,6 +893,15 @@
                             {!!Form::date('data_emissao_retroativa', 'Data Emissão Retroativa')
                             !!}
                         </div>
+
+                        @if(isset($isCompra) && isset($item) && $item->chave_importada)
+                        <div class="col-md-2 mt-3">
+                            {!!Form::tel('data_emissao', 'Data de emissão')
+                            ->value(isset($item) ? __data_pt($item->data_emissao) : '')
+                            ->attrs(['data-mask' => '00/00/0000 00:00'])
+                            !!}
+                        </div>
+                        @endif
 
                         <div class="col-md-2 mt-3">
                             {!!Form::date('data_entrega', 'Data de Entrega')
@@ -837,7 +933,7 @@
                             !!}
                         </div>
                         @endif
-
+                        
                         @if(!isset($isCompra))
                         @if(!isset($item) && $isOrcamento == 0)
                         <div class="col-md-2 mt-3 div-conta-receber">
@@ -865,6 +961,7 @@
                         <div class="col-md-2 mt-3 div-conta-pagar d-none">
                             {!!Form::select('gerar_conta_pagar', 'Gerar conta a pagar', [0 => 'Não', 1 => 'Sim'])
                             ->attrs(['class' => 'form-select'])
+                            ->value($config ? $config->gerar_conta_pagar_padrao : 1)
                             !!}
                         </div>
                         @endcan
@@ -902,6 +999,11 @@
                     <div class="row m-3">
                         <div class="col-12">
 
+                            <button type="button" class="btn btn-light px-5 btn-fatura-padrao d-none">
+                                <i class="ri-booklet-line"></i>
+                                Fatura Padrão do Cliente
+                            </button>
+
                             <button type="button" class="btn btn-dark px-5 btn-gerar-fatura" data-bs-toggle="modal" data-bs-target="#modal_fatura_venda">
                                 <i class="ri-list-indefinite"></i>
                                 Gerar Fatura
@@ -909,7 +1011,7 @@
                         </div>
                         <div class="table-responsive">
                             <table class="table table-dynamic table-fatura" style="width: 800px">
-                                <thead>
+                                <thead class="table-dark">
                                     <tr>
                                         <th>Tipo de Pagamento</th>
                                         <th>Data Vencimento</th>
@@ -966,7 +1068,7 @@
                                         </td>
                                     </tr>
                                     @endif
-
+                                    
                                     @else
                                     @if(isset($item) && isset($item->fatura) && sizeof($item->fatura) > 0 && !isset($isOrdemServico))
                                     @foreach ($item->fatura as $f)
@@ -1015,7 +1117,7 @@
                                             </button>
                                         </td>
                                     </tr>
-
+                                    
                                     @endif
                                     @endif
                                 </tbody>
@@ -1049,12 +1151,15 @@
     </div>
     <hr class="mt-4">
     <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success btn-salvar-nfe px-5 m-3">Salvar</button>
+        <button type="submit" class="btn btn-success btn-salvar-nfe px-5 m-3 btn-action-form">
+            Salvar
+        </button>
     </div>
 </div>
 
 @include('modals._cartao_credito', ['not_submit' => true])
 @include('modals._variacao')
 @include('modals._fatura_venda')
+@include('modals._lista_precos')
 
 

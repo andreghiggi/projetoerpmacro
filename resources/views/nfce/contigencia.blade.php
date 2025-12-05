@@ -26,26 +26,29 @@
                         </thead>
                         <tbody>
                             @foreach($data as $item)
-
                             <tr>
-                                <td>{{ $item->cliente ? $item->cliente->info : '--' }}</td>
-                                <td>{{ $item->numero }}</td>
-                                <td>{{ $item->chave }}</td>
-                                <td>{{ __moeda($item->total) }}</td>
-                                <td>{{ __data_pt($item->created_at) }}</td>
+                                <td data-label="Cliente">{{ $item->cliente ? $item->cliente->info : '--' }}</td>
+                                <td data-label="Número">{{ $item->numero }}</td>
+                                <td data-label="Chave">{{ $item->chave }}</td>
+                                <td data-label="Valor">{{ __moeda($item->total) }}</td>
+                                <td data-label="Data">{{ __data_pt($item->created_at) }}</td>
                                 <td>
-                                    @if($item->reenvio_contigencia == 0 && $item->contigencia)
-                                    <button title="Transmitir NFe" type="button" class="btn btn-success btn-sm" onclick="transmitirContigencia('{{$item->id}}')">
-                                        <i class="ri-send-plane-fill"></i>
-                                    </button>
-                                    @endif
+                                    <div style="width: 100px;"> 
+                                        @if($item->reenvio_contigencia == 0 && $item->contigencia)
+                                        <button title="Transmitir NFe" type="button" class="btn btn-success btn-sm" onclick="transmitirContigencia('{{$item->id}}')">
+                                            <i class="ri-send-plane-fill"></i>
+                                        </button>
+                                        @endif
+                                        <a target="_blank" title="XML temporário" class="btn btn-light btn-sm" href="{{ route('nfce.xml-temp-contigencia', $item->id) }}">
+                                            <i class="ri-file-line"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
-
                             @endforeach
                         </tbody>
-                        
                     </table>
+
                 </div>
             </div>
 

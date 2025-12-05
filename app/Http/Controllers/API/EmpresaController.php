@@ -59,7 +59,8 @@ class EmpresaController extends Controller
         $item->setHidden(['arquivo']);
         $item->vencimento = null;
         if($item->dia_vencimento_boleto){
-            $item->vencimento = date('Y-m')."-".$item->dia_vencimento_boleto;
+            $item->vencimento = date('Y-m')."-".($item->dia_vencimento_boleto < 10 ?
+               "0".$item->dia_vencimento_boleto : $item->dia_vencimento_boleto);
         }
         return response()->json($item, 200); 
     }

@@ -72,61 +72,66 @@ class BoletoCron extends Command
                 }
                 $valor = $empresa->plano->valor;
                 $vencimento = date('Y-m') . "-" . $empresa->dia_vencimento_boleto;
-                $dataBoleto = [
-                    'customer' => $empresa->asaas_id,
-                    'billingType' => 'BOLETO',
-                    'value' => $valor,
-                    'dueDate' => $vencimento
-                ];
 
-                if($config->percentual_juros_padrao_boleto){
-                    $dataBoleto['interest'] = [
-                        'value' => $config->percentual_juros_padrao_boleto
+                $financeiroBoleto = FinanceiroBoleto::where('empresa_id', $empresa->id)
+                ->whereMonth('vencimento', date('m'))->first();
+                if($financeiroBoleto == null){
+                    $dataBoleto = [
+                        'customer' => $empresa->asaas_id,
+                        'billingType' => 'BOLETO',
+                        'value' => $valor,
+                        'dueDate' => $vencimento
                     ];
-                }
 
-                if($config->percentual_multa_padrao_boleto){
-                    $dataBoleto['fine'] = [
-                        'value' => $config->percentual_multa_padrao_boleto
-                    ];
-                }
+                    if($config->percentual_juros_padrao_boleto){
+                        $dataBoleto['interest'] = [
+                            'value' => $config->percentual_juros_padrao_boleto
+                        ];
+                    }
 
-                $endPoint = 'https://api-sandbox.asaas.com/v3/payments';
-                if($config->sandbox_boleto == 0){
-                    $endPoint = 'https://api.asaas.com/v3/payments';
-                }
-                $client = new \GuzzleHttp\Client();
-                $response = $client->request('POST', $endPoint, [
-                    'body' => json_encode($dataBoleto),
-                    'headers' => [
-                        'accept' => 'application/json',
-                        'access_token' => $config->asaas_token_boleto,
-                    ],
-                ]);
+                    if($config->percentual_multa_padrao_boleto){
+                        $dataBoleto['fine'] = [
+                            'value' => $config->percentual_multa_padrao_boleto
+                        ];
+                    }
 
-                $data = json_decode($response->getBody(),true);
-
-                if($data){
-                    $boleto = [
-                        'empresa_id' => $empresa->id,
-                        'valor' => $valor,
-                        'vencimento' => $vencimento,
-                        'pdf_boleto' => $data['bankSlipUrl'],
-                        'valor_recebido' => 0,
-                        'juros' => $config->percentual_juros_padrao_boleto,
-                        'multa' => $config->percentual_multa_padrao_boleto,
-                        'status' => 0,
-                        'plano_id' => $empresa->plano->plano_id,
-                        '_id' => $data['id']
-                    ];
-                    FinanceiroBoleto::create($boleto);
-
-                    LogBoleto::create([
-                        'tipo' => 'geracao',
-                        'empresa_id' => $empresa->id,
-                        'status' => 1,
-                        'descricao' => 'Cron mensal'
+                    $endPoint = 'https://api-sandbox.asaas.com/v3/payments';
+                    if($config->sandbox_boleto == 0){
+                        $endPoint = 'https://api.asaas.com/v3/payments';
+                    }
+                    $client = new \GuzzleHttp\Client();
+                    $response = $client->request('POST', $endPoint, [
+                        'body' => json_encode($dataBoleto),
+                        'headers' => [
+                            'accept' => 'application/json',
+                            'access_token' => $config->asaas_token_boleto,
+                        ],
                     ]);
+
+                    $data = json_decode($response->getBody(),true);
+
+                    if($data){
+                        $boleto = [
+                            'empresa_id' => $empresa->id,
+                            'valor' => $valor,
+                            'vencimento' => $vencimento,
+                            'pdf_boleto' => $data['bankSlipUrl'],
+                            'valor_recebido' => 0,
+                            'juros' => $config->percentual_juros_padrao_boleto,
+                            'multa' => $config->percentual_multa_padrao_boleto,
+                            'status' => 0,
+                            'plano_id' => $empresa->plano->plano_id,
+                            '_id' => $data['id']
+                        ];
+                        FinanceiroBoleto::create($boleto);
+
+                        LogBoleto::create([
+                            'tipo' => 'geracao',
+                            'empresa_id' => $empresa->id,
+                            'status' => 1,
+                            'descricao' => 'Cron mensal'
+                        ]);
+                    }
                 }
 
             }

@@ -25,7 +25,7 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="suporte-menu">
                             <a href="{{ route('empresas.index') }}" class="dropdown-item">Empresas</a>
-
+                            
                             <a href="{{ route('segmentos.index') }}" class="dropdown-item">Segmentos</a>
                             <a href="{{ route('cidades.index') }}" class="dropdown-item">Cidades</a>
                             <a href="{{ route('usuario-super.index') }}" class="dropdown-item">Usuários</a>
@@ -337,7 +337,7 @@
                             @can('metas_view')
                             <a href="{{ route('ordem-servico.metas') }}" class="dropdown-item">Metas</a>
                             @endcan
-
+                            
                         </div>
                     </li>
 
@@ -393,6 +393,9 @@
                             @endcan
                             @can('controle_acesso_view')
                             <a href="{{ route('controle-acesso.index') }}" class="dropdown-item">Controle de acesso</a>
+                            @endcan
+                            @can('config_fiscal_usuario_view')
+                            <a href="{{ route('config-fiscal-usuario.index') }}" class="dropdown-item">Configuração fiscal</a>
                             @endcan
                         </div>
                     </li>
@@ -622,6 +625,8 @@
 
                             @can('caixa_view')
 
+                            <a class="dropdown-item" href="{{ route('financeiro.dashboard') }}">Dashboard</a>
+
                             <div class="dropdown">
                                 <a class="dropdown-item dropdown-toggle arrow-none" href="#" id="topnav-caixa" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Caixa <div class="arrow-down"></div>
@@ -789,6 +794,35 @@
                     @endcanany
                     @endif
 
+                    @if(__isActivePlan(Auth::user()->empresa, 'Planejamento de Custos'))
+                    @canany(['planejamento_custo_view'])
+
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link dropdown-toggle arrow-none" href="#" id="veiculos-menu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="ri-dashboard-fill"></i>  <div class="arrow-down"></div>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="veiculos-menu">
+                            <label>Planejamento de Custos</label>
+                            @can('veiculos_view')
+                            <a href="{{ route('veiculos.index') }}" class="dropdown-item">Listar</a>
+                            @endcan
+                            @can('veiculos_create')
+                            <a href="{{ route('veiculos.create') }}" class="dropdown-item">Novo Veículo</a>
+                            @endcan
+
+                            @can('planejamento_custo_view')
+                            <a href="{{ route('planejamento-custo.index') }}" class="dropdown-item">Listar</a>
+                            @endcan
+                            @can('planejamento_custo_create')
+                            <a href="{{ route('planejamento-custo.create') }}" class="dropdown-item">Novo</a>
+                            @endcan
+                        </div>
+                    </li>
+
+                    @endcan
+                    @endif
+
                     @if(__isActivePlan(Auth::user()->empresa, 'Controle de Fretes'))
                     @canany(['tipo_despesa_frete_view', 'frete_view'])
                     <li class="nav-item dropdown">
@@ -805,7 +839,7 @@
                             <a href="{{ route('fretes.index') }}" class="dropdown-item">Fretes</a>
                             @endcan
                             @can('manutencao_veiculo_view')
-                            <a href="{{ route('manutencao-veiculos.index') }}" class="dropdown-item">Manuetenção de veículos</a>
+                            <a href="{{ route('manutencao-veiculos.index') }}" class="dropdown-item">Manutenção de veículos</a>
                             @endcan
                         </div>
                     </li>
@@ -894,13 +928,20 @@
                             <a href="{{ route('config-cardapio.index') }}" class="dropdown-item">Configuração</a>
                             <a href="{{ route('produtos-cardapio.categorias') }}" class="dropdown-item">Categorias</a>
                             <a href="{{ route('produtos-cardapio.index') }}" class="dropdown-item">Produtos</a>
+
+                            <a href="{{ route('categoria-adicional.index') }}" class="dropdown-item">Categorias de adicional</a>
                             <a href="{{ route('adicionais.index') }}" class="dropdown-item">Adicionais</a>
                             <a href="{{ route('pedidos-cardapio.index') }}" class="dropdown-item">Comandas</a>
                             <a href="{{ route('pedido-cozinha.index') }}" class="dropdown-item">Controle de pedidos</a>
+                            <a href="{{ route('impressao-pedido.index') }}" class="dropdown-item">>Controle de impressão</a>
                             <a href="{{ route('carrossel.index') }}" class="dropdown-item">Carrossel destaque</a>
                             <a href="{{ route('avaliacao-cardapio.index') }}" class="dropdown-item">Avaliações</a>
                             <a href="{{ route('tamanhos-pizza.index') }}" class="dropdown-item">Tamanhos de pizza</a>
                             <a href="{{ route('atendimento-garcom.index') }}" class="dropdown-item">Atendimentos garçom</a>
+                            <a href="{{ route('pedidos-cardapio.historico') }}" class="dropdown-item">Histórico</a>
+                            @if(file_exists(public_path('app.apk')))
+                            <a href="{{ route('config-cardapio.download') }}" class="dropdown-item">Download APP</a>
+                            @endif
 
                         </div>
                     </li>
@@ -988,27 +1029,6 @@
                     @endif
                     @endif
 
-                    @if(env("CONECTAVENDA") == 1)
-                        @if(__isActivePlan(Auth::user()->empresa, 'Conecta Venda'))
-                            @can('conecta_venda_view')
-                                <li class="nav-item dropdown">
-
-                                    <a class="nav-link dropdown-toggle arrow-none" href="#" id="conecta-venda-menu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="ri-cloud-line"></i>  <div class="arrow-down"></div>
-                                    </a>
-                                    <div class="dropdown-menu" aria-labelledby="conecta-venda-menu">
-                                        <label>Conecta Venda</label>
-                                        <a href="{{ route('conecta-venda-config.index') }}" class="dropdown-item">Configuração</a>
-                                        <a href="{{ route('conecta-venda-produtos.index') }}" class="dropdown-item">Produtos</a>
-                                        <a href="{{ route('conecta-venda-produtos.index') }}" class="dropdown-item">Listar Produtos</a>
-                                        <a href="{{ route('conecta-venda-pedidos.index') }}" class="dropdown-item">Pedidos</a>
-                                    </div>
-                                </li>
-                            @endcan
-                        @endif
-                    @endif
-
-
                     @if(env("MARKETPLACE") == 1)
                     @if(__isActivePlan(Auth::user()->empresa, 'Delivery'))
                     @can('delivery_view')
@@ -1028,12 +1048,16 @@
                             <a href="{{ route('servicos-marketplace.index') }}" class="dropdown-item">Serviços</a>
                             <a href="{{ route('funcionamento-delivery.index') }}" class="dropdown-item">Funcionamento</a>
                             <a href="{{ route('bairros-empresa.index') }}" class="dropdown-item">Bairros</a>
+                            <a href="{{ route('categoria-adicional.index') }}" class="dropdown-item">Categorias de adicional</a>
                             <a href="{{ route('adicionais.index') }}" class="dropdown-item">Adicionais</a>
                             <a href="{{ route('destaque-marketplace.index') }}" class="dropdown-item">Destaques</a>
                             <a href="{{ route('cupom-desconto.index') }}" class="dropdown-item">Cupom de desconto</a>
                             <a href="{{ route('tamanhos-pizza.index') }}" class="dropdown-item">Tamanhos de pizza</a>
                             <a href="{{ route('motoboys.index') }}" class="dropdown-item">Motoboys</a>
+
                             <a href="{{ route('pedido-cozinha.index') }}" class="dropdown-item">Controle de pedidos</a>
+                            <a href="{{ route('impressao-pedido.index') }}" class="dropdown-item">>Controle de impressão</a>
+
                             <a href="{{ route('clientes-delivery.index') }}" class="dropdown-item">Clientes</a>
                             <a href="{{ route('config-agendamento.index') }}" class="dropdown-item">Configuração de agendamento</a>
                             <a target="_blank" href="{{ route('config-marketplace.loja') }}" class="dropdown-item">Ver loja</a>
@@ -1130,6 +1154,25 @@
                     @endcan
                     @endif
 
+                    @if(__isActivePlan(Auth::user()->empresa, 'VendiZap'))
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link dropdown-toggle arrow-none" href="#" id="vendizap-menu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="ri-whatsapp-fill"></i>  <div class="arrow-down"></div>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="vendizap-menu">
+                            <label>VendiZap</label>
+                            <a href="{{ route('vendizap-config.index') }}" class="dropdown-item">Configuração</a>
+                            <a href="{{ route('vendizap-categorias.index') }}" class="dropdown-item">Categorias</a>
+                            @can('variacao_view')
+                            <a href="{{ route('variacoes.index') }}" class="dropdown-item">Variações</a>
+                            @endcan
+                            <a href="{{ route('vendizap-produtos.index') }}" class="dropdown-item">Produtos</a>
+                            <a href="{{ route('vendizap-pedidos.index') }}" class="dropdown-item">Pedidos</a>
+                        </div>
+                    </li>
+                    @endif
+
                     @canany(['natureza_operacao_view', 'emitente_view'])
 
                     <li class="nav-item dropdown">
@@ -1144,15 +1187,15 @@
                             @endcan
 
                             @can('natureza_operacao_view')
-                            <a href="{{ route('natureza-operacao.index') }}" class="dropdown-item">Natureza de Operação</a>
+                            <a href="{{ route('natureza-operacao.index') }}" class="dropdown-item">Natureza de operação</a>
                             @endcan
 
                             @can('email_config_view')
-                            <a href="{{ route('email-config.index') }}" class="dropdown-item">Configuração de Email</a>
+                            <a href="{{ route('email-config.index') }}" class="dropdown-item">Configuração de email</a>
                             @endcan
 
                             @can('escritorio_contabil_view')
-                            <a href="{{ route('escritorio-contabil.index') }}" class="dropdown-item">Escritório Contábil</a>
+                            <a href="{{ route('escritorio-contabil.index') }}" class="dropdown-item">Escritório contábil</a>
                             @endcan
 
                             @can('emitente_view')
@@ -1180,10 +1223,13 @@
                             @endcan
 
                             @can('metas_view')
-                            <a href="{{ route('metas.index') }}" class="dropdown-item">Configuração de Metas</a>
+                            <a href="{{ route('metas.index') }}" class="dropdown-item">Configuração de metas</a>
                             @endcan
 
                             <a href="{{ route('sintegra.index') }}" class="dropdown-item">Sintegra</a>
+                            @can('impressora_pedido_view')
+                            <a href="{{ route('impressoras-pedido.index') }}" class="dropdown-item">Impressoras de pedido</a>
+                            @endcan
                         </div>
                     </li>
 

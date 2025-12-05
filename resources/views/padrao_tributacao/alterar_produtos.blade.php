@@ -32,7 +32,7 @@
                         <h5>Produtos</h5>
                         <div class="form-check m-1 form-checkbox-success col-12">
                             <input type="checkbox" checked class="form-check-input" id="check-all">
-                            <label class="form-check-label">Selecionar todos</label>
+                            <label class="form-check-label">Selecionar todos <strong>(<span class="contador-selecionados">0</span>)</strong></label>
                         </div>
                         @foreach($produtos as $p)
 
@@ -60,6 +60,10 @@
 
 @section('js')
 <script type="text/javascript">
+    $(function(){ 
+        $("#inp-padrao_id").change()
+        contaSelecionados()
+    })
 
     $(document).on("change", "#inp-padrao_id", function () {
         if($(this).val()){
@@ -69,7 +73,12 @@
             })
             .done((result) => {
                 $('.form-trib').removeClass('d-none')
-                $('#inp-ncm').val(result.ncm)
+
+                if(result._ncm){
+                    var newOption = new Option(result._ncm.descricao, result._ncm.codigo, 1, 1);
+                    $('#inp-ncm').append(newOption);
+                }
+                // $('#inp-ncm').val(result.ncm)
                 $('#inp-cest').val(result.cest)
                 $('#inp-perc_icms').val(result.perc_icms)
                 $('#inp-perc_pis').val(result.perc_pis)
@@ -100,7 +109,20 @@
         }else{
             $('.prod-check').prop('checked', 0)
         }
+
+        setTimeout(() => {
+            contaSelecionados()
+        }, 100)
     })
+
+    $('.prod-check').click(() => {
+        contaSelecionados()
+    })
+
+    function contaSelecionados(){
+        let total = $(".prod-check:checked").length;
+        $(".contador-selecionados").text(total);
+    }
 
     $(document).on("blur", "#inp-cfop_estadual", function () {
 

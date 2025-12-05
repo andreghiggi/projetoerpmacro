@@ -67,7 +67,7 @@
 									<span class="apenas apenas-single">
 										Por <br> apenas 
 									</span>
-									<span class="valor" style="color:black">R$: {{ __moeda($p->valor_delivery) }}</span>
+									<span class="valor" style="color:black">R$ {{ __moeda($p->valor_delivery) }}</span>
 									@endif
 									<div class="detalhes"><i class="icone icone-sacola"></i> <span>Comprar</span></div>
 								</a>
@@ -80,10 +80,12 @@
 		</div>
 	</div>
 </div>
-
-@if($categoria->tipo_pizza)
 @section('js')
+<script src="/food-files/js/main.js"></script>
+@if($categoria->tipo_pizza)
 <script type="text/javascript" src="/delivery/js/pizza.js"></script>
-@endsection
 @endif
+
+@endsection
+
 @endsection

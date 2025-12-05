@@ -82,7 +82,8 @@ class NFeController extends Controller
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
             "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-            "schemes" => "PL_009_V4",
+            // "schemes" => "PL_009_V4",
+            "schemes" => "PL_010_V1.21",
             "versao" => "4.00",
         ], $empresa);
 
@@ -97,6 +98,7 @@ class NFeController extends Controller
             $xml = $doc['xml'];
 
             $chave = $doc['chave'];
+            die;
 
             try {
                 $signed = $nfe_service->sign($xml);
@@ -158,6 +160,7 @@ class NFeController extends Controller
                     }
                 }
             } catch (\Exception $e) {
+
                 return response()->json(__getError($e), 404);
             }
         } else {
@@ -413,7 +416,8 @@ class NFeController extends Controller
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
             "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-            "schemes" => "PL_009_V4",
+            // "schemes" => "PL_009_V4",
+            "schemes" => "PL_010_V1.21",
             "versao" => "4.00",
         ], $empresa);
 
@@ -463,7 +467,8 @@ class NFeController extends Controller
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
             "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-            "schemes" => "PL_009_V4",
+            // "schemes" => "PL_009_V4",
+            "schemes" => "PL_010_V1.21",
             "versao" => "4.00",
         ], $empresa);
 
@@ -499,7 +504,8 @@ class NFeController extends Controller
                 "razaosocial" => $nfe->emissor_nome,
                 "siglaUF" => $nfe->empresa->cidade->uf,
                 "cnpj" => $cnpj,
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $nfe->empresa);
             $consulta = $nfe_service->consultar($nfe);
@@ -531,7 +537,8 @@ class NFeController extends Controller
                 "razaosocial" => $nfe->emissor_nome,
                 "siglaUF" => $nfe->empresa->cidade->uf,
                 "cnpj" => $cnpj,
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $nfe->empresa);
             $doc = $nfe_service->correcao($nfe, $request->motivo);
@@ -597,7 +604,8 @@ class NFeController extends Controller
                 "razaosocial" => $nfe->emissor_nome,
                 "siglaUF" => $nfe->empresa->cidade->uf,
                 "cnpj" => $cnpj,
-                "schemes" => "PL_009_V4",
+                // "schemes" => "PL_009_V4",
+                "schemes" => "PL_010_V1.21",
                 "versao" => "4.00",
             ], $nfe->empresa);
             $doc = $nfe_service->cancelar($nfe, $request->motivo);

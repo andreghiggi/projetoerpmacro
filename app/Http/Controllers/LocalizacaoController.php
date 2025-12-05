@@ -37,15 +37,15 @@ class LocalizacaoController extends Controller
             return redirect()->back();
         }
         $count++;
-        
-        return view('localizacao.create', compact('dadosCertificado', 'count'));
+        $naoDesativar = 0;
+        return view('localizacao.create', compact('dadosCertificado', 'count', 'naoDesativar'));
     }
 
     public function edit($id){
         $item = Localizacao::findOrFail($id);
         $temp = Localizacao::where('empresa_id', request()->empresa_id)->first();
 
-        $firstLocation = $item == $temp;
+        $naoDesativar = $firstLocation = $item == $temp;
         __validaObjetoEmpresa($item);
 
         $dadosCertificado = null;
@@ -57,7 +57,7 @@ class LocalizacaoController extends Controller
         if(__isAdmin()){
             $firstLocation = 0;
         }
-        return view('localizacao.edit', compact('item', 'firstLocation', 'dadosCertificado'));
+        return view('localizacao.edit', compact('item', 'firstLocation', 'dadosCertificado', 'naoDesativar'));
     }
 
     private function getInfoCertificado($item)

@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'CTe'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -78,18 +78,18 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->remetente ? $item->remetente->razao_social : "--" }}</td>
-                                    <td>{{ $item->destinatario ? $item->destinatario->razao_social : "--" }}</td>
+                                    <td data-label="Remetente">{{ $item->remetente ? $item->remetente->razao_social : "--" }}</td>
+                                    <td data-label="Destinatário">{{ $item->destinatario ? $item->destinatario->razao_social : "--" }}</td>
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger">{{ $item->localizacao->descricao }}</td>
+                                    <td data-label="Local" class="text-danger">{{ $item->localizacao->descricao }}</td>
                                     @endif
-                                    <td>{{ __moeda($item->valor_transporte) }}</td>
-                                    <td>{{ __moeda($item->valor_carga) }}</td>
-                                    <td>{{ $item->numero ? $item->numero : '--' }}</td>
-                                    <td>{!! $item->estadoEmissao() !!}</td>
-                                    <td>{{ __data_pt($item->created_at, 1) }}</td>
-                                    <td>{{ $item->chave }}</td>
-                                    <td>
+                                    <td data-label="Valor de transporte">{{ __moeda($item->valor_transporte) }}</td>
+                                    <td data-label="Valor da carga">{{ __moeda($item->valor_carga) }}</td>
+                                    <td data-label="Número">{{ $item->numero ? $item->numero : '--' }}</td>
+                                    <td data-label="Estado">{!! $item->estadoEmissao() !!}</td>
+                                    <td data-label="Data">{{ __data_pt($item->created_at, 1) }}</td>
+                                    <td data-label="Chave">{{ $item->chave }}</td>
+                                    <td data-label="Local de emissão">
                                         @if($item->api)
                                         <span class="text-success">API</span>
                                         @else
@@ -138,7 +138,9 @@
                                                 <i class="ri-file-line"></i>
                                             </a>
                                             @can('cte_delete')
-                                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
+                                            <button type="button" class="btn btn-danger btn-sm btn-delete">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
                                             @endcan
 
                                             <button title="Transmitir CTe" type="button" class="btn btn-success btn-sm" onclick="transmitir('{{$item->id}}')">
@@ -164,6 +166,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>

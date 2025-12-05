@@ -74,6 +74,16 @@ class ListaPrecoController extends Controller
     public function store(Request $request){
         try{
             $item = DB::transaction(function () use ($request) {
+                if(!$request->percentual_alteracao && !$request->valor_alteracao){
+                    session()->flash("flash_warning", "Informe o valor ou percentual de alteração!");
+                    return redirect()->back();
+                }
+
+                $request->merge([
+                    'valor_alteracao' => __convert_value_bd($request->valor_alteracao),
+                    'percentual_alteracao' => $request->percentual_alteracao ? __convert_value_bd($request->percentual_alteracao) : 0
+                ]);
+
                 $item = ListaPreco::create($request->all());
 
                 $produtos = Produto::where('empresa_id', $request->empresa_id)->get();
@@ -82,16 +92,32 @@ class ListaPrecoController extends Controller
                     $valor = 0;
                     if($request->ajuste_sobre == 'valor_venda'){
                         if($request->tipo == 'incremento'){
-                            $valor = $p->valor_unitario + ($p->valor_unitario*($request->percentual_alteracao/100));
+                            if($request->percentual_alteracao > 0){
+                                $valor = $p->valor_unitario + ($p->valor_unitario*($request->percentual_alteracao/100));
+                            }else{
+                                $valor = $p->valor_unitario + $request->valor_alteracao;
+                            }
                         }else{
-                            $valor = $p->valor_unitario - ($p->valor_unitario*($request->percentual_alteracao/100));
+                            if($request->percentual_alteracao > 0){
+                                $valor = $p->valor_unitario - ($p->valor_unitario*($request->percentual_alteracao/100));
+                            }else{
+                                $valor = $p->valor_unitario - $request->valor_alteracao;
+                            }
                         }
 
                     }else{
                         if($request->tipo == 'incremento'){
-                            $valor = $p->valor_compra+ ($p->valor_compra*($request->percentual_alteracao/100));
+                            if($request->percentual_alteracao > 0){
+                                $valor = $p->valor_compra + ($p->valor_compra*($request->percentual_alteracao/100));
+                            }else{
+                                $valor = $p->valor_compra + $request->valor_alteracao;
+                            }
                         }else{
-                            $valor = $p->valor_compra - ($p->valor_compra*($request->percentual_alteracao/100));
+                            if($request->percentual_alteracao > 0){
+                                $valor = $p->valor_compra - ($p->valor_compra*($request->percentual_alteracao/100));
+                            }else{
+                                $valor = $p->valor_compra - $request->valor_alteracao;
+                            }
                         }
                     }
                     ItemListaPreco::create([
@@ -100,7 +126,6 @@ class ListaPrecoController extends Controller
                         'valor' => $valor,
                         'percentual_lucro' => $request->percentual_alteracao
                     ]);
-
                 }
 
                 for($i=0; $i<sizeof($request->usuarios); $i++){
@@ -116,10 +141,11 @@ class ListaPrecoController extends Controller
             session()->flash("flash_success", "Lista cadastrada!");
             return redirect()->route('lista-preco.index');
         }catch(\Exception $e){
-            // echo $e->getMessage() . '<br>' . $e->getLine();
-            // die;
+            echo $e->getMessage() . '<br>' . $e->getLine();
+            die;
             __createLog(request()->empresa_id, 'Lista de Preços', 'erro', $e->getMessage());
             session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
+            return redirect()->back();
         }
     }
 
@@ -131,33 +157,49 @@ class ListaPrecoController extends Controller
             $item = DB::transaction(function () use ($request, $item) {
                 $item->fill($request->all())->save();
 
-                $produtos = Produto::where('empresa_id', $request->empresa_id)->get();
-                $item->itens()->delete();
+                // $produtos = Produto::where('empresa_id', $request->empresa_id)->get();
+                // $item->itens()->delete();
 
-                foreach($produtos as $p){
-                    $valor = 0;
-                    if($request->ajuste_sobre == 'valor_venda'){
-                        if($request->tipo == 'incremento'){
-                            $valor = $p->valor_unitario + ($p->valor_unitario*($request->percentual_alteracao/100));
-                        }else{
-                            $valor = $p->valor_unitario - ($p->valor_unitario*($request->percentual_alteracao/100));
-                        }
+                // foreach($produtos as $p){
+                //     $valor = 0;
+                //     if($request->ajuste_sobre == 'valor_venda'){
+                //         if($request->tipo == 'incremento'){
+                //             if($request->percentual_alteracao > 0){
+                //                 $valor = $p->valor_unitario + ($p->valor_unitario*($request->percentual_alteracao/100));
+                //             }else{
+                //                 $valor = $p->valor_unitario + __convert_value_bd($request->valor_alteracao);
+                //             }
+                //         }else{
+                //             if($request->percentual_alteracao > 0){
+                //                 $valor = $p->valor_unitario - ($p->valor_unitario*($request->percentual_alteracao/100));
+                //             }else{
+                //                 $valor = $p->valor_unitario - __convert_value_bd($request->valor_alteracao);
+                //             }
+                //         }
 
-                    }else{
-                        if($request->tipo == 'incremento'){
-                            $valor = $p->valor_compra+ ($p->valor_compra*($request->percentual_alteracao/100));
-                        }else{
-                            $valor = $p->valor_compra - ($p->valor_compra*($request->percentual_alteracao/100));
-                        }
-                    }
-                    ItemListaPreco::create([
-                        'lista_id' => $item->id,
-                        'produto_id' => $p->id,
-                        'valor' => $valor,
-                        'percentual_lucro' => $request->percentual_alteracao
-                    ]);
+                //     }else{
+                //         if($request->tipo == 'incremento'){
+                //             if($request->percentual_alteracao > 0){
+                //                 $valor = $p->valor_compra + ($p->valor_compra*($request->percentual_alteracao/100));
+                //             }else{
+                //                 $valor = $p->valor_compra + __convert_value_bd($request->valor_alteracao);
+                //             }
+                //         }else{
+                //             if($request->percentual_alteracao > 0){
+                //                 $valor = $p->valor_compra - ($p->valor_compra*($request->percentual_alteracao/100));
+                //             }else{
+                //                 $valor = $p->valor_compra - __convert_value_bd($request->valor_alteracao);
+                //             }
+                //         }
+                //     }
+                //     ItemListaPreco::create([
+                //         'lista_id' => $item->id,
+                //         'produto_id' => $p->id,
+                //         'valor' => $valor,
+                //         'percentual_lucro' => $request->percentual_alteracao
+                //     ]);
 
-                }
+                // }
 
                 $item->usuarios()->delete();
                 for($i=0; $i<sizeof($request->usuarios); $i++){
@@ -172,6 +214,7 @@ class ListaPrecoController extends Controller
             });
             session()->flash('flash_success', 'Alterado com sucesso');
         } catch (\Exception $e) {
+            dd($e->getLine());
             __createLog(request()->empresa_id, 'Lista de Preços', 'erro', $e->getMessage());
             session()->flash('flash_error', 'Algo deu errado: ' . $e->getMessage());
         }
@@ -185,6 +228,7 @@ class ListaPrecoController extends Controller
         try {
             $descricaoLog = $item->nome;
             $item->itens()->delete();
+            $item->usuarios()->delete();
             $item->delete();
             __createLog(request()->empresa_id, 'Lista de Preços', 'excluir', $descricaoLog);
             session()->flash('flash_success', 'Lista removida com sucesso');

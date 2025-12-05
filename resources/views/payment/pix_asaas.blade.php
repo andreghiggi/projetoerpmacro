@@ -53,7 +53,7 @@
             plano_id: '{{ $item->id }}',
             empresa_id: $('#empresa_id').val()
         }
-        console.log(json)
+        // console.log(json)
         $.get(path_url+'api/payment-status-asaas', json)
         .done((success) => {
             console.log(success)

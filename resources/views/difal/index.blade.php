@@ -31,7 +31,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -47,14 +47,14 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->uf }}</td>
-                                    <td>{{ $item->cfop }}</td>
-                                    <td>{{ $item->pICMSUFDest }}</td>
-                                    <td>{{ $item->pICMSInter }}</td>
-                                    <td>{{ $item->pICMSInterPart }}</td>
-                                    <td>{{ $item->pFCPUFDest }}</td>
+                                    <td data-label="UF">{{ $item->uf }}</td>
+                                    <td data-label="CFOP">{{ $item->cfop }}</td>
+                                    <td data-label="% ICMS UF Destino">{{ $item->pICMSUFDest }}</td>
+                                    <td data-label="% ICMS Interno">{{ $item->pICMSInter }}</td>
+                                    <td data-label="% ICMS Interestadual UF">{{ $item->pICMSInterPart }}</td>
+                                    <td data-label="% Fundo Combate a Pobreza">{{ $item->pFCPUFDest }}</td>
                                     <td>
-                                        <form action="{{ route('difal.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 100px;" action="{{ route('difal.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @can('difal_edit')
                                             <a class="btn btn-warning btn-sm text-white" href="{{ route('difal.edit', [$item->id]) }}">
@@ -77,6 +77,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                 </div>
                 {!! $data->appends(request()->all())->links() !!}

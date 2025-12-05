@@ -63,7 +63,7 @@ class CteOsController extends Controller
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when($estado != "", function ($query) use ($estado) {
-            return $query->where('estado', $estado);
+            return $query->where('estado_emissao', $estado);
         })
         ->when($local_id, function ($query) use ($local_id) {
             return $query->where('local_id', $local_id);
@@ -72,7 +72,7 @@ class CteOsController extends Controller
             return $query->whereIn('local_id', $locais);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('cte_os.index', compact('data'));
     }
 

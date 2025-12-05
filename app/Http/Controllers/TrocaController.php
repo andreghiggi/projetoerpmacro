@@ -6,13 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\Troca;
 use App\Models\ItemTroca;
 use App\Models\Nfce;
+use App\Models\Nfe;
 use App\Models\Funcionario;
 use App\Models\CategoriaProduto;
 use App\Models\Caixa;
 use App\Models\Empresa;
 use App\Models\ConfigGeral;
+use App\Models\UsuarioEmpresa;
 use App\Utils\EstoqueUtil;
 use NFePHP\DA\NFe\CupomNaoFiscal;
+use Dompdf\Dompdf;
 
 class TrocaController extends Controller
 {
@@ -34,30 +37,30 @@ class TrocaController extends Controller
 
         $data = Troca::where('trocas.empresa_id', $request->empresa_id)
         ->select('trocas.*')
-        ->join('nfces', 'nfces.id', '=', 'trocas.nfce_id')
-        ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('trocas.created_at', '>=', $start_date);
-        })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
-            return $query->whereDate('trocas.created_at', '<=', $end_date);
-        })
-        ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
-            return $query->where('nfces.cliente_id', $cliente_id);
+        ->leftJoin('nfces', 'nfces.id', '=', 'trocas.nfce_id')
+        ->leftJoin('nves', 'nves.id', '=', 'trocas.nfe_id')
+        ->when($start_date, fn($q) => $q->whereDate('trocas.created_at', '>=', $start_date))
+        ->when($end_date, fn($q) => $q->whereDate('trocas.created_at', '<=', $end_date))
+        ->when($cliente_id, function ($q) use ($cliente_id) {
+            return $q->where(function ($q) use ($cliente_id) {
+                $q->where('nfces.cliente_id', $cliente_id)
+                ->orWhere('nves.cliente_id', $cliente_id);
+            });
         })
         ->orderBy('trocas.created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
+
         return view('trocas.index', compact('data'));
     }
 
     public function create(Request $request){
-        $codigo = $request->codigo;
-        $numero_nfce = $request->numero_nfce;
+        $tipo = $request->tipo;
+        $id = $request->id;
 
-        $item = Nfce::where('numero_sequencial', $codigo)->where('empresa_id', $request->empresa_id)
-        ->first();
-        if($item == null){
-            $item = Nfce::where('numero', $numero_nfce)->where('empresa_id', $request->empresa_id)
-            ->first();
+        if($tipo == 'nfce'){
+            $item = Nfce::findOrFail($id);
+        }else{
+            $item = Nfe::findOrFail($id);
         }
 
         if($item == null){
@@ -80,10 +83,13 @@ class TrocaController extends Controller
         ->first();
 
         $isVendaSuspensa = 0;
-        $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)->get();
+        $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)
+        ->where('categoria_id', null)
+        ->get();
         $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
 
         $tiposPagamento = Nfce::tiposPagamento();
+
         // dd($tiposPagamento);
         if($config != null){
             $config->tipos_pagamento_pdv = $config != null && $config->tipos_pagamento_pdv ? json_decode($config->tipos_pagamento_pdv) : [];
@@ -100,12 +106,12 @@ class TrocaController extends Controller
         $tiposPagamento['00'] = 'Vale Crédito';
 
         $msgTroca = "";
-        if(sizeof($item->trocas) > 0){
+        if(sizeof($item->troca) > 0){
             $msgTroca = "Essa venda já possui troca!";
         }
 
         return view('trocas.create', compact('item', 'funcionarios', 'cliente', 'funcionario', 'caixa', 'abertura', 
-            'isVendaSuspensa', 'categorias', 'tiposPagamento', 'msgTroca'));
+            'isVendaSuspensa', 'categorias', 'tiposPagamento', 'msgTroca', 'config'));
     }
 
     public function show($id)
@@ -122,7 +128,8 @@ class TrocaController extends Controller
 
             foreach($item->itens as $i){
                 if ($i->produto->gerenciar_estoque) {
-                    $this->util->incrementaEstoque($i->produto->id, $i->quantidade, null, $item->nfce->local_id);
+                    $local_id = $item->nfce ? $item->nfce->local_id : $item->nfe->local_id;
+                    $this->util->incrementaEstoque($i->produto->id, $i->quantidade, null, $local_id);
                 }
             }
             $item->itens()->delete();
@@ -138,19 +145,55 @@ class TrocaController extends Controller
         return redirect()->back();
     }
 
-    public function imprimir($id){
+    public function imprimir($id)
+    {
 
         $item = Troca::findOrFail($id);
-
         __validaObjetoEmpresa($item);
+
         $config = Empresa::where('id', $item->empresa_id)
         ->first();
 
-        $cupom = new CupomNaoFiscal($item->nfce, $config, 0, $item);
+        $config = __objetoParaEmissao($config, $item->local_id);
+        
+        $usuario = UsuarioEmpresa::find(get_id_user());
 
-        $pdf = $cupom->render();
-        return response($pdf)
-        ->header('Content-Type', 'application/pdf');
+        $logo = null;
+        if($config->logo && file_exists(public_path('/uploads/logos/') . $config->logo)){
+            $logo = public_path('/uploads/logos/') . $config->logo;
+        }
+
+        $configGeral = ConfigGeral::where('empresa_id', $item->empresa_id)->first();
+
+        $p = view('trocas.cupom_nao_fiscal', compact('config', 'item', 'configGeral'));
+
+        $domPdf = new Dompdf(["enable_remote" => true]);
+        $domPdf->loadHtml($p);
+        $pdf = ob_get_clean();
+        $height = 400;
+
+        $height += sizeof($item->itens)*11;
+        foreach($item->itens as $it){
+            if(strlen($it->descricao()) > 10){
+                $height += 10;
+            }
+        }
+
+        foreach(($item->nfe ? $item->nfe->itens : $item->nfce->itens) as $it){
+            if(strlen($it->descricao()) > 10){
+                $height += 10;
+            }
+        }
+
+        if($item->observacao != ''){
+            $height += 30;
+        }
+
+
+        $domPdf->setPaper([0,0,244,$height]);
+        $pdf = $domPdf->render();
+
+        $domPdf->stream("Doc. Troca $item->numero_sequencial.pdf", array("Attachment" => false));
     }
 
 }

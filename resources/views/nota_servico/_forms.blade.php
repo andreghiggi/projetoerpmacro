@@ -150,6 +150,13 @@
                         </div>
 
                         <div class="col-md-2">
+                            {!!Form::text('numero_nfse', 'Número de NFSe')->attrs(['class' => ''])
+                            ->value(isset($item) ? $item->numero_nfse : (isset($novoNumeroNFse) ? $novoNumeroNFse : ''))
+                            ->required()
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
                             {!!Form::select('gerar_conta_receber', 'Gerar conta a receber', [0 => 'Não', 1 => 'Sim'])
                             ->attrs(['class' => 'form-select'])
                             !!}
@@ -226,7 +233,7 @@
                         </div>
 
                         <div class="col-md-2">
-                            {!!Form::select('responsavel_retencao_iss', 'Resp. pela retenção', [1 => 'Tomador', 2 => 'Sim'])->attrs(['class' => 'form-select'])
+                            {!!Form::select('responsavel_retencao_iss', 'Resp. pela retenção', [1 => 'Tomador', 2 => 'Intermediário'])->attrs(['class' => 'form-select'])
                             ->value(isset($item) ? $item->servico->responsavel_retencao_iss : '')->required()
                             !!}
                         </div>
@@ -252,22 +259,24 @@
                         <hr>
                         <div class="col-md-2">
                             {!!Form::text('valor_deducoes', 'Valor deduções')->attrs(['class' => 'moeda'])
-                            ->value(isset($item) ? $item->servico->valor_deducoes : '')
+                            ->value(isset($item) ? __moeda($item->servico->valor_deducoes) : '')
                             !!}
                         </div>
-                        <div class="col-md-2">
-                            {!!Form::text('desconto_incondicional', 'Desconto incondicional')->attrs(['class' => 'moeda'])
-                            ->value(isset($item) ? $item->servico->desconto_incondicional : '')
-                            !!}
-                        </div>
+                        
                         <div class="col-md-2">
                             {!!Form::text('desconto_condicional', 'Desconto condicional')->attrs(['class' => 'moeda'])
-                            ->value(isset($item) ? $item->servico->desconto_condicional : '')
+                            ->value(isset($item) ? __moeda($item->servico->desconto_condicional) : '')
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!!Form::text('desconto_incondicional', 'Desconto incondicional')->attrs(['class' => 'moeda'])
+                            ->value(isset($item) ? __moeda($item->servico->desconto_incondicional) : '')
                             !!}
                         </div>
                         <div class="col-md-2">
                             {!!Form::text('outras_retencoes', 'Outras retencoes')->attrs(['class' => 'moeda'])
-                            ->value(isset($item) ? $item->servico->outras_retencoes : '')
+                            ->value(isset($item) ? __moeda($item->servico->outras_retencoes) : '')
                             !!}
                         </div>
                         <div class="col-md-2">

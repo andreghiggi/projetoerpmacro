@@ -25,7 +25,7 @@ class NaturezaOperacaoController extends Controller
                 return $quer->where('descricao', 'LIKE', "%$request->descricao%");
             });
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('natureza_operacao.index', compact('data'));
     }
 

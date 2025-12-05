@@ -30,7 +30,7 @@ class ContadorAdminMDFeController extends Controller
         })
         ->where('estado_emissao', 'aprovado')
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $contXml = $this->preparaXmls($start_date, $end_date, $empresaSelecionada);
         return view('contador.mdfe', compact('data', 'contXml'));

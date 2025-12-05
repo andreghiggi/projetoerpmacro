@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Empresas'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -17,8 +17,8 @@
                     {!!Form::open()->fill(request()->all())
                     ->get()
                     !!}
-                    <div class="row mt-3">
-                        <div class="col-md-4">
+                    <div class="row mt-3 g-2">
+                        <div class="col-md-3">
                             {!!Form::text('nome', 'Pesquisar por nome')
                             !!}
                         </div>
@@ -26,7 +26,27 @@
                             {!!Form::tel('cpf_cnpj', 'Pesquisar por documento')
                             !!}
                         </div>
-                        <div class="col-md-3 text-left ">
+                        <div class="col-md-2">
+                            {!!Form::date('start_date', 'Data inicial')
+                            !!}
+                        </div>
+                        <div class="col-md-2">
+                            {!!Form::date('end_date', 'Data final')
+                            !!}
+                        </div>
+
+                        <div class="col-md-3">
+                            {!!Form::select('contador_id', 'Representante/Contador', ['' => 'Selecione'] + $contadores->pluck('nome', 'id')->all())
+                            ->attrs(['class' => 'form-select select2'])
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!!Form::select('status', 'Ativo', ['' => 'Todos', 1 => 'Sim', 0 => 'Não'])
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
+                        <div class="col-md-2 text-left ">
                             <br>
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
                             <a id="clear-filter" class="btn btn-danger" href="{{ route('empresas.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
@@ -42,7 +62,7 @@
                                 <tr>
                                     <th>Razão social</th>
                                     <th>Nome fantasia</th>
-                                    <th>CNPJ/CPF</th>
+                                    <th style="width: 200px;">CNPJ/CPF</th>
                                     <th>IE/RG</th>
                                     <th>Tributação</th>
                                     <th>Ambiente</th>
@@ -51,7 +71,7 @@
                                     <th>Plano</th>
                                     <th>Data de cadastro</th>
 
-                                    <th width="10%">Ações</th>
+                                    <th>Ações</th>
 
                                 </tr>
                             </thead>

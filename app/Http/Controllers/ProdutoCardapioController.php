@@ -10,6 +10,7 @@ use App\Models\ProdutoAdicional;
 use App\Models\ProdutoIngrediente;
 use App\Models\TamanhoPizza;
 use App\Models\ProdutoPizzaValor;
+use App\Models\CategoriaAdicional;
 
 class ProdutoCardapioController extends Controller
 {
@@ -20,7 +21,7 @@ class ProdutoCardapioController extends Controller
             return $q->where('nome', 'LIKE', "%$nome%");
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('cardapio.categorias.index', compact('data'));
     }
 
@@ -36,7 +37,7 @@ class ProdutoCardapioController extends Controller
             return $q->where('status', $status);
         })
         ->where('cardapio', 1)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('cardapio.produtos.index', compact('data'));
 
@@ -52,13 +53,32 @@ class ProdutoCardapioController extends Controller
         ->whereNotIn('id', $adds)
         ->get();
 
-        return view('cardapio.produtos.show', compact('item', 'adicionais'));
+        $categorias = CategoriaAdicional::where('empresa_id', request()->empresa_id)
+        ->orderBy('nome', 'asc')
+        ->where('status', 1)
+        ->get();
+
+        return view('cardapio.produtos.show', compact('item', 'adicionais', 'categorias'));
 
     }
 
     public function storeAdicional(Request $request){
         try {
-            ProdutoAdicional::create($request->all());
+
+            if($request->adicional_id){
+                ProdutoAdicional::create($request->all());
+            }else if($request->categoria_id){
+                $categoria = CategoriaAdicional::findOrFail($request->categoria_id);
+                foreach($categoria->adicionais as $a){
+                    ProdutoAdicional::updateOrCreate([
+                        'produto_id' => $request->produto_id,
+                        'adicional_id' => $a->id
+                    ]);
+                }
+            }else{
+                session()->flash("flash_error", 'Selecione o adicional ou categoria para adicionar!');
+                return redirect()->back();
+            }
             session()->flash("flash_success", "Adicioanado com sucesso!");
         } catch (\Exception $e) {
             session()->flash("flash_error", 'Algo deu errado ' . $e->getMessage());
@@ -107,7 +127,7 @@ class ProdutoCardapioController extends Controller
 
     }
 
-     public function tamanhosPizza($id){
+    public function tamanhosPizza($id){
         $produto = Produto::findOrFail($id);
         $tamanhos = TamanhoPizza::where('empresa_id', request()->empresa_id)->get();
         return view('produtos.tamanho_pizza', compact('produto', 'tamanhos'));

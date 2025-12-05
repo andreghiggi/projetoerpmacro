@@ -388,12 +388,13 @@ class PagamentoController extends Controller
         $pedido = PedidoEcommerce::where('hash_pedido', $request->hash_pedido)
         ->first();
         $_SESSION["session_cart"] = null;
-
+        $config = EcommerceConfig::where('empresa_id', $pedido->empresa_id)->first();
+        
         if($pedido == null){
             session()->flash("flash_error", "Algo deu errado!");
-            return redirect()->back();
+            return redirect()->route('loja.index', ['link='.$config->loja_id]);
         }
-        $config = EcommerceConfig::findOrfail($request->loja_id);
+
         $categorias = CategoriaProduto::where('ecommerce', 1)->where('status', 1)
         ->where('empresa_id', $config->empresa_id)->get();
         return view('loja.finalizar', compact('pedido', 'config', 'categorias'));
@@ -422,12 +423,26 @@ class PagamentoController extends Controller
 
                 $pedido = $this->createPedido($request);
                 $carrinho = $this->_getCarrinho();
+                
+                //teste
+                // $pedido->status_pagamento = 'approved';
+                // $pedido->transacao_id = "123";
+                // $pedido->tipo_pagamento = 'cartao';
+                // $pedido->save();
+
+                // session()->flash("flash_success", "Pagamento concluído com sucesso!");
+                // return [
+                //     'sucesso' => 1,
+                //     'hash_pedido' => $pedido->hash_pedido
+                // ];
+                //teste
 
                 \MercadoPago\SDK::setAccessToken($config->mercadopago_access_token);
+
                 $payment = new \MercadoPago\Payment();
                 $payment->transaction_amount = (float)$request->transactionAmount;
                 $payment->token = $request->token;
-                $payment->description = $request->description;
+                $payment->description = "Pagamento do pedido #" . $pedido->hash_pedido;
                 $payment->installments = (int)$request->installments;
                 $payment->payment_method_id = $request->paymentMethodId;
 
@@ -438,10 +453,13 @@ class PagamentoController extends Controller
                     "number" => $request->docNumber
                 );
                 $payment->payer = $payer;
-
+                // dd($payment);
                 $payment->save();
 
+                // dd($request->all());
+
                 if($payment->error){
+                    // dd($payment);
                     session()->flash("flash_error", $payment->error);
                     return [
                         'erro' => $payment->error
@@ -452,16 +470,17 @@ class PagamentoController extends Controller
                     $pedido->tipo_pagamento = 'cartao';
                     $pedido->save();
 
+                    // dd($payment);
                     session()->flash("flash_success", "Pagamento concluído com sucesso!");
                     return [
                         'sucesso' => 1,
-                        'transacao_id' => $pedido->transacao_id
+                        'hash_pedido' => $pedido->hash_pedido
                     ];
                 }
             });
 
             if(isset($result['sucesso'])){
-                return redirect()->route('loja.finalizar', 'link='.$config->loja_id .'&transacao_id='.$result['transacao_id']);
+                return redirect()->route('loja.finalizar', 'link='.$config->loja_id .'&hash_pedido='.$result['hash_pedido']);
             }else{
                 return redirect()->back();
             }

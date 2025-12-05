@@ -7,7 +7,9 @@ use App\Models\OrdemProducao;
 use App\Models\ItemProducao;
 use App\Models\ItemOrdemProducao;
 use App\Models\Empresa;
+use App\Models\EtiquetaConfiguracao;
 use Dompdf\Dompdf;
+use Illuminate\Support\Facades\DB;
 
 class OrdemProducaoController extends Controller
 {
@@ -24,7 +26,7 @@ class OrdemProducaoController extends Controller
 
         $data = OrdemProducao::where('empresa_id', $request->empresa_id)
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('ordem_producao.index', compact('data'));
     }
@@ -36,10 +38,10 @@ class OrdemProducaoController extends Controller
         ->where('item_producaos.status', 0)
         ->get();
 
-        if(sizeof($data) == 0){
-            session()->flash("flash_error", "Nenhum item para gerar a ordem de produção!");
-            return redirect()->back();
-        }
+        // if(sizeof($data) == 0){
+        //     session()->flash("flash_error", "Nenhum item para gerar a ordem de produção!");
+        //     return redirect()->back();
+        // }
 
         // foreach($data as $i){
         //     foreach($i->itemNfe->itensDimensao as $itd){
@@ -63,45 +65,84 @@ class OrdemProducaoController extends Controller
 
     public function show(Request $request, $id){
         $item = OrdemProducao::findOrFail($id);
-        return view('ordem_producao.show', compact('item'));
+
+        $config = EtiquetaConfiguracao::where('empresa_id', $request->empresa_id)->first();
+        return view('ordem_producao.show', compact('item', 'config'));
+    }
+
+    public function config(Request $request){
+        $item = EtiquetaConfiguracao::where('empresa_id', $request->empresa_id)->first();
+        try{
+            if($item == null){
+                EtiquetaConfiguracao::create($request->all());
+            }else{
+                $item->fill($request->all())->save();
+            }
+            session()->flash("flash_success", "Configuração definida!");
+
+        }catch(\Exception $e){
+            session()->flash("flash_error", "Algo deu Errado" . $e->getMessage());
+        }
+        return redirect()->back();
+
     }
 
     public function store(Request $request){
         try{
-            if(!$request->item_select){
-                session()->flash("flash_error", "Selecione ao menos 1 produto!");
-                return redirect()->back();
-            }
+            DB::transaction(function () use ($request) {
 
-            $lastItem = OrdemProducao::where('empresa_id', $request->empresa_id)
-            ->orderBy('codigo_sequencial', 'desc')->first();
-            $codigo_sequencial = 1;
-            if($lastItem != null){
-                $codigo_sequencial = $lastItem->codigo_sequencial+1;
-            }
-            $request->merge([
-                'observacao' => $request->observacao ?? '',
-                'codigo_sequencial' => $codigo_sequencial,
-                'usuario_id' => get_id_user()
-            ]);
-            $ordem = OrdemProducao::create($request->all());
+                if(!$request->item_select){
+                    session()->flash("flash_error", "Selecione ao menos 1 produto!");
+                    return redirect()->back();
+                }
+                $lastItem = OrdemProducao::where('empresa_id', $request->empresa_id)
+                ->orderBy('codigo_sequencial', 'desc')->first();
+                $codigo_sequencial = 1;
+                if($lastItem != null){
+                    $codigo_sequencial = $lastItem->codigo_sequencial+1;
+                }
 
-            for($i=0; $i<sizeof($request->item_select); $i++){
-                $itemProducao = ItemProducao::findOrFail($request->item_select[$i]);
-                $itemProducao->status = 1;
-                $itemProducao->save();
-                echo $request->qtd[$i]. "<br>";
-                ItemOrdemProducao::create([
-                    'ordem_producao_id' => $ordem->id,
-                    'item_producao_id' => $itemProducao->id,
-                    'produto_id' => $itemProducao->produto_id,
-                    'quantidade' => $request->qtd[$i],
-                    'status' => 0,
-                    'observacao' => $request->observacao_item[$i]
+                $request->merge([
+                    'observacao' => $request->observacao ?? '',
+                    'codigo_sequencial' => $codigo_sequencial,
+                    'usuario_id' => get_id_user()
                 ]);
-            }
 
-            session()->flash("flash_success", "Ordem de Produção criada com sucesso");
+                // dd($request->all());
+                $ordem = OrdemProducao::create($request->all());
+
+                for($i=0; $i<sizeof($request->item_select); $i++){
+
+                    $itemProducao = ItemProducao::find($request->item_select[$i]);
+                    if($itemProducao){
+                        $itemProducao->status = 1;
+                        $itemProducao->save();
+                        ItemOrdemProducao::create([
+                            'ordem_producao_id' => $ordem->id,
+                            'item_producao_id' => $itemProducao->id,
+                            'produto_id' => $itemProducao->produto_id,
+                            'quantidade' => $request->qtd[$i],
+                            'status' => 0,
+                            'observacao' => $request->observacao_item[$i]
+                        ]);
+                    }else{
+                        $dataItem = [
+                            'ordem_producao_id' => $ordem->id,
+                            'item_producao_id' => null,
+                            'produto_id' => $request->produto_id[$i],
+                            'cliente_id' => $request->cliente_id[$i],
+                            'quantidade' => $request->qtd[$i],
+                            'status' => 0,
+                            'observacao' => $request->observacao_item[$i],
+                            'numero_pedido' => $request->numero_pedido[$i],
+                        ];
+
+                        ItemOrdemProducao::create($dataItem);
+                    }
+                }
+
+                session()->flash("flash_success", "Ordem de Produção criada com sucesso");
+            });
             return redirect()->route('ordem-producao.index');
 
         }catch(\Exception $e){
@@ -122,24 +163,41 @@ class OrdemProducaoController extends Controller
 
             foreach($item->itens as $i){
                 $itemProducao = $i->itemProducao;
-                $itemProducao->status = 0;
-                $itemProducao->save();
+                if($itemProducao){
+                    $itemProducao->status = 0;
+                    $itemProducao->save();
+                }
             }
 
             $item->itens()->delete();
 
             for($i=0; $i<sizeof($request->item_select); $i++){
-                $itemProducao = ItemProducao::findOrFail($request->item_select[$i]);
-                $itemProducao->status = 1;
-                $itemProducao->save();
-                ItemOrdemProducao::create([
-                    'ordem_producao_id' => $item->id,
-                    'item_producao_id' => $itemProducao->id,
-                    'produto_id' => $itemProducao->produto_id,
-                    'quantidade' => $request->qtd[$i],
-                    'status' => 0,
-                    'observacao' => $request->observacao_item[$i]
-                ]);
+                $itemProducao = ItemProducao::find($request->item_select[$i]);
+                if($itemProducao){
+                    $itemProducao->status = 1;
+                    $itemProducao->save();
+                    ItemOrdemProducao::create([
+                        'ordem_producao_id' => $item->id,
+                        'item_producao_id' => $itemProducao->id,
+                        'produto_id' => $itemProducao->produto_id,
+                        'quantidade' => $request->qtd[$i],
+                        'status' => 0,
+                        'observacao' => $request->observacao_item[$i]
+                    ]);
+                }else{
+                    $dataItem = [
+                        'ordem_producao_id' => $item->id,
+                        'item_producao_id' => null,
+                        'produto_id' => $request->produto_id[$i],
+                        'cliente_id' => $request->cliente_id[$i],
+                        'quantidade' => $request->qtd[$i],
+                        'status' => 0,
+                        'observacao' => $request->observacao_item[$i],
+                        'numero_pedido' => $request->numero_pedido[$i],
+                    ];
+
+                    ItemOrdemProducao::create($dataItem);
+                }
             }
 
             session()->flash("flash_success", "Ordem de Produção atualizada com sucesso");
@@ -173,8 +231,10 @@ class OrdemProducaoController extends Controller
         try {
             foreach($item->itens as $i){
                 $itemProducao = $i->itemProducao;
-                $itemProducao->status = 0;
-                $itemProducao->save();
+                if($itemProducao){
+                    $itemProducao->status = 0;
+                    $itemProducao->save();
+                }
             }
             $item->itens()->delete();
 
@@ -190,6 +250,8 @@ class OrdemProducaoController extends Controller
         $item = OrdemProducao::findOrFail($id);
 
         $empresa = Empresa::findOrFail(request()->empresa_id);
+        $config = EtiquetaConfiguracao::where('empresa_id', $empresa->id)->first();
+
         // $p = view('ordem_producao.etiqueta', compact('item', 'empresa'));
         // $domPdf = new Dompdf(["enable_remote" => true]);
         // $domPdf->loadHtml($p);
@@ -200,7 +262,7 @@ class OrdemProducaoController extends Controller
         //     $height += $i->quantidade * 300;
         // }
 
-        return view('ordem_producao.etiqueta', compact('item', 'empresa'));
+        return view('ordem_producao.etiqueta', compact('item', 'empresa', 'config'));
 
         // $domPdf->set_paper(array(0,0,204,$height));
         // $domPdf->render();
@@ -217,7 +279,7 @@ class OrdemProducaoController extends Controller
         $domPdf->loadHtml($p);
 
         $pdf = ob_get_clean();
-        
+
         $domPdf->setPaper("A4", "landscape");
         $domPdf->render();
         $domPdf->stream("Ordem de produção.pdf", array("Attachment" => false));

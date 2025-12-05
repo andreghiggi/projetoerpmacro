@@ -38,6 +38,7 @@ use App\Models\Nfe;
 use App\Models\Estoque;
 use App\Models\Nfce;
 use App\Models\MovimentacaoProduto;
+use App\Models\EstoqueAtualProduto;
 use App\Models\Produto;
 use App\Models\SpedConfig;
 use App\Models\Sped;
@@ -141,7 +142,7 @@ class SpedController extends Controller
 
         if($contador == null){
             session()->flash("flash_error", "Configure o contador primeiro!");
-            return redirect()->route('escritorio-contabils');
+            return redirect()->route('escritorio-contabil.index');
         }
         $std = new \stdClass();
         $std->NOME = $contador->razao_social;
@@ -205,6 +206,8 @@ class SpedController extends Controller
         
 
         $comprasManifesto = [];
+        $produtosAdicionados = [];
+        $unidadesAdicionadas = [];
 
         $speedService = new SpeedService($config);
         $dataXml = [];
@@ -250,7 +253,8 @@ class SpedController extends Controller
                 $temp = [
                     'xml_importado' => 1,
                     'tipo' => 'compra',
-                    'xml' => $xml
+                    'xml' => $xml,
+                    'compra' => $v
                 ];
                 array_push($dataXml, $temp);
             }
@@ -262,7 +266,8 @@ class SpedController extends Controller
                 $temp = [
                     'xml_importado' => 1,
                     'tipo' => 'compra',
-                    'xml' => $xml
+                    'xml' => $xml,
+                    'compra' => $v
                 ];
                 array_push($dataXml, $temp);
             }
@@ -351,8 +356,6 @@ class SpedController extends Controller
         $sz0190 = '';
         $uncom = [];
 
-        $produtosAdicionados = [];
-        $unidadesAdicionadas = [];
         $estoque = [];
 
         foreach($dataXml as $l){
@@ -379,6 +382,7 @@ class SpedController extends Controller
 
                 $p = Produto::where('referencia_xml', $cProd)->where('empresa_id', $request->empresa_id)
                 ->first();
+
                 $estoqueProduto = null;
                 if($p){
                     $estoqueProduto = $p->estoque;
@@ -392,21 +396,22 @@ class SpedController extends Controller
                     }
                 }
 
-                if($l['xml_importado'] == 1 || ($estoqueProduto != null && $estoqueProduto->quantidade > 0) && $inventario == 1){
+                // $spedConfig && $spedConfig->gerar_bloco_k ver depois
+                if($l['xml_importado'] == 1 || (($estoqueProduto != null && $estoqueProduto->quantidade > 0) && $inventario == 1)){
 
                     $arr = (array_values((array)$imposto->ICMS));
                     $cst_csosn = $arr[0]->CST ? $arr[0]->CST : $arr[0]->CSOSN;
                     $pICMS = $arr[0]->pICMS ?? 0;
-
-                    if (!in_array($prod->uCom, $unidadesAdicionadas)){
-                        array_push($unidadesAdicionadas, (string)$prod->uCom);
+                    $unid = strtoupper((string)$prod->uCom);
+                    if (!in_array($unid, $unidadesAdicionadas)){
+                        array_push($unidadesAdicionadas, $unid);
                         $std = new \stdClass();
 
-                        $std->UNID = strtoupper($prod->uCom);
+                        $std->UNID = $unid;
                         // if($prod->uCom == 'UNID'){
                         //     $prod->uCom = 'UN';
                         // }
-                        $std->DESCR = 'UNIDADE DE MEDIDA ' . strtoupper($prod->uCom);
+                        $std->DESCR = 'UNIDADE DE MEDIDA ' . $unid;
 
                         try {
                             $z0190 = new Z0190($std);
@@ -437,6 +442,7 @@ class SpedController extends Controller
 
                         $p = Produto::where('referencia_xml', $cProd)->where('empresa_id', $request->empresa_id)
                         ->first();
+
                         $pId = null;
                         if($p == null){
                             $xProd = (string)$prod->xProd;
@@ -468,7 +474,7 @@ class SpedController extends Controller
                         if ($prod->uCom == ''){
                             $std->UNID_INV = 'UN';
                         }else{                    
-                            $std->UNID_INV = (string)$prod->uCom;
+                            $std->UNID_INV = strtoupper((string)$prod->uCom);
                         }
 
                         $std->TIPO_ITEM = '00';
@@ -609,8 +615,13 @@ class SpedController extends Controller
             $std->NUM_DOC = (string)$ide->nNF;
             $std->CHV_NFE = $chave;
 
-            $dhEmi = \Carbon\Carbon::parse($dhEmi)->format('dmY');
-            $dhSaiEnt = \Carbon\Carbon::parse($dhSaiEnt)->format('dmY');
+            if(isset($l['compra'])){
+                $dhEmi = \Carbon\Carbon::parse($l['compra']->data_emissao)->format('dmY');
+                $dhSaiEnt = \Carbon\Carbon::parse($l['compra']->data_emissao)->format('dmY');
+            }else{
+                $dhEmi = \Carbon\Carbon::parse($dhEmi)->format('dmY');
+                $dhSaiEnt = \Carbon\Carbon::parse($dhSaiEnt)->format('dmY');
+            }
 
             $std->DT_DOC = $dhEmi;
             $std->DT_E_S = $dhSaiEnt;
@@ -642,12 +653,10 @@ class SpedController extends Controller
             }
 
             $itens = $speedService->getItemNfe($l['xml']);
-            //c170
 
             $cont = 0;
-
+            //c170
             if ($l['xml_importado'] == 1){
-
                 foreach($itens as $item){
 
                     $cont++;
@@ -659,7 +668,7 @@ class SpedController extends Controller
                     $std->COD_ITEM = strtoupper((string)$prod->cProd);
                     $std->DESCR_COMPL = strtoupper((string)$prod->xProd);
                     $std->QTD = (float)$prod->qCom;
-                    $std->UNID = (string)$prod->uCom;
+                    $std->UNID = strtoupper((string)$prod->uCom);
 
                     $std->VL_ITEM = (float)$prod->vProd;
                     $std->VL_DESC = (float)$prod->vDesc;
@@ -835,6 +844,7 @@ class SpedController extends Controller
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
+
 
         $total000 = $this->totalizeBloco($sped, 'D');
         $sped .= '|D990|' . $total000 . '|';
@@ -1040,10 +1050,11 @@ class SpedController extends Controller
 
             $k200a = '';
             $gk = 'N';
-            // dd($estoque);
+
             foreach ($estoque as $item){
 
                 if($item['quantidade'] > 0){
+
                     $qtd = $item['quantidade'];
 
                     $estoqueAtualProduto = EstoqueAtualProduto::where('produto_id', $item['id'])
@@ -1105,7 +1116,7 @@ class SpedController extends Controller
                 $sped .= "\r\n";
             }
         }else{
-            $sped .= '|K001|0|';
+            $sped .= '|K001|1|'; // ver aqui
             $sped .= "\r\n";
             $sped .= '|K990|2|';
             $sped .= "\r\n";
@@ -1190,6 +1201,7 @@ class SpedController extends Controller
 
         $tot .= "|9001|0|\n";
         $n = 0;
+        // dd($keys);
         foreach ($keys as $key => $value) {
             if (!empty($key)) {
                 $tot .= "|9900|$key|$value|\n";

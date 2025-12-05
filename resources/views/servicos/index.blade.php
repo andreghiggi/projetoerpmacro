@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Serviços'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -36,7 +36,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -52,6 +52,7 @@
                                     <th>Descrição</th>
                                     <th>Valor</th>
                                     <th>Duração</th>
+                                    <th>Unidade de cobrança</th>
                                     <th>Status</th>
                                     @if(__isActivePlan(Auth::user()->empresa, 'Reservas'))
                                     <th>Ativo em reserva</th>
@@ -62,30 +63,35 @@
                                     <th>Ações</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
                                     @can('servico_delete')
-                                    <td>
+                                    <td data-label="Selecionar">
                                         <div class="form-check form-checkbox-danger mb-2">
                                             <input class="form-check-input check-delete" type="checkbox" name="item_delete[]" value="{{ $item->id }}">
                                         </div>
                                     </td>
                                     @endcan
+
                                     <td><img class="img-60" src="{{ $item->img }}"></td>
-                                    <td>{{ $item->numero_sequencial }}</td>
-                                    <td>{{ $item->nome }}</td>
-                                    <td>{{ __moeda($item->valor) }}</td>
-                                    <td>{{ $item->tempo_servico }} - {{ $item->unidade_cobranca }} </td>
-                                    <td>
+                                    <td data-label="#">{{ $item->numero_sequencial }}</td>
+                                    <td data-label="Descrição">{{ $item->nome }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->valor) }}</td>
+                                    <td data-label="Duração">{{ $item->tempo_servico }} min.</td>
+                                    <td data-label="Unidade de cobrança">{{ $item->unidade_cobranca }}</td>
+
+                                    <td data-label="Status">
                                         @if($item->status)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
+
                                     @if(__isActivePlan(Auth::user()->empresa, 'Reservas'))
-                                    <td>
+                                    <td data-label="Ativo em reserva">
                                         @if($item->reserva)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
@@ -93,8 +99,9 @@
                                         @endif
                                     </td>
                                     @endif
+
                                     @if(__isActivePlan(Auth::user()->empresa, 'Delivery'))
-                                    <td>
+                                    <td data-label="MarketPlace">
                                         @if($item->marketplace)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
@@ -102,8 +109,9 @@
                                         @endif
                                     </td>
                                     @endif
+
                                     <td>
-                                        <form action="{{ route('servicos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 100px;" action="{{ route('servicos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @can('servico_edit')
                                             <a class="btn btn-warning btn-sm" href="{{ route('servicos.edit', [$item->id]) }}">
@@ -120,6 +128,7 @@
                                         </form>
                                     </td>
                                 </tr>
+
                                 @empty
                                 <tr>
                                     <td colspan="9" class="text-center">Nada encontrado</td>
@@ -127,6 +136,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
                         @can('servico_delete')
                         <form action="{{ route('servicos.destroy-select') }}" method="post" id="form-delete-select">
@@ -140,6 +150,7 @@
                         @endcan
                     </div>
                 </div>
+                <br>
                 {!! $data->appends(request()->all())->links() !!}
             </div>
         </div>

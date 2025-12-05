@@ -1,0 +1,79 @@
+
+div.qty, .new, .search-btn{
+	background: var(--color-main)!important;
+}
+
+i, .sale, .product-price{
+	color: var(--color-main)!important;
+}
+
+.new, .sale{
+	border-color: var(--color-main)!important;
+}
+
+.cart-btns .finalizar{
+	background: var(--color-main)!important;
+	color: #fff!important;
+}
+
+.cart-btns .finalizar i{
+	color: #fff!important;
+}
+
+.sub_total, h4, .order-total{
+	color: var(--color-main)!important;
+}
+.add-to-cart-btn, .order-submit{
+	background: var(--color-main)!important;
+}
+.input-checkbox span{
+	background: var(--color-main)!important;
+	border-color: var(--color-main)!important;
+}
+
+.add-to-cart-btn:hover{
+	background-color: #FFF;
+	color: #fff !important;
+	border-color: var(--color-main)!important;
+	padding: 0px 30px 0px 50px;
+}
+.slick-current{
+	border-color: var(--color-main) !important;
+}
+
+.add-to-cart-btn:hover i{
+	color: #fff !important;
+}
+
+.btn-delete i{
+	color: #fff !important;
+}
+
+.btn-frete i{
+	color: #fff !important;
+}
+
+.btn-continuar-comprando:hover{
+	background: #EFEFEF;
+}
+.btn-continuar-comprando{
+	border: none;
+	background: #EFEFEF;
+	color: var(--color-main) !important;
+}
+
+.btn-ir-pagamento{
+	background: var(--color-main) !important;
+	color: #fff !important;
+	border: none;
+}
+
+.btn-ir-pagamento i{
+	color: #fff !important;
+}
+
+
+
+
+
+

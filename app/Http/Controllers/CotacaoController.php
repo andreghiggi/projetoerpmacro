@@ -57,7 +57,7 @@ class CotacaoController extends Controller
             return $query->where('nfe_id', null);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if(!empty($fornecedor_id)){
             $fornecedor = Fornecedor::findOrFail($fornecedor_id);

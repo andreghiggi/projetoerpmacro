@@ -5,12 +5,8 @@
     <div class="row">
         <div class="card">
             <div class="card-body">
-                <div class="col-md-2">
-                    <a href="{{ route('conta-pagar.create') }}" class="btn btn-success">
-                        <i class="ri-add-circle-fill"></i>
-                        Nova conta a pagar
-                    </a>
-                </div>
+
+
                 <hr class="mt-3">
                 <div class="col-lg-12">
                     {!!Form::open()->fill(request()->all())
@@ -40,15 +36,57 @@
                     </div>
                     {!!Form::close()!!}
                 </div>
-                <br><br>
+
+                <div style="text-align: right; margin-top: -35px;">
+                    <form method="get" action="{{ route('contas-empresa.print', [$item->id]) }}">
+
+                        <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                        <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                        <input type="hidden" name="tipo" value="{{ request('tipo') }}">
+                        <button class="btn btn-dark btn-sm px-3">
+                            <i class="ri-printer-line"></i> Imprimir
+                        </button>
+                    </form>
+                </div>
+                <br>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    Conta: <strong class="text-primary">{{ $item->nome }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    Banco: <strong class="text-primary">{{ $item->banco }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    Agência: <strong class="text-primary">{{ $item->agencia }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    Conta corrente: <strong class="text-primary">{{ $item->conta }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-md-12 mt-3">
                     @forelse($data as $m)
                     <div class="row">
-                        <div class="col-md-2">
+                        <div class="col-md-2 text-muted">
                             {{ __data_pt($m->created_at) }}
                         </div>
 
-                        <div class="col-md-6 col-12">
+                        <div class="col-md-2 text-dark">
+                            @if($m->fornecedor)
+                            {{ $m->fornecedor->razao_social }}
+                            @endif
+
+                            @if($m->cliente)
+                            {{ $m->cliente->razao_social }}
+                            @endif
+                        </div>
+
+                        <div class="col-md-4 col-12 text-muted">
                             {{ $m->descricao }}
                             @if($m->caixa_id)
                             <br>
@@ -65,10 +103,18 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-10">
+                        <div class="col-md-2">
+                            @if($m->categoria)
+                            <span>Categoria <strong class="text-dark">{{ $m->categoria->nome }}</strong></span>
+                            @endif
+                        </div>
+                        <div class="col-md-8">
+                            @if($m->numero_documento)
+                            <span>Nº NFe <strong class="text-dark">{{ $m->numero_documento }}</strong></span>
+                            @endif
                         </div>
                         <div class="col-md-2">
-                            <label class="float-right @if($m->saldo_atual <= 0) text-danger @else text-info @endif">
+                            <label class="float-right @if($m->saldo_atual <= 0) text-danger @else text-primary @endif">
                                 Saldo: R$ {{ __moeda($m->saldo_atual) }}
                             </label>
                         </div>

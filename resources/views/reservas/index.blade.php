@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Reservas'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -64,6 +64,7 @@
                                     <h6>Data checkout: <strong>{{ __data_pt($item->data_checkout, 0) }}</strong></h6>
                                     <h6>Cliente: <strong>{{ $item->cliente->info }}</strong></h6>
                                     <h6>Acomodação: <strong>{{ $item->acomodacao->info }}</strong></h6>
+                                    <h6>Qtd. hospedes: <strong>{{ $item->total_hospedes }}</strong></h6>
                                     <span class="badge bg-{{ $item->colorStatus() }}">{{ strtoupper($item->estado) }}</span>
                                 </div>
 

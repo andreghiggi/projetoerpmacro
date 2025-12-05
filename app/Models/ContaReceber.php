@@ -11,7 +11,8 @@ class ContaReceber extends Model
 
     protected $fillable = [
         'empresa_id', 'nfe_id', 'nfce_id', 'cliente_id', 'descricao', 'valor_integral', 'valor_recebido', 'data_vencimento',
-        'data_recebimento', 'status', 'observacao', 'tipo_pagamento', 'caixa_id', 'local_id', 'arquivo', 'motivo_estorno'
+        'data_recebimento', 'status', 'observacao', 'tipo_pagamento', 'caixa_id', 'local_id', 'arquivo', 'motivo_estorno',
+        'categoria_conta_id', 'valor_original', 'observacao2', 'observacao3', 'referencia', 'conta_empresa_id', 'ordem_servico_id'
     ];
 
     protected $appends = [ 'info' ];
@@ -25,6 +26,11 @@ class ContaReceber extends Model
         }
     }
 
+    public function categoria()
+    {
+        return $this->belongsTo(CategoriaConta::class, 'categoria_conta_id');
+    }
+
     public function localizacao()
     {
         return $this->belongsTo(Localizacao::class, 'local_id');
@@ -35,9 +41,19 @@ class ContaReceber extends Model
         return $this->belongsTo(Nfce::class, 'nfce_id');
     }
 
+    public function contaEmpresa()
+    {
+        return $this->belongsTo(ContaEmpresa::class, 'conta_empresa_id');
+    }
+
     public function nfe()
     {
         return $this->belongsTo(Nfe::class, 'nfe_id');
+    }
+
+    public function ordemServico()
+    {
+        return $this->belongsTo(OrdemServico::class, 'ordem_servico_id');
     }
 
     public function contaFatura(){
@@ -57,7 +73,7 @@ class ContaReceber extends Model
     
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class, 'cliente_id');
+        return $this->belongsTo(Cliente::class, 'cliente_id')->with('cidade');
     }
 
     public function boleto()

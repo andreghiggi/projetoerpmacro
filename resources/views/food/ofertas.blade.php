@@ -15,19 +15,7 @@
 				<div class="clearline"></div>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-md-12">
-				<div class="search-bar-mobile visible-xs visible-sm">
-					<form class="align-middle" method="GET" action="https://mateuscaseirao.ssapps.com.br/categoria/">
-						<input type="text" name="busca" placeholder="Digite sua busca..." value="">
-						<button>
-							<i class="lni lni-search-alt"></i>
-						</button>
-						<div class="clear"></div>
-					</form>
-				</div>
-			</div>
-		</div>
+		
 		
 		<div class="categorias no-bottom-mobile">
 			<div class="categoria no-bottom-mobile">
@@ -73,4 +61,7 @@
 </div>
 
 
+@endsection
+@section('js')
+<script src="/food-files/js/main.js"></script>
 @endsection

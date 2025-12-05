@@ -31,7 +31,7 @@ class RelacaoDadosFornecedorController extends Controller
         ->when(!empty($request->cfop_entrada), function ($q) use ($request) {
             return $q->where('cfop_entrada', $request->cfop_entrada);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('relacao_dados_fornecedor.index', compact('data'));
     }
@@ -48,7 +48,7 @@ class RelacaoDadosFornecedorController extends Controller
         return view('relacao_dados_fornecedor.edit', compact('item'));
     }
 
-     public function store(Request $request)
+    public function store(Request $request)
     {
         try {
 

@@ -30,12 +30,17 @@
         {!!Form::tel('etiquestas_por_linha', 'Etiquetas por linha')->attrs(['data-mask' => '00'])->required()
         !!}
     </div>
+    
     <div class="col-md-2">
         {!!Form::tel('distancia_etiquetas_lateral', 'Distância etiqueta lateral')->attrs(['data-mask' => '000.00', 'data-mask-reverse' => 'true'])->required()
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('distancia_etiquetas_topo', 'Distância etiqueta topo')->attrs(['data-mask' => '000.00', 'data-mask-reverse' => 'true'])->required()
+        !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::tel('distancia_entre_linhas', 'Distância entre linhas')->attrs(['data-mask' => '000.00', 'data-mask-reverse' => 'true'])->required()
         !!}
     </div>
     <div class="col-md-2">
@@ -75,6 +80,20 @@
         {!!Form::checkbox('codigo_barras_numerico', 'Código de barras numérico')->attrs(['class' => ''])
         ->value(1)
         ->checked(isset($item) ? $item->codigo_barras_numerico : 0)
+        !!}
+    </div>
+
+    <div class="col-md-3">
+        {!!Form::checkbox('referencia', 'Referência')->attrs(['class' => ''])
+        ->value(1)
+        ->checked(isset($item) ? $item->referencia : 0)
+        !!}
+    </div>
+
+    <div class="col-md-3">
+        {!!Form::checkbox('valor_atacado', 'Valor de atacado')->attrs(['class' => ''])
+        ->value(1)
+        ->checked(isset($item) ? $item->valor_atacado : 0)
         !!}
     </div>
 

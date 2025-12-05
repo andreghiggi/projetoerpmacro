@@ -1,0 +1,62 @@
+.w-100{
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+.ml-2{
+	border-left: 10px;
+}
+
+.select{
+	border-bottom: 2px solid #D10024;
+}
+.header-pay{
+	text-align: center;
+}
+.header-pay:hover{
+	cursor: pointer;
+}
+.body-pay{
+	margin-top: 20px;
+}
+.d-none{
+	display: none;
+}
+label{
+	margin-top: 10px;
+	margin-bottom: -4px;
+}
+
+.btn-success{
+	background: var(--color-main)!important;
+	border: none;
+}
+
+.billing-details {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+  padding: 25px;
+}
+
+.order-details .section-title .title {
+  text-align: center;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: var(--color-main, #c62828);
+  box-shadow: 0 0 0 2px rgba(198,40,40,0.15);
+  outline: none;
+}
+
+

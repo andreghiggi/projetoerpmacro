@@ -8,7 +8,7 @@
                 $soma = 0;
                 @endphp
                 <div class="row mt-3">
-                    <h3 class="text-center">Total por Tipo de Pagamento:</h3>
+                    <p class="text-muted">Total por Tipo de Pagamento</p>
                     @foreach($somaTiposPagamento as $key => $tp)
                     @if($tp > 0)
                     <div class="col-sm-4 col-lg-3 col-md-6">

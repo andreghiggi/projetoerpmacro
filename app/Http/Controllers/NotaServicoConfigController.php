@@ -88,7 +88,11 @@ class NotaServicoConfigController extends Controller
                     'timeout' => 60,
                     'port' => 443,
                     'http_version' => CURL_HTTP_VERSION_NONE
-                ]
+                ],
+                "debug" => false,
+                "timeout" => 60,
+                "port" => 443,
+                "http_version" => CURL_HTTP_VERSION_NONE
             ];
             $softhouse = new Softhouse($params);
             $documento = preg_replace('/[^0-9]/', '', $request->documento);
@@ -97,12 +101,16 @@ class NotaServicoConfigController extends Controller
 
             $cidade = Cidade::findOrFail($request->cidade_id);
 
+            $ie = $request->ie;
+            if($ie == 'ISENTO'){
+                $ie = null;
+            }
             $payload = [
                 "nome" => $request->nome,
                 "razao" => $request->razao_social,
                 "cnae" => $request->cnae,
                 "crt" => $request->regime == 'simples' ? 1 : 3,
-                "ie" => $request->ie,
+                "ie" => $ie,
                 "im" => $request->im,
                 "login_prefeitura" => $request->login_prefeitura,
                 "senha_prefeitura" => $request->senha_prefeitura,
@@ -129,6 +137,7 @@ class NotaServicoConfigController extends Controller
             }
             // dd($payload);
             $resp = $softhouse->criaEmitente($payload);
+            $resp = json_decode($resp);
 
             return $resp;
         }catch(\Exception $e){
@@ -149,19 +158,28 @@ class NotaServicoConfigController extends Controller
             ]);
 
             $item->fill($request->all())->save();
-            $resp = $this->atualizaSofthouse($request, $item);
+
+            $resp = $this->storeSofthouse($request);
 
             if($resp->codigo == 200){
-                session()->flash('flash_success', 'Configuração atualizada com sucesso!');
+
+                $item->token = $resp->token;
+                $item->save();
+
+                session()->flash("flash_success", "Empresa cadastrada na api com sucesso!");
             }else{
-                $erros = "";
-                if(isset($resp->erros)){
-                    foreach($resp->erros as $e){
-                        $erros .= $e->erro . " ";
-                    }
+
+                if($resp->codigo == 5001){
+                    session()->flash('flash_error', $resp->mensagem . " - " . $resp->erros[0]->erro);
                 }
-                session()->flash('flash_error', $resp->mensagem . " " . $erros);
-            } 
+
+                $resp = $this->atualizaSofthouse($request, $item);
+                if($resp == null){
+                    session()->flash('flash_error', 'Algo deu errado: TOKEN não configurado para atualizar!');
+                }else{
+                    session()->flash("flash_success", "Atualizado com sucesso!");
+                }
+            }
 
         }catch(\Exception $e){
             session()->flash('flash_error', 'Algo deu errado: ' . $e->getMessage());
@@ -181,7 +199,11 @@ class NotaServicoConfigController extends Controller
                     'timeout' => 60,
                     'port' => 443,
                     'http_version' => CURL_HTTP_VERSION_NONE
-                ]
+                ],
+                'debug' => false,
+                'timeout' => 60,
+                'port' => 443,
+                'http_version' => CURL_HTTP_VERSION_NONE
             ];
 
             $softhouse = new Emitente($params);
@@ -189,13 +211,17 @@ class NotaServicoConfigController extends Controller
             $telefone = preg_replace('/[^0-9]/', '', $request->telefone);
             $cep = preg_replace('/[^0-9]/', '', $request->cep);
 
-            $cidade = Cidade::findOrFail($request->cidade_id);  
+            $cidade = Cidade::findOrFail($request->cidade_id);
+            $ie = $request->ie;
+            if($ie == 'ISENTO'){
+                $ie = null;
+            }
             $payload = [
                 "nome" => $request->nome,
                 "razao" => $request->razao_social,
                 "cnae" => $request->cnae,
                 "crt" => $request->regime == 'simples' ? 1 : 3,
-                "ie" => $request->ie,
+                "ie" => $ie,
                 "im" => $request->im,
                 "login_prefeitura" => $request->login_prefeitura,
                 "senha_prefeitura" => $request->senha_prefeitura,
@@ -229,6 +255,8 @@ class NotaServicoConfigController extends Controller
             }
             // dd($payload);
             $resp = $softhouse->atualiza($payload);
+            $resp = json_decode($resp);
+
             return $resp;
         }catch(\Exception $e){
             session()->flash('flash_error', 'Algo deu errado: ' . $e->getMessage());
@@ -257,10 +285,15 @@ class NotaServicoConfigController extends Controller
                 'timeout' => 60,
                 'port' => 443,
                 'http_version' => CURL_HTTP_VERSION_NONE
-            ]
+            ],
+            "debug" => false,
+            "timeout" => 60,
+            "port" => 443,
+            "http_version" => CURL_HTTP_VERSION_NONE
         ];
         $certificado = new Certificado($params);
         $resp = $certificado->mostra();
+        $resp = json_decode($resp);
 
         return $resp;
     }
@@ -291,7 +324,11 @@ class NotaServicoConfigController extends Controller
                     'timeout' => 60,
                     'port' => 443,
                     'http_version' => CURL_HTTP_VERSION_NONE
-                ]
+                ],
+                'debug' => false,
+                'timeout' => 60,
+                'port' => 443,
+                'http_version' => CURL_HTTP_VERSION_NONE
             ];
             $certificado = new Certificado($params);
 
@@ -301,6 +338,8 @@ class NotaServicoConfigController extends Controller
             ];
 
             $resp = $certificado->atualiza($payload);
+            $resp = json_decode($resp);
+            
             if($resp->codigo == 200){
                 session()->flash('flash_success', 'Upload realizado com sucesso!');
             }else{

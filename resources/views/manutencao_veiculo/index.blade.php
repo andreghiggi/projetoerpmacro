@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Manutenção de Veículos'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
 	<div class="row">
 		<div class="card">
 			<div class="card-body">
@@ -83,7 +83,6 @@
 									<th>Fornecedor</th>
 									<th>Veículo</th>
 									<th>Valor</th>
-									
 									<th>Data de início</th>
 									<th>Data de fim</th>
 									<th>Data de cadastro</th>
@@ -94,27 +93,20 @@
 							<tbody>
 								@forelse($data as $item)
 								<tr>
-									<td>{{ $item->numero_sequencial }}</td>
-									<td>{{ $item->fornecedor->info }}</td>
-									<td>{{ $item->veiculo->info }}</td>
-									<td>{{ __moeda($item->total) }}</td>
-									<td>{{ __data_pt($item->data_inicio, 0) }}</td>
-									<td>{{ __data_pt($item->data_fim, 0) }}</td>
-									<td>{{ __data_pt($item->created_at) }}</td>
-
-									<td style="width: 200px">
+									<td data-label="#">{{ $item->numero_sequencial }}</td>
+									<td data-label="Fornecedor">{{ $item->fornecedor->info }}</td>
+									<td data-label="Veículo">{{ $item->veiculo->info }}</td>
+									<td data-label="Valor">{{ __moeda($item->total) }}</td>
+									<td data-label="Data de início">{{ __data_pt($item->data_inicio, 0) }}</td>
+									<td data-label="Data de fim">{{ __data_pt($item->data_fim, 0) }}</td>
+									<td data-label="Data de cadastro">{{ __data_pt($item->created_at) }}</td>
+									<td data-label="Estado">
 										@if($item->estado == 'aguardando')
-										<span class="btn btn-sm btn-warning text-white btn-sm w-100">
-											Aguardando
-										</span>
+										<span class="btn btn-sm btn-warning text-white">Aguardando</span>
 										@elseif($item->estado == 'em_manutencao')
-										<span class="btn btn-primary text-white btn-sm w-100">
-											Em manutenção
-										</span>
+										<span class="btn btn-primary text-white btn-sm">Em manutenção</span>
 										@else
-										<span class="btn btn-success text-white btn-sm w-100">
-											Finalizado
-										</span>
+										<span class="btn btn-success text-white btn-sm">Finalizado</span>
 										@endif
 									</td>
 									<td>
@@ -129,17 +121,20 @@
 											@endcan
 
 											@can('manutencao_veiculo_delete')
-											<button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
+											<button type="button" class="btn btn-danger btn-sm btn-delete">
+												<i class="ri-delete-bin-line"></i>
+											</button>
 											@endcan
 
-											<a class="btn btn-ligth btn-sm" title="Detalhes" href="{{ route('manutencao-veiculos.show', $item->id) }}"><i class="ri-eye-line"></i></a>
-
+											<a class="btn btn-light btn-sm" title="Detalhes" href="{{ route('manutencao-veiculos.show', $item->id) }}">
+												<i class="ri-eye-line"></i>
+											</a>
 										</form>
 									</td>
 								</tr>
 								@empty
 								<tr>
-									<td colspan="10" class="text-center">Nada encontrado</td>
+									<td colspan="9" class="text-center">Nada encontrado</td>
 								</tr>
 								@endforelse
 							</tbody>
@@ -150,6 +145,7 @@
 								</tr>
 							</tfoot>
 						</table>
+
 					</div>
 					<br>
 					{!! $data->appends(request()->all())->links() !!}

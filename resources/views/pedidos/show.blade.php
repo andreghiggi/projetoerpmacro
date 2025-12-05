@@ -42,7 +42,7 @@
 						</div>
 
 						<div class="col-md-12 mt-2">
-							<button type="button" class="btn w-100 btn-dark" id="btn-adicionais">
+							<button @if($item->status == 0) disabled @endif type="button" class="btn w-100 btn-dark" id="btn-adicionais">
 								<i class="ri-shopping-basket-fill"></i>
 								Definir adicionais
 							</button>
@@ -87,7 +87,7 @@
 						<input type="hidden" id="pizzas-hidden" name="pizzas">
 						<input type="hidden" id="tamanho_id-hidden" name="tamanho_id">
 						<div class="col-md-12 col-12 mt-4">
-							<button type="submit" class="btn w-100 btn-success">
+							<button @if($item->status == 0) disabled @endif type="submit" class="btn w-100 btn-success">
 								<i class="ri-checkbox-circle-fill"></i>
 								Adicionar
 							</button>
@@ -148,7 +148,7 @@
 						</div>
 
 						<div class="col-md-12 col-12 mt-4">
-							<button type="submit" class="btn w-100 btn-dark">
+							<button @if($item->status == 0) disabled @endif type="submit" class="btn w-100 btn-dark">
 								<i class="ri-checkbox-circle-fill"></i>
 								Adicionar
 							</button>
@@ -164,12 +164,27 @@
 			<div class="card">
 				<div class="card-body">
 					<div class="col-12">
-						<h3>ITENS <strong class="text-success">#{{ $item->comanda }}</strong></h3>
-
+						<h3>ITENS 
+							@if($item->comanda)
+							<strong class="text-success">COMANDA #{{ $item->comanda }}</strong>
+							@endif
+						</h3>
+						@if($item->_mesa)
+						<h4 class="text-danger">{{ $item->_mesa->nome }} </h4>
+						@endif
+						<button type="button" data-bs-toggle="modal" data-bs-target="#modal-mesa" class="btn float-end btn-light">
+							<i class="ri-refresh-line"></i>
+							Alterar mesa/comanda
+						</button>
 						<button class="float-end btn btn-dark" onclick="print('{{ $item->id }}')">
 							<i class="ri-printer-line"></i>
 							Imprimir
 						</button>
+
+						@if($item->cliente_nome)
+						<h4>Cliente: <strong class="text-primary">{{ $item->cliente_nome }} - {{ $item->cliente_fone }}</strong></h4>
+						@endif
+
 					</div>
 
 					
@@ -193,6 +208,10 @@
 										@if($i->funcionario)
 										<br> <span style="color: red; font-size: 11px">garçom: {{ $i->funcionario->nome }}</span>
 										@endif
+
+										@if($i->nome_cardapio)
+										<br> <span style="color: red; font-size: 11px">cliente: {{ $i->nome_cardapio }}</span>
+										@endif
 									</td>
 									<td>{{ __moeda($i->quantidade) }}</td>
 									<td>{{ __moeda($i->valor_unitario) }}</td>
@@ -209,11 +228,13 @@
 										@endif
 									</td>
 									<td>
+										@if(__isAdmin())
 										<form action="{{ route('pedidos-cardapio.destroy-item', $i->id) }}" method="post" id="form-{{$i->id}}">
 											@csrf
 											@method('delete')
-											<button type="submit" title="Deletar" class="btn btn-danger btn-delete btn-sm"><i class="ri-delete-bin-2-line"></i></button>
+											<button @if($item->status == 0) disabled @endif type="submit" title="Deletar" class="btn btn-danger btn-delete btn-sm"><i class="ri-delete-bin-2-line"></i></button>
 										</form>
+										@endif
 									</td>
 								</tr>
 								@if(sizeof($i->adicionais) > 0)
@@ -282,7 +303,7 @@
 					</div>	
 
 					<div class="row">
-						<h5>estado dos itens</h5>
+						<h5>Estado dos itens</h5>
 						<div class="col-lg-3 col-6">
 							<h6 class="text-novo">
 								<i class="ri-flag-2-fill"></i> novo
@@ -307,13 +328,50 @@
 							</h6>
 						</div>
 					</div>
+
+					@if($config->percentual_taxa_servico > 0)
+					<div class="row">
+						<div class="col-lg-3 col-6">
+							<h5 class="text-muted">% Taxa de serviço: <strong>{{ $config->percentual_taxa_servico }}%</strong></h5>
+						</div>
+						<div class="col-lg-3 col-6">
+							<h5 class="text-muted">Valor dos itens: <strong>R$ {{ __moeda($item->itensServico->sum('sub_total') + $item->itens->sum('sub_total')) }}</strong></h5>
+						</div>
+						<div class="col-lg-3 col-6">
+							<h5 class="text-muted">Valor de acréscimo: <strong>R$ {{ __moeda($item->acrescimo) }}</strong></h5>
+						</div>
+					</div>
+					@endif
 					<hr>
+					
+					@can('pdv_create')
+					@if($item->status == 1)
+					@if(sizeof($clientes) > 0)
+					<div class="row">
+						<h5>Finalizar por cliente</h5>
+						@foreach($clientes as $key => $valor)
+						<div class="col-md-3">
+							<a href="{{ route('pedidos-cardapio.finish-client', ['pedido_id' => $item->id, 'nome' => $key, 'valor' => $valor])}}" class="btn btn-dark w-100 @if(!$item->status) disabled @endif">
+								<i class="ri-user-6-fill"></i> {{ $key }} R$ {{ __moeda($valor) }}
+							</a>
+						</div>
+						@endforeach
+					</div>
+					<hr>
+					@endif
 					<div class="col-12">
 						<a class="btn btn-lg btn-primary pull-right @if(!$item->status) disabled @endif" href="{{ route('pedidos-cardapio.finish', [$item->id])}}">
 							<i class="ri-shopping-cart-2-line"></i>
-							Finalizar <strong style="font-size: 25px; margin-left: 15px">R$ {{ __moeda($item->total) }}</strong>
+							@if(sizeof($clientes) > 0)
+							Finalizar Todos
+							@else
+							Finalizar
+							@endif
+							<strong style="font-size: 25px; margin-left: 15px">R$ {{ __moeda($item->total+$item->acrescimo) }}</strong>
 						</a>
 					</div>
+					@endcan
+					@endif
 
 					<div style="text-align: right; margin-top: -40px;">
 						<a href="{{ route('pedidos-cardapio.index') }}" class="btn btn-sm btn-danger btn-sm px-3">
@@ -326,6 +384,40 @@
 	</div>
 </div>
 
+<div class="modal fade" id="modal-mesa" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<form action="{{ route('pedidos-cardapio.update-table', [$item->id]) }}" method="post">
+			@csrf
+			@method('put')
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Alterar mesa/comanda</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+
+					<div class="col-md-12 mb-2">
+						{!!Form::select('mesa_id', 'Mesa', ['' => 'Selecione'] + 
+						$mesas->pluck('nome', 'id')->all())
+						->attrs(['class' => 'form-select'])
+						->value($item->mesa_id)
+						!!}
+					</div>
+
+					<div class="col-md-12">
+						{!!Form::tel('comanda', 'Comanda')
+						->value($item->comanda)
+						!!}
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-success" data-bs-dismiss="modal">Salvar</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
 <div class="modal fade" id="modal-adicionais" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
@@ -335,7 +427,6 @@
 			</div>
 			<div class="modal-body">
 				<div class="row adicionais">
-
 
 				</div>
 

@@ -12,15 +12,27 @@ class Nfce extends Model
     protected $fillable = [
         'empresa_id', 'emissor_nome', 'emissor_cpf_cnpj', 'cliente_nome', 'cliente_cpf_cnpj',
         'chave', 'numero_serie', 'numero', 'estado', 'total', 'motivo_rejeicao', 'recibo',
-        'ambiente', 'uf', 'desconto', 'acrescimo', 'natureza_id', 'observacao', 'cliente_id',
+        'ambiente', 'desconto', 'acrescimo', 'natureza_id', 'observacao', 'cliente_id',
         'api', 'caixa_id', 'dinheiro_recebido', 'troco', 'tipo_pagamento', 'bandeira_cartao',
         'cnpj_cartao', 'cAut_cartao', 'gerar_conta_receber', 'valor_cashback', 'lista_id',
-        'numero_sequencial', 'funcionario_id', 'local_id', 'user_id', 'valor_entrega'
+        'numero_sequencial', 'funcionario_id', 'local_id', 'user_id', 'valor_entrega', 'placa', 'uf', 'tipo',
+        'qtd_volumes', 'numeracao_volumes', 'especie', 'peso_liquido', 'peso_bruto', 'valor_frete',
+        'transportadora_id'
     ];
+
+    public function transportadora()
+    {
+        return $this->belongsTo(Transportadora::class, 'transportadora_id');
+    }
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+
+    public function caixa()
+    {
+        return $this->belongsTo(Caixa::class, 'caixa_id');
     }
 
     public function user()
@@ -48,6 +60,11 @@ class Nfce extends Model
         return $this->hasOne(Pedido::class, 'nfce_id');
     }
 
+    public function registroTef()
+    {
+        return $this->hasOne(RegistroTef::class, 'nfce_id');
+    }
+
     public function empresa()
     {
         return $this->belongsTo(Empresa::class, 'empresa_id');
@@ -63,7 +80,7 @@ class Nfce extends Model
         return $this->hasMany(ItemNfce::class, 'nfce_id')->with('produto');
     }
 
-    public function trocas()
+    public function troca()
     {
         return $this->hasMany(Troca::class, 'nfce_id');
     }
@@ -119,9 +136,29 @@ class Nfce extends Model
             '90' => 'Sem Pagamento',
             // '99' => 'Outros',
 
-            // '30' => 'Cartão de Crédito TEF',
-            // '31' => 'Cartão de Débito TEF',
-            // '32' => 'PIX TEF',
+            '30' => 'Cartão de Crédito TEF',
+            '31' => 'Cartão de Débito TEF',
+            '32' => 'PIX TEF',
+        ];
+    }
+
+    public static function tiposPagamentoMobo()
+    {
+        return [
+            '01' => 'Dinheiro',
+            '02' => 'Cheque',
+            '03' => 'Cartão de Crédito',
+            '04' => 'Cartão de Débito',
+            '05' => 'Crédito Loja',
+            '06' => 'Crediário',
+            '10' => 'Vale Alimentação',
+            '11' => 'Vale Refeição',
+            '12' => 'Vale Presente',
+            '13' => 'Vale Combustível',
+            '14' => 'Duplicata Mercantil',
+            '15' => 'Boleto Bancário',
+            '16' => 'Depósito Bancário',
+            '17' => 'Pix',
         ];
     }
 
@@ -143,6 +180,9 @@ class Nfce extends Model
 
     public static function getTipoPagamento($tipo)
     {
+        if($tipo == '00'){
+            return 'Vale crédito';
+        }
         if (isset(Nfce::tiposPagamento()[$tipo])) {
             return Nfce::tiposPagamento()[$tipo];
         } else {

@@ -60,7 +60,7 @@
 									</div>
 									
 									
-									<span class="valor" style="color:black">R$: {{ __moeda($s->valor) }}</span>
+									<span class="valor" style="color:black">R$ {{ __moeda($s->valor) }}</span>
 									<div class="detalhes"><i class="icone icone-sacola"></i> <span>Adicionar</span></div>
 								</a>
 							</div>

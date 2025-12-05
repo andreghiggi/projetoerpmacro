@@ -5,17 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CategoriaProduto;
 use App\Models\Produto;
+use Illuminate\Support\Str;
 
 class ProdutoEcommerceController extends Controller
 {
+
+    private function insertHash(){
+        $data = CategoriaProduto::where('empresa_id', request()->empresa_id)
+        ->where('hash_ecommerce', null)->get();
+        foreach($data as $c){
+            $c->hash_ecommerce = Str::random(50);
+            $c->save();
+        }
+    }
+
     public function categorias(Request $request){
+        $this->insertHash();
         $nome = $request->nome;
         $data = CategoriaProduto::where('empresa_id', $request->empresa_id)
         ->when(!empty($nome), function ($q) use ($nome) {
             return $q->where('nome', 'LIKE', "%$nome%");
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('ecommerce.categorias.index', compact('data'));
     }
 
@@ -31,7 +43,7 @@ class ProdutoEcommerceController extends Controller
             return $q->where('status', $status);
         })
         ->where('ecommerce', 1)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('ecommerce.produtos.index', compact('data'));
     }

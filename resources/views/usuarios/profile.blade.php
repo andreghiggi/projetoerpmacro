@@ -39,6 +39,11 @@
                                 <p class="text-muted mb-2"><strong>Data do Cadastro:</strong> <span class="ms-2 ">{{ __data_pt($item->created_at) }}</span></p>
 
                                 @if(Auth::user()->empresa)
+                                <p class="text-muted mb-2"><strong>Empresa:</strong> 
+                                    <span class="ms-2">
+                                        {{ Auth::user()->empresa->empresa->nome }}
+                                    </span>
+                                </p>
                                 <p class="text-muted mb-2"><strong>Ambiente:</strong> 
                                     <span class="ms-2">
                                         {{ Auth::user()->empresa->empresa->ambiente == 2 ? 'HOMOLOGAÇÃO' : 'PRODUÇÃO'}}
@@ -48,7 +53,7 @@
 
                                 <p class="text-muted mb-2"><strong>IP:</strong> 
                                     <span class="ms-2 ">
-                                        {{ Auth::user()->acessos ? Auth::user()->acessos->first()->ip : ''}}
+                                        {{ Auth::user()->acessos && Auth::user()->acessos->first() ? Auth::user()->acessos->first()->ip : ''}}
                                     </span>
                                 </p>
 

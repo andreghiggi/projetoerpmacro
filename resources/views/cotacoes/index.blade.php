@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Cotações'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -65,7 +65,7 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -84,10 +84,10 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->fornecedor ? $item->fornecedor->razao_social : "--" }}</td>
-                                    <td>{{ $item->fornecedor ? $item->fornecedor->cpf_cnpj : "--" }}</td>
-                                    <td>{{ number_format($item->valor_total, 2, ',', '.') }}</td>
-                                    <td width="150">
+                                    <td data-label="Fornecedor">{{ $item->fornecedor ? $item->fornecedor->razao_social : "--" }}</td>
+                                    <td data-label="CPF/CNPJ">{{ $item->fornecedor ? $item->fornecedor->cpf_cnpj : "--" }}</td>
+                                    <td data-label="Valor total">{{ number_format($item->valor_total, 2, ',', '.') }}</td>
+                                    <td data-label="Estado">
                                         @if($item->estado == 'aprovada')
                                         <span class="bg-success text-white p-2" style="border-radius: 5px;">Aprovada</span>
                                         @elseif($item->estado == 'rejeitada')
@@ -98,28 +98,28 @@
                                         <span class="bg-info text-white p-2" style="border-radius: 5px;">Nova</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td data-label="Status">
                                         @if($item->status)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td data-label="Gerado compra">
                                         @if($item->nfe_id)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>{{ $item->data_resposta ? __data_pt($item->data_resposta) : '--' }}</td>
-                                    <td>{{ $item->referencia }}</td>
-                                    <td width="300">
-                                        <form action="{{ route('cotacoes.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                    <td data-label="Data de criação">{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Data de resposta">{{ $item->data_resposta ? __data_pt($item->data_resposta) : '--' }}</td>
+                                    <td data-label="Referência">{{ $item->referencia }}</td>
+                                    <td>
+                                        <form style="width: 200px" action="{{ route('cotacoes.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @csrf
-                                            
+
                                             @if($item->estado != 'aprovada')
                                             @can('cotacao_edit')
                                             <a class="btn btn-warning btn-sm" href="{{ route('cotacoes.edit', $item->id) }}">
@@ -143,7 +143,6 @@
                                                 <i class="ri-eye-2-line"></i>
                                             </a>
                                             @endif
-                                            
                                         </form>
                                     </td>
                                 </tr>
@@ -154,6 +153,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>

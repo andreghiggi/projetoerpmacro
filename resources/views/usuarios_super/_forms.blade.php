@@ -37,7 +37,7 @@
     <div class="col-md-3">
         {!!Form::select('role_id', 'Controle de acesso', ['' => 'Selecione'] + $roles->pluck('description', 'id')->all())
         ->attrs(['class' => 'select2'])
-        ->value(isset($item) && $item->roles ? $item->roles->first()->id : null)
+        ->value((isset($item) && $item->roles && $item->roles->first()) ? $item->roles->first()->id : null)
         ->required()
         !!}
     </div>

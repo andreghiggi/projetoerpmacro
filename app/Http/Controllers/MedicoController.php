@@ -21,7 +21,7 @@ class MedicoController extends Controller
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('medicos.index', compact('data'));
     }

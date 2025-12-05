@@ -1,10 +1,20 @@
 @extends('layouts.app', ['title' => 'NFCe'])
 @section('content')
+
+<input type="hidden" id="nao_imprimir" value="1">
 <div class="mt-3">
     <div class="row">
         <div class="card">
             <div class="card-body">
                 <h4>NFCe</h4>
+
+                <div class="col-md-2">
+                    <a href="{{ route('contador-empresa-nfce.create') }}" class="btn btn-success">
+                        <i class="ri-add-circle-fill"></i>
+                        Nova NFCe
+                    </a>
+                </div>
+
                 <hr class="mt-3">
                 <div class="col-lg-12">
                     {!!Form::open()->fill(request()->all())
@@ -47,6 +57,8 @@
                                 <tr>
                                     <th>Cliente</th>
                                     <th>CPF/CNPJ</th>
+                                    <th>#</th>
+
                                     <th>Número</th>
                                     <th>Valor</th>
                                     <th>Estado</th>
@@ -61,6 +73,8 @@
                                 <tr>
                                     <td>{{ $item->cliente ? $item->cliente->razao_social : ($item->cliente_nome != "" ? $item->cliente_nome : "--") }}</td>
                                     <td>{{ $item->cliente ? $item->cliente->cpf_cnpj : ($item->cliente_cpf_cnpj != "" ? $item->cliente_cpf_cnpj : "--") }}</td>
+                                    <td>{{ $item->numero_sequencial }}</td>
+
                                     <td>{{ $item->numero ? $item->numero : '' }}</td>
                                     <td>{{ __moeda($item->total) }}</td>
                                     <td width="150">
@@ -84,14 +98,42 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a class="btn btn-primary btn-sm" title="Download XML" href="{{ route('contador-empresa-nfce.download', [$item->id]) }}">
-                                            <i class="ri-file-download-fill"></i>
-                                        </a>
-                                        @if($item->estado == 'aprovado')
-                                        <a target="_blank" class="btn btn-dark btn-sm" title="Danfe" href="{{ route('contador-empresa-nfce.danfce', [$item->id]) }}">
-                                            <i class="ri-printer-fill"></i>
-                                        </a>
-                                        @endif
+                                        <form action="{{ route('contador-empresa-nfce.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 180px">
+                                            @method('delete')
+                                            @csrf
+                                            @if($item->estado == 'aprovado')
+                                            <a class="btn btn-primary btn-sm" title="Download XML" href="{{ route('contador-empresa-nfce.download', [$item->id]) }}">
+                                                <i class="ri-file-download-fill"></i>
+                                            </a>
+                                            <a target="_blank" class="btn btn-dark btn-sm" title="Danfe" href="{{ route('contador-empresa-nfce.danfce', [$item->id]) }}">
+                                                <i class="ri-printer-fill"></i>
+                                            </a>
+
+                                            <button title="Cancelar NFCe" type="button" class="btn btn-danger btn-sm" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
+                                                <i class="ri-close-circle-line"></i>
+                                            </button>
+                                            @else
+
+                                            @if($item->estado != 'cancelado')
+                                            <a class="btn btn-warning btn-sm" href="{{ route('contador-empresa-nfce.edit', $item->id) }}">
+                                                <i class="ri-edit-line"></i>
+                                            </a>
+
+                                            <button title="Transmitir NFCe" type="button" class="btn btn-success btn-sm" onclick="transmitir('{{$item->id}}')">
+                                                <i class="ri-send-plane-fill"></i>
+                                            </button>
+
+                                            <a target="_blank" title="XML temporário" class="btn btn-light btn-sm" href="{{ route('contador-empresa-nfce.xml-temp', $item->id) }}">
+                                                <i class="ri-file-line"></i>
+                                            </a>
+
+                                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
+                                            @endif
+                                            @endif
+
+
+
+                                        </form>
                                     </td>
                                 </tr>
                                 @empty
@@ -120,6 +162,33 @@
                     </div>
                     @endif
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-cancelar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cancelar NFCe <strong class="ref-numero"></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+
+                    <div class="col-md-12">
+                        {!!Form::text('motivo-cancela', 'Motivo')
+                        ->required()
+
+                        !!}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" id="btn-cancelar" class="btn btn-danger">Cancelar</button>
             </div>
         </div>
     </div>
@@ -164,5 +233,5 @@
     })
 
 </script>
-<script type="text/javascript" src="/js/nfe_transmitir.js"></script>
+<script type="text/javascript" src="/js/nfce_transmitir.js"></script>
 @endsection

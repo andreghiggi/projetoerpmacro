@@ -20,6 +20,7 @@ use App\Models\ItemListaPreco;
 use App\Models\PadraoTributacaoProduto;
 use App\Models\ProdutoVariacao;
 use App\Models\Localizacao;
+use App\Models\CategoriaAdicional;
 use Illuminate\Http\Request;
 use App\Utils\EstoqueUtil;
 
@@ -31,6 +32,25 @@ class ProdutoController extends Controller
     public function __construct(EstoqueUtil $util)
     {
         $this->util = $util;
+    }
+
+    public function getAdicionaisModal(Request $request){
+        $item = Produto::findOrFail($request->produto_id);
+
+        if(sizeof($item->adicionais) == 0){
+            return response()->json("", 200);
+        }
+
+        $categoriasAdicional = CategoriaAdicional::where('categoria_adicionals.empresa_id', $item->empresa_id)
+        ->where('categoria_adicionals.status', 1)
+        ->select('categoria_adicionals.*')
+        ->join('adicionals', 'adicionals.categoria_id', '=', 'categoria_adicionals.id')
+        ->join('produto_adicionals', 'produto_adicionals.adicional_id', '=', 'adicionals.id')
+        ->where('produto_adicionals.produto_id', $item->id)
+        ->groupBy('categoria_adicionals.id')
+        ->get();
+
+        return view('produtos.partials.adicional_pdv', compact('item', 'categoriasAdicional'));
     }
 
     public function pesquisa(Request $request)
@@ -52,11 +72,12 @@ class ProdutoController extends Controller
             }
         }
 
+        $refDigito = substr($request->pesquisa, 0, 1);
         $data = Produto::orderBy('nome', 'desc')
         ->select('produtos.*')
         ->where('empresa_id', $request->empresa_id)
         ->where('status', 1)
-        ->when(!is_numeric($request->pesquisa), function ($q) use ($request) {
+        ->when(!is_numeric($request->pesquisa) && $refDigito != '#', function ($q) use ($request) {
             // return $q->where('nome', 'LIKE', "%$request->pesquisa%");
             return $q->where(function($query) use ($request)
             {
@@ -64,13 +85,18 @@ class ProdutoController extends Controller
                 ->orWhere('referencia', 'LIKE', "%$request->pesquisa%");
             });
         })
-        ->when(is_numeric($request->pesquisa), function ($q) use ($request) {
+        ->when(is_numeric($request->pesquisa) && $refDigito != '#', function ($q) use ($request) {
             return $q->where(function($query) use ($request)
             {
                 return $query->where('codigo_barras', 'LIKE', "%$request->pesquisa%")
                 ->orWhere('codigo_barras2', 'LIKE', "%$request->pesquisa%")
-                ->orWhere('codigo_barras3', 'LIKE', "%$request->pesquisa%");
+                ->orWhere('codigo_barras3', 'LIKE', "%$request->pesquisa%")
+                ->orWhere('numero_sequencial', 'LIKE', "%$request->pesquisa%");
             });
+        })
+        ->when($refDigito == '#', function ($q) use ($request) {
+            $pesquisa = substr($request->pesquisa, 1, strlen($request->pesquisa));
+            return $q->where('referencia', 'LIKE', "%$pesquisa%");
         })
         ->when($local_id != null, function ($query) use ($local_id) {
             return $query->join('produto_localizacaos', 'produto_localizacaos.produto_id', '=', 'produtos.id')
@@ -81,7 +107,8 @@ class ProdutoController extends Controller
 
         if(is_numeric($request->pesquisa)){
             $dataAppend = ProdutoVariacao::where('produtos.empresa_id', $request->empresa_id)
-            ->where('produto_variacaos.codigo_barras', 'LIKE', "%$request->pesquisa%")
+            ->where('produto_variacaos.codigo_barras', $request->pesquisa)
+            // ->where('produto_variacaos.codigo_barras', 'LIKE', "%$request->pesquisa%")
             ->join('produtos', 'produtos.id', '=', 'produto_variacaos.produto_id')
             ->select('produto_variacaos.*')
             ->get();
@@ -136,9 +163,18 @@ class ProdutoController extends Controller
             if($countLocais > 1){
                 $p = __tributacaoProdutoLocalVenda($p, $local_id);
             }
+
+            if($p instanceof Produto &&$p->precoComPromocao()){
+                $p->valor_unitario = $p->precoComPromocao()->valor;
+            }
         }
 
         return response()->json($data, 200);
+    }
+
+    public function modal($id){
+        $item = Produto::findOrFail($id);
+        return view('produtos.partials.modal_body', compact('item'));
     }
 
     public function codigoUnico(Request $request){
@@ -146,10 +182,32 @@ class ProdutoController extends Controller
         $data = ProdutoUnico::
         where('produtos.empresa_id', $request->empresa_id)
         ->where('produto_unicos.em_estoque', 1)
+        ->where('produtos.status', 1)
         ->select('produto_unicos.*')
         ->join('produtos', 'produtos.id', '=', 'produto_unicos.produto_id')
         ->when($request->pesquisa, function ($q) use ($request) {
             return $q->where('produto_unicos.codigo', 'LIKE', "%$request->pesquisa%");
+        })
+        ->get();
+        return response()->json($data, 200);
+    }
+
+    public function descricao(Request $request){
+        $item = Produto::findOrFail($request->produto_id);
+        return response()->json($item->nome, 200);
+    }
+
+    public function tipoProducao(Request $request){
+
+        $data = Produto::
+        where('produtos.empresa_id', $request->empresa_id)
+        ->where('tipo_producao', 1)
+        ->where('status', 1)
+        ->when(!is_numeric($request->pesquisa), function ($q) use ($request) {
+            return $q->where('nome', 'LIKE', "%$request->pesquisa%");
+        })
+        ->when(is_numeric($request->pesquisa), function ($q) use ($request) {
+            return $q->where('codigo_barras', 'LIKE', "%$request->pesquisa%");
         })
         ->get();
         return response()->json($data, 200);
@@ -220,6 +278,7 @@ class ProdutoController extends Controller
         $fornecedor = null;
         $entrada = $request->entrada;
         $tributacao_cliente = $request->tributacao_cliente;
+        $lista_id = $request->lista_id;
         $tributacao = null;
         $caixa = Caixa::where('usuario_id', $request->usuario_id)->where('status', 1)->first();
 
@@ -232,6 +291,15 @@ class ProdutoController extends Controller
         }
         $item = Produto::where('id', $request->produto_id)
         ->first();
+
+        if($lista_id){
+            $itemLista = ItemListaPreco::where('lista_id', $lista_id)
+            ->where('produto_id', $item->id)
+            ->first();
+            if($itemLista){
+                $item->valor_unitario = $itemLista->valor;
+            }
+        }
 
         $item = __tributacaoProdutoLocalVenda($item, $caixa->local_id);
 
@@ -290,6 +358,10 @@ class ProdutoController extends Controller
             }
         }
 
+        if($item->precoComPromocao()){
+            $item->valor_unitario = $item->precoComPromocao()->valor;
+        }
+
         $item->cfop_atual = $item->cfop_estadual;
 
         if ($empresa != null) {
@@ -312,9 +384,10 @@ class ProdutoController extends Controller
     public function findId($id)
     {
         $item = Produto::where('id', $id)
-        ->with(['categoria', 'adicionais'])
+        ->with(['categoria', 'adicionais', 'subcategoria', 'locais'])
         ->first();
 
+        $item->disponibilidade = $item->locais->pluck('localizacao_id');
         return response()->json($item, 200);
     }
 
@@ -332,6 +405,10 @@ class ProdutoController extends Controller
         ->first();
         if($itemLista){
             $item->valor_unitario = $itemLista->valor;
+        }
+
+        if($item->precoComPromocao()){
+            $item->valor_unitario = $item->precoComPromocao()->valor;
         }
 
         return response()->json($item, 200);
@@ -371,7 +448,12 @@ class ProdutoController extends Controller
             return $query->join('produto_localizacaos', 'produto_localizacaos.produto_id', '=', 'produtos.id')
             ->where('produto_localizacaos.localizacao_id', $local_id);
         })
-        ->where('categoria_id', $id)
+        // ->where('categoria_id', $id)
+        ->where(function($query) use ($id)
+        {
+            return $query->where('categoria_id', $id)
+            ->orWhere('sub_categoria_id', $id);
+        })
         ->where('status', 1)
         ->get();
 
@@ -534,12 +616,16 @@ class ProdutoController extends Controller
             }
         }
 
+
         if($item == null){
             $variacao = ProdutoVariacao::where('produto_variacaos.codigo_barras', $request->barcode)
             ->where('produtos.empresa_id', $request->empresa_id)
             ->join('produtos', 'produtos.id', '=', 'produto_variacaos.produto_id')
             ->select('produto_variacaos.*')
             ->first();
+
+            $item = $variacao->produto;
+
             if($variacao){
                 $item->codigo_variacao = $variacao->id;
                 $item->valor_unitario = $variacao->valor;
@@ -547,6 +633,11 @@ class ProdutoController extends Controller
                 $item->id = $variacao->produto_id;
             }
         }
+
+        if($item->precoComPromocao()){
+            $item->valor_unitario = $item->precoComPromocao()->valor;
+        }
+        
         return response()->json($item, 200);
     }
 
@@ -595,6 +686,7 @@ class ProdutoController extends Controller
         }
 
         if ($item->unidade == 'KG') {
+
             if ($balanca_valor_peso == 'valor') {
                 $quantidade = $valor / $item->valor_unitario;
                 $subtotal = $valor;
@@ -693,19 +785,27 @@ class ProdutoController extends Controller
     {
         $produto = Produto::findOrFail($request->product_id);
         $qtd = $request->qtd;
+        $local_id = $request->local_id;
 
         if($produto->gerenciar_estoque){
+
             if($produto->combo){
                 $estoqueMsg = $this->util->verificaEstoqueCombo($produto, (float)$qtd);
                 if($estoqueMsg != ""){
                     return response()->json($estoqueMsg, 401);
                 }
             }else{
-                if(!$produto->estoque){
+
+                $estoque = Estoque::where('produto_id', $request->product_id)
+                ->when($local_id, function ($query) use ($local_id) {
+                    return $query->where('local_id', $local_id);
+                })
+                ->first();
+                if(!$estoque){
                     return response()->json("Produto sem estoque definido!", 401);
                 }
 
-                if($produto->estoque->quantidade < $qtd){
+                if($estoque->quantidade < $qtd){
                     return response()->json("Estoque insuficiente!", 401);
                 }
             }
@@ -807,6 +907,20 @@ class ProdutoController extends Controller
 
         $item = __tributacaoProdutoLocalVenda($item, $request->local_id);
 
+        //valida estoque
+        if($item->gerenciar_estoque){
+            if(!$item->estoque){
+                return response()->json("Estoque vazio!", 401);
+            }
+            if($item->estoque->quantidade < $request->quantidade){
+                $qtd = $item->estoque->quantidade;
+                if(!$item->unidadeDecimal()){
+                    $qtd = number_format($item->estoque->quantidade, 0, '.', '');
+                }
+                return response()->json("Estoque insuficiente, o estoque atual é: " . $qtd, 401);
+            }
+        }
+
         if($item->quantidade_atacado > 0 && $request->quantidade >= $item->quantidade_atacado){
             if($item->valor_atacado > 0){
                 return response()->json($item->valor_atacado, 200);
@@ -819,9 +933,9 @@ class ProdutoController extends Controller
     //     $quantidade = __convert_value_bd($request->$quantidade);
     //     $item = Produto::findOrFail($request->produto_id);
     //     if($item->gerenciar_estoque){
-    //         if(!$item->estoque || $item->estoque->quantidade < $quantidade){
-    //             return response()->json("Estoque insuficiente!", 401);
-    //         }
+            // if(!$item->estoque || $item->estoque->quantidade < $quantidade){
+            //     return response()->json("Estoque insuficiente!", 401);
+            // }
     //     }
     //     return response()->json("estoque ok", 200);
     // }

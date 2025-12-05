@@ -91,7 +91,7 @@
 							<div class="row">
 								<div class="col-md-12">
 									<div class="form-field-default">
-										<label>Endereço:</label>
+										<label class="lbl-endereco">Endereço:</label>
 
 										<div class="fake-select">
 											<i class="lni lni-chevron-down"></i>
@@ -290,7 +290,7 @@
 						@csrf
 						<input type="hidden" name="link" value="{{ $config->loja_id }}" />
 
-						<button type="button" id="enviarPedido" class="botao-acao"><i class="lni lni-enter"></i> <span>Concluir pagamento</span></button>
+						<button type="button" id="enviarPedido" class="botao-acao"><i class="lni lni-enter"></i> <span>Concluir Pedido</span></button>
 					</form>
 				</div>
 			</div>
@@ -305,6 +305,25 @@
 <script type="text/javascript" src="/delivery/js/gera_comprovante.js"></script>
 <script type="text/javascript" src="/delivery/js/pagamento.js"></script>
 <script src="https://secure.mlstatic.com/sdk/javascript/v1/mercadopago.js"></script>
+
+<script type="text/javascript">
+	@if($pedidoHoje != null)
+	swal({
+		title: "Atenção", 
+		text: "Você já realizou um pedido hoje, deseja comprar novamente?", 
+		icon: "warning", 
+		buttons: true,
+		buttons: ["Ver meus pedidos", "Sim"],
+		dangerMode: true
+	}).then((confirmed) => {
+		if (confirmed) {
+
+		}else{
+			location.href = '{{ route('food.conta', ['link='.$config->loja_id]) }}'
+		}
+	});
+	@endif
+</script>
 
 @endsection
 @endsection

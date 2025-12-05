@@ -34,11 +34,30 @@ class PedidoDeliveryController extends Controller
         $this->util = $util;
     }
 
+    private function setNumeroSequencial(){
+        $docs = PedidoDelivery::where('empresa_id', request()->empresa_id)
+        ->where('numero_sequencial', null)
+        ->get();
+
+        $last = PedidoDelivery::where('empresa_id', request()->empresa_id)
+        ->orderBy('numero_sequencial', 'desc')
+        ->where('numero_sequencial', '>', 0)->first();
+        $numero = $last != null ? $last->numero_sequencial : 0;
+        $numero++;
+
+        foreach($docs as $d){
+            $d->numero_sequencial = $numero;
+            $d->save();
+            $numero++;
+        }
+    }
+
     public function index(Request $request){
         $estado = $request->estado;
         $tipo = $request->tipo;
         $cliente_delivery_id = $request->cliente_delivery_id;
         $cliente = null;
+        $this->setNumeroSequencial();
 
         $data = PedidoDelivery::
         where('empresa_id', $request->empresa_id)
@@ -56,7 +75,7 @@ class PedidoDeliveryController extends Controller
                 return $query->where('inicio_agendamento', '!=', null);
             }
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         if($cliente_delivery_id){
             $cliente = Cliente::findOrFail($cliente_delivery_id);
@@ -123,6 +142,15 @@ class PedidoDeliveryController extends Controller
         return redirect()->back();
     }
 
+    private function getLastNumero($empresa_id){
+        $last = PedidoDelivery::where('empresa_id', $empresa_id)
+        ->orderBy('numero_sequencial', 'desc')
+        ->where('numero_sequencial', '>', 0)->first();
+        $numero = $last != null ? $last->numero_sequencial : 0;
+        $numero++;
+        return $numero;
+    }
+
     public function store(Request $request){
         try{
             $cliente = null;
@@ -144,7 +172,8 @@ class PedidoDeliveryController extends Controller
                 'observacao' => '',
                 'telefone' => $request->cliente_fone ?? '',
                 'estado' => 'novo',
-                'horario_cricao' => date('H:i')
+                'horario_cricao' => date('H:i'),
+                'numero_sequencial' => $this->getLastNumero($request->empresa_id)
             ]);
             session()->flash("flash_success", "Pedido criado!");
             return redirect()->route('pedidos-delivery.show', [$pedido->id]);
@@ -250,7 +279,7 @@ class PedidoDeliveryController extends Controller
         $domPdf->setPaper([0,0,204,$height]);
         $domPdf->render();
 
-        $domPdf->stream("Pedido $id.pdf", array("Attachment" => false));
+        $domPdf->stream("Pedido $item->numero_sequencial.pdf", array("Attachment" => false));
     }
 
     public function setEndereco(Request $request, $id){
@@ -339,7 +368,9 @@ class PedidoDeliveryController extends Controller
             return redirect()->route('caixa.create');
         }
 
-        $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)->get();
+        $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)
+        ->where('categoria_id', null)
+        ->get();
 
         $abertura = Caixa::where('empresa_id', request()->empresa_id)->where('usuario_id', get_id_user())
         ->where('status', 1)
@@ -387,27 +418,28 @@ class PedidoDeliveryController extends Controller
         $produtos = [];
         $marcas = [];
 
-        if($config != null && $config->modelo == 'compact'){
-            $view = 'front_box.create2';
-            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)
-            ->where('categoria_id', null)
-            ->orderBy('nome', 'asc')
-            ->where('status', 1)
-            ->paginate(4);
+        // if($config != null && $config->modelo == 'compact'){
+        //     $view = 'front_box.create2';
+        //     $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)
+        //     ->where('categoria_id', null)
+        //     ->orderBy('nome', 'asc')
+        //     ->where('status', 1)
+        //     ->where('categoria_id', null)
+        //     ->paginate(4);
 
-            $marcas = Marca::where('empresa_id', request()->empresa_id)
-            ->orderBy('nome', 'asc')
-            ->paginate(4);
+        //     $marcas = Marca::where('empresa_id', request()->empresa_id)
+        //     ->orderBy('nome', 'asc')
+        //     ->paginate(4);
 
-            $produtos = Produto::select('produtos.*', \DB::raw('sum(quantidade) as quantidade'))
-            ->where('empresa_id', request()->empresa_id)
-            ->where('produtos.status', 1)
-            ->where('status', 1)
-            ->leftJoin('item_nfces', 'item_nfces.produto_id', '=', 'produtos.id')
-            ->groupBy('produtos.id')
-            ->orderBy('quantidade', 'desc')
-            ->paginate(12);
-        }
+        //     $produtos = Produto::select('produtos.*', \DB::raw('sum(quantidade) as quantidade'))
+        //     ->where('empresa_id', request()->empresa_id)
+        //     ->where('produtos.status', 1)
+        //     ->where('status', 1)
+        //     ->leftJoin('item_nfces', 'item_nfces.produto_id', '=', 'produtos.id')
+        //     ->groupBy('produtos.id')
+        //     ->orderBy('quantidade', 'desc')
+        //     ->paginate(12);
+        // }
         $local_id = $caixa->local_id;
 
         return view($view, 
@@ -506,6 +538,28 @@ class PedidoDeliveryController extends Controller
         $texto .= "\nTotal: " . __moeda($pedido->valor_total);
 
         return $texto;
+    }
+
+    public function destroy($id){
+        $pedido = PedidoDelivery::findOrFail($id);
+        try {
+            foreach($pedido->itens as $item){
+                $item->adicionais()->delete();
+                $item->pizzas()->delete();
+                $item->delete();
+
+                if($item->agendamento){
+                    $item->agendamento()->delete();
+                }
+            }
+            $pedido->delete();
+            session()->flash("flash_success", "Pedido removido!");
+            return redirect()->route('pedidos-delivery.index');
+
+        } catch (\Exception $e) {
+            session()->flash("flash_error", 'Algo deu errado '. $e->getMessage());
+            return redirect()->back();
+        }
     }
 
     public function destroyItem($id){

@@ -230,6 +230,11 @@
 								@endif
 							</div>
 
+							<div class="col-md-3">
+								<strong class="text-danger">#{{ $p->hash_pedido }}</strong>
+
+							</div>
+
 							@if($p->tipo_pagamento == 'pix' && $p->status_pagamento != 'approved')
 							<div class="col-md-3">
 								<a style="margin-top: -7px" href="{{ route('loja.nova-chavepix', ['link='.$config->loja_id.'&hash='.$p->hash_pedido]) }}" class="btn btn-primary btn-sm">Gerar nova chave pix</a>

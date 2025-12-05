@@ -21,7 +21,7 @@ class TipoDespesaFreteController extends Controller
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->orderBy('nome')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('tipo_despesa_frete.index', compact('data'));
     }

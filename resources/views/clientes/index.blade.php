@@ -1,6 +1,35 @@
 @extends('layouts.app', ['title' => 'Clientes'])
+@section('css')
+<style type="text/css">
+    .img-wrapper {
+        height: 180px;
+        overflow: hidden;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        background-color: #f8f9fa;
+    }
+    .produto-img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .produto-card {
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+    .produto-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    }
+    .produto-card:hover .produto-img {
+        transform: scale(1.05);
+    }
+</style>
+@endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -23,7 +52,7 @@
                     {!!Form::open()->fill(request()->all())
                     ->get()
                     !!}
-                    <div class="row mt-3">
+                    <div class="row mt-3 g-1">
                         <div class="col-md-3">
                             {!!Form::text('razao_social', 'Pesquisar por nome')
                             !!}
@@ -56,106 +85,25 @@
                     </div>
                     {!!Form::close()!!}
                 </div>
-                <div class="col-md-12 mt-3 table-responsive">
-                    <div class="table-responsive-sm">
-                        <table class="table table-striped table-centered mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    @can('clientes_delete')
-                                    <th>
-                                        <div class="form-check form-checkbox-danger mb-2">
-                                            <input class="form-check-input" type="checkbox" id="select-all-checkbox">
-                                        </div>
-                                    </th>
-                                    @endcan
-                                    <th>#</th>
-                                    <th>Razão Social</th>
-                                    <th>CPF/CNPJ</th>
-                                    <th>Cidade</th>
-                                    <th>Endereço</th>
-                                    <th>CEP</th>
-                                    <th>Status</th>
-                                    <th>Data de cadastro</th>
-                                    <th width="10%">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($data as $item)
-                                <tr>
-                                    @can('clientes_delete')
-                                    <td>
-                                        <div class="form-check form-checkbox-danger mb-2">
-                                            <input class="form-check-input check-delete" type="checkbox" name="item_delete[]" value="{{ $item->id }}">
-                                        </div>
-                                    </td>
-                                    @endcan
-                                    <td>{{ $item->numero_sequencial }}</td>
-                                    <td width="500">{{ $item->razao_social }}</td>
-                                    <td>{{ $item->cpf_cnpj }}</td>
-                                    <td>{{ $item->cidade ? $item->cidade->info : '' }}</td>
-                                    <td>{{ $item->rua ? $item->endereco : '--' }}</td>
-                                    <td>{{ $item->cep }}</td>
-                                    <td>
-                                        @if($item->status)
-                                        <i class="ri-checkbox-circle-fill text-success"></i>
-                                        @else
-                                        <i class="ri-close-circle-fill text-danger"></i>
-                                        @endif
-                                    </td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>
-                                        <form action="{{ route('clientes.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 230px;">
-                                            @method('delete')
-                                            @can('clientes_edit')
-                                            <a class="btn btn-warning btn-sm" href="{{ route('clientes.edit', [$item->id]) }}">
-                                                <i class="ri-pencil-fill"></i>
-                                            </a>
-                                            @endcan
 
-                                            @csrf
-                                            @can('clientes_delete')
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
-                                            @endcan
+                @if($tipoExibe == 'tabela')
+                @include('clientes.partials.tabela')
+                @else
+                @include('clientes.partials.card')
+                @endif
 
-                                            <a title="Informações de cashBack" class="btn btn-dark btn-sm" href="{{ route('clientes.cash-back', [$item->id]) }}">
-                                                <i class="ri-coins-fill"></i>
-                                            </a>
-
-                                            <a title="Histórico" class="btn btn-primary btn-sm" href="{{ route('clientes.historico', [$item->id]) }}">
-                                                <i class="ri-file-list-3-fill"></i>
-                                            </a>
-
-                                            @can('crm_create')
-                                            <button type="button" title="CRM" class="btn btn-light btn-sm" onclick="modalCrm('{{ $item->id }}')">
-                                                <i class="ri-user-voice-fill"></i>
-                                            </button>
-                                            @endcan
-
-                                        </form>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">Nada encontrado</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                        <br>
-                        @can('clientes_delete')
-                        <form action="{{ route('clientes.destroy-select') }}" method="post" id="form-delete-select">
-                            @method('delete')
-                            @csrf
-                            <div></div>
-                            <button type="button" class="btn btn-danger btn-sm btn-delete-all" disabled>
-                                <i class="ri-close-circle-line"></i> Remover selecionados
-                            </button>
-                        </form>
-                        @endcan
-                    </div>
-                </div>
+                <br>
+                @can('clientes_delete')
+                <form action="{{ route('clientes.destroy-select') }}" method="post" id="form-delete-select">
+                    @method('delete')
+                    @csrf
+                    <div></div>
+                    <button type="button" class="btn btn-danger btn-sm btn-delete-all" disabled>
+                        <i class="ri-close-circle-line"></i> Remover selecionados
+                    </button>
+                </form>
+                @endcan
+                
                 <br>
                 {!! $data->appends(request()->all())->links() !!}
             </div>
@@ -163,6 +111,8 @@
     </div>
 </div>
 @include('modals._crm')
+@include('clientes.partials.modal_info')
+
 @endsection
 @section('js')
 <script type="text/javascript" src="/js/delete_selecionados.js"></script>
@@ -171,6 +121,18 @@
         $('#cliente_id').val(cliente_id)
         $('#modal_crm').modal('show')
         montaSelect2()
+    }
+
+    function openModal(id) {
+        $.get(path_url + "clientes-modal/"+id)
+        .done((data) => {
+            // console.log(data)
+            $('#modal-info').modal('show')
+            $('#modal-info .modal-content').html(data)
+        })
+        .fail((e) => {
+            console.log(e)
+        })
     }
 </script>
 <script type="text/javascript" src="/js/modal_crm.js"></script>

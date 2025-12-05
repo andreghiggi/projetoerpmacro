@@ -11,11 +11,13 @@ use App\Models\Plano;
 use App\Models\PlanoEmpresa;
 use App\Models\UsuarioEmpresa;
 use App\Models\ConfigGeral;
+use App\Models\ConfiguracaoSuper;
 use App\Utils\UploadUtil;
 use App\Utils\EmpresaUtil;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use NFePHP\Common\Certificate;
+use Mail;
 
 class ConfigController extends Controller
 {
@@ -32,6 +34,7 @@ class ConfigController extends Controller
     {
         $item = null;
         $empresa = auth::user()->empresa;
+
         $usuario = auth::user();
         if ($empresa != null) {
             $item = $empresa->empresa;
@@ -74,8 +77,18 @@ class ConfigController extends Controller
         $this->__validate($request);
         $plano = Plano::where('auto_cadastro', 1)->first();
 
+        $usuario = auth::user();
+
+        if($usuario->plano_auto_cadastro){
+            $planoVinculado = Plano::find($usuario->plano_auto_cadastro);
+            if($planoVinculado){
+                $plano = $planoVinculado;
+            }
+        }
+
         try {
-            DB::transaction(function () use ($request, $plano) {
+
+            $empresa = DB::transaction(function () use ($request, $plano) {
                 $file_name = '';
 
                 if ($request->hasFile('image')) {
@@ -121,9 +134,10 @@ class ConfigController extends Controller
                     'usuario_id' => $usuario->id
                 ]);
 
-                if($plano != null){
-                    $intervalo = $plano->intervalo_dias;
-                    $exp = date('Y-m-d', strtotime(date('Y-m-d') . "+ $intervalo days"));
+                $config = ConfiguracaoSuper::first();
+
+                if($config != null && $config->cobrar_apos_auto_cadastro == 1 && $plano->dias_teste < 1){
+                    $exp = date('Y-m-d', strtotime(date('Y-m-d') . "- 1 days"));
                     PlanoEmpresa::create([
                         'empresa_id' => $empresa->id,
                         'plano_id' => $plano->id,
@@ -131,17 +145,60 @@ class ConfigController extends Controller
                         'valor' => 0,
                         'forma_pagamento' => ''
                     ]);
-                    // session()->flash("flash_success", "Plano atribuído!");
+                }else{
+
+                    if($plano != null){
+                        $intervalo = $plano->intervalo_dias;
+                        if($plano->dias_teste){
+                            $intervalo = $plano->dias_teste;
+                        }
+                        $exp = date('Y-m-d', strtotime(date('Y-m-d') . "+ $intervalo days"));
+                        PlanoEmpresa::create([
+                            'empresa_id' => $empresa->id,
+                            'plano_id' => $plano->id,
+                            'data_expiracao' => $exp,
+                            'valor' => 0,
+                            'forma_pagamento' => ''
+                        ]);
+                    }
                 }
                 $this->empresaUtil->initLocation($empresa);
-                
-                return true;
+                $this->empresaUtil->initNaturezaTributacao($empresa);
+                try{
+                    $this->emailNovaEmpresa($empresa);
+                }catch(\Exception $e){
+
+                }
+
+                return $empresa;
             });
+
             session()->flash("flash_success", "Empresa cadastrada!");
+
+            if(!$empresa->plano){
+                return redirect()->route('payment.index');
+            }
+            if(strtotime($empresa->plano->data_expiracao) < strtotime(date('Y-m-d'))){
+                session()->flash("flash_warning", "Efetue o pagamento para utilizar o sistema!");
+                return redirect()->route('payment.index');
+            }
+
         } catch (\Exception $e) {
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
         return redirect()->route('config.index');
+    }
+
+    private function emailNovaEmpresa($empresa){
+        $config = ConfiguracaoSuper::first();
+        if($config && $config->email_aviso_novo_cadastro){
+            Mail::send('mail.nova_empresa', ['empresa' => $empresa], function($m) use ($config){
+                $nomeEmail = env('MAIL_FROM_NAME');
+                $m->from(env('MAIL_USERNAME'), $nomeEmail);
+                $m->subject('Nova empresa cadastrada');
+                $m->to($config->email_aviso_novo_cadastro);
+            });
+        }
     }
 
     public function update(Request $request, $id)
@@ -149,6 +206,11 @@ class ConfigController extends Controller
         $item = Empresa::findOrFail($id);
         try {
             $file_name = $item->logo;
+            $doc = preg_replace('/[^0-9]/', '', $request->cpf_cnpj);
+            if(strlen($doc) != 11 && strlen($doc) != 14){
+                session()->flash("flash_error", "Configure CPF/CNPJ corretamente");
+                return redirect()->back();
+            }
 
             if ($request->hasFile('image')) {
                 $this->util->unlinkImage($item, '/logos');
@@ -156,7 +218,7 @@ class ConfigController extends Controller
             }
 
             $request->merge([
-                'cpf_cnpj' => preg_replace('/[^0-9]/', '', $request->cpf_cnpj),
+                'cpf_cnpj' => $doc,
                 'logo' => $file_name,
 
             ]);

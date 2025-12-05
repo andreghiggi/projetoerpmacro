@@ -5,7 +5,7 @@
     <div class="card-header">
         <h4>Editar Produto</h4>
         <div style="text-align: right; margin-top: -35px;">
-            <a href="{{ route('produtos.index') }}" class="btn btn-danger btn-sm px-3">
+            <a href="{{ url()->previous() }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar
             </a>
         </div>

@@ -1,0 +1,485 @@
+/* ===============================
+   MODO ESCURO – ADAPTADO AO SEU PDV
+================================ */
+
+body.dark-mode {
+    background: #1b1b1f !important;
+    color: #e6e6e6 !important;
+}
+
+/* HEADER */
+body.dark-mode .pdv-header {
+    background: linear-gradient(90deg, #2c377e, #462c8f) !important;
+}
+
+body.dark-mode .pdv-header h4,
+body.dark-mode .pdv-header .ri-menu-line {
+    color: #fff !important;
+}
+
+/* CATEGORIAS */
+body.dark-mode .pdv-cat {
+    background: #2a2a2f !important;
+    color: #cfcfcf !important;
+}
+
+body.dark-mode .pdv-cat.active {
+    background: #786eff !important;
+}
+
+/* SEARCH */
+body.dark-mode .pdv-search {
+    background: #2a2a2f !important;
+    border-color: #3c3c45 !important;
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode .pdv-search::placeholder {
+    color: #9c9c9c !important;
+}
+
+body.dark-mode .pdv-search-btn {
+    background: #786eff !important;
+}
+
+/* PRODUTOS */
+body.dark-mode .pdv-card {
+    background: #2a2a2f !important;
+    box-shadow: none !important;
+    border: 1px solid #3c3c45;
+}
+
+body.dark-mode .pdv-card-title {
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode .pdv-card-price {
+    color: #9ea0ff !important;
+}
+
+/* PRODUTOS CONTAINER BACKGROUND */
+body.dark-mode .pdv-produtos-container {
+    background: #1b1b1f !important;
+}
+
+/* FOOTER */
+body.dark-mode .pdv-footer {
+    background: #232327 !important;
+    border-top-color: #3a3a40 !important;
+    color: #fff !important;
+}
+
+body.dark-mode .pdv-total-btn {
+    background: #786eff !important;
+    box-shadow: 0 4px 12px rgba(120, 110, 255, .35) !important;
+}
+
+/* CARRINHO FLOAT BTN */
+body.dark-mode .pdv-cart-btn {
+    background: #ff5959 !important;
+}
+
+/* SIDEBAR */
+body.dark-mode .pdv-sidebar {
+    background: #232327 !important;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.55) !important;
+}
+
+body.dark-mode .pdv-sidebar-header {
+    background: #2a2a2f !important;
+    border-bottom-color: #3a3a40 !important;
+}
+
+body.dark-mode .close-btn {
+    color: #bbb !important;
+}
+
+body.dark-mode .pdv-side-item {
+    background: #2a2a2f !important;
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode .pdv-side-item:hover {
+    background: #3c3c45 !important;
+}
+
+body.dark-mode .pdv-side-item i {
+    color: #9ea0ff !important;
+}
+
+body.dark-mode .pdv-side-item.text-danger {
+    background: #492525 !important;
+    color: #ff7777 !important;
+}
+
+body.dark-mode .pdv-menu-sep {
+    border-bottom-color: #3c3c45 !important;
+}
+
+/* POPUP */
+body.dark-mode .popup-box {
+    background: #2a2a2f !important;
+    color: #e6e6e6 !important;
+    border: 1px solid #3a3a40 !important;
+}
+
+body.dark-mode .popup-title {
+    color: #fff !important;
+}
+
+body.dark-mode .popup-info {
+    color: #bbb !important;
+}
+
+/* CHECKBOX ADICIONAIS */
+body.dark-mode .custom-checkbox input {
+    border-color: #979797 !important;
+}
+
+body.dark-mode .custom-checkbox input:checked {
+    background: #786eff !important;
+    border-color: #786eff !important;
+}
+
+/* TOTAL ADICIONAIS */
+body.dark-mode .total-adicional-card {
+    background: #232327 !important;
+    border-color: #3c3c45 !important;
+}
+
+body.dark-mode .total-adicional-card .label {
+    color: #bbb !important;
+}
+
+body.dark-mode .total-adicional-card .valor {
+    color: #9ea0ff !important;
+}
+
+/* COMANDAS */
+body.dark-mode .mesa-box {
+    box-shadow: none !important;
+}
+
+body.dark-mode .mesa-livre {
+    background: #786eff !important;
+}
+
+body.dark-mode .mesa-fechada {
+    background: #c54242 !important;
+}
+
+body.dark-mode .mesa-nome,
+body.dark-mode .mesa-total {
+    color: #fff !important;
+}
+
+/* SAVER COMANDA */
+body.dark-mode .btn-salvar-comanda {
+    background: #c54242 !important;
+}
+
+/* SABORES */
+body.dark-mode .sabor-item {
+    background: #232327 !important;
+    border-color: #3c3c45 !important;
+}
+
+body.dark-mode .sabor-item.selecionado {
+    background: #2f2f37 !important;
+    border-color: #786eff !important;
+}
+
+body.dark-mode .sabor-nome {
+    color: #fff !important;
+}
+
+/* LOADER */
+body.dark-mode .loader {
+    background: rgba(0,0,0,0.7) !important;
+}
+
+body.dark-mode .loader-spinner {
+    border-color: #6c6c6c;
+    border-top-color: #9ea0ff !important;
+}
+
+body.dark-mode .loader-text {
+    color: #9ea0ff !important;
+}
+
+/* =============================================
+   MODO ESCURO – MODAIS (PRODUTO, PAGAMENTO, CLIENTE, CARRINHO)
+   ============================================= */
+
+body.dark-mode .produto-modal,
+body.dark-mode .cart-modal,
+body.dark-mode .cliente-modal,
+body.dark-mode .finalizar-modal,
+body.dark-mode .produto-footer,
+body.dark-mode .sangria-footer,
+body.dark-mode .finalizar-footer,
+body.dark-mode .cart-footer,
+body.dark-mode .cliente-footer,
+body.dark-mode .sangria-modal {
+    background: #232327 !important;
+    color: #e6e6e6 !important;
+    border: 1px solid #3a3a40 !important;
+}
+
+/* Cabeçalhos das modais (mantém o gradiente mas mais escuro) */
+body.dark-mode .produto-header,
+body.dark-mode .cart-header,
+body.dark-mode .cliente-header,
+body.dark-mode .finalizar-header,
+body.dark-mode .sangria-header {
+    background: linear-gradient(90deg, #2c377e, #462c8f) !important;
+    color: #fff !important;
+}
+
+/* Inputs das modais */
+body.dark-mode .produto-input,
+body.dark-mode .finalizar-input,
+body.dark-mode .sangria-input,
+body.dark-mode .cliente-search,
+body.dark-mode .sangria-select {
+    background: #2a2a2f !important;
+    border: 1px solid #3c3c45 !important;
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode input::placeholder {
+    color: #9c9c9c !important;
+}
+
+/* BOTÕES */
+body.dark-mode .produto-btn-primary,
+body.dark-mode .cart-btn-primary,
+body.dark-mode .finalizar-btn-primary,
+body.dark-mode .cliente-btn-select,
+body.dark-mode .sangria-btn-primary {
+    background: #786eff !important;
+    color: #fff !important;
+}
+
+body.dark-mode .produto-btn-secondary,
+body.dark-mode .cart-btn-secondary,
+body.dark-mode .finalizar-btn-secondary,
+body.dark-mode .sangria-btn-secondary {
+    background: #3a3a40 !important;
+    color: #e6e6e6 !important;
+}
+
+/* LISTAS (itens dentro do carrinho, pagamentos, clientes etc.) */
+body.dark-mode #carrinhoLista .item-carrinho,
+body.dark-mode .linha-pagamento,
+body.dark-mode .card-cliente,
+body.dark-mode #listaPagamentos .linha-pagamento {
+    background: #2a2a2f !important;
+    border: 1px solid #3c3c45 !important;
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode .item-valor {
+    color: #9ea0ff !important;
+}
+
+body.dark-mode .btn-remover-pg,
+body.dark-mode .item-remove {
+    background: #c54242 !important;
+    color: #fff !important;
+}
+
+/* TOTAL FINAL (na modal de finalizar) */
+body.dark-mode .finalizar-total {
+    color: #9ea0ff !important;
+}
+
+body.dark-mode .finalizar-label {
+    color: #aaa !important;
+}
+
+body.dark-mode .finalizar-troco {
+    color: #55e36d !important;
+}
+
+/* Sabores modal */
+body.dark-mode .sabor-item {
+    background: #232327 !important;
+    border-color: #3c3c45 !important;
+}
+
+body.dark-mode .sabor-item.selecionado {
+    background: #2f2f37 !important;
+    border-color: #786eff !important;
+}
+
+body.dark-mode .sabor-nome {
+    color: #fff !important;
+}
+
+/* Popup (impressão) */
+body.dark-mode .popup-box {
+    background: #232327 !important;
+    border: 1px solid #3c3c45 !important;
+}
+
+body.dark-mode .popup-title {
+    color: #fff !important;
+}
+
+body.dark-mode .popup-info {
+    color: #bbb !important;
+}
+
+/* =============================================
+   MODO ESCURO – VENDAS SUSPENSAS
+============================================= */
+
+body.dark-mode .card-suspensa {
+    background: #232327 !important;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: none !important;
+    border: 1px solid #3a3a40 !important;
+}
+
+body.dark-mode .cs-info {
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode .cs-cliente i,
+body.dark-mode .cs-data i {
+    color: #9ea0ff !important;
+}
+
+body.dark-mode .cs-cliente {
+    color: #ffffff !important;
+}
+
+body.dark-mode .cs-data {
+    color: #bbbbbb !important;
+}
+
+body.dark-mode .cs-total span {
+    color: #bbbbbb !important;
+}
+
+body.dark-mode .cs-total strong {
+    color: #9ea0ff !important;
+}
+
+body.dark-mode .cs-btn-finalizar {
+    background: #786eff !important;
+    border: none !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .cs-btn-finalizar:hover {
+    background: #6a63e0 !important;
+}
+
+body.dark-mode .cs-btn-finalizar.btn-success {
+    background: #4bae4f !important;
+}
+
+body.dark-mode .cs-btn-finalizar.btn-dark {
+    background: #444 !important;
+}
+
+body.dark-mode .cs-btn-remover {
+    background: #c54242 !important;
+    border: none !important;
+}
+
+/* =============================================
+   MODO ESCURO – SWEETALERT
+============================================= */
+
+body.dark-mode .swal-modal {
+    background-color: #232327 !important;
+    border: 1px solid #3a3a40 !important;
+    color: #e6e6e6 !important;
+}
+
+body.dark-mode .swal-title {
+    color: #ffffff !important;
+}
+
+body.dark-mode .swal-text {
+    color: #cfcfcf !important;
+}
+
+body.dark-mode .swal-button {
+    background-color: #786eff !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+body.dark-mode .swal-button:hover {
+    background-color: #6a63e0 !important;
+}
+
+/* Botão de erro */
+body.dark-mode .swal-button--danger,
+body.dark-mode .swal-button--danger:not([disabled]):hover {
+    background-color: #c54242 !important;
+    color: #fff !important;
+}
+
+/* Overlay */
+body.dark-mode .swal-overlay {
+    background-color: rgba(0,0,0,0.65) !important;
+}
+
+/* =============================================
+   MODO ESCURO – BOTÕES PERSONALIZADOS DO SWEETALERT
+============================================= */
+
+/* Caixa geral */
+body.dark-mode .swal-modal {
+    background: #232327 !important;
+    border: 1px solid #3a3a40 !important;
+    color: #e6e6e6 !important;
+}
+
+/* Título e texto */
+body.dark-mode .swal-title { color: #fff !important; }
+body.dark-mode .swal-text { color: #cfcfcf !important; }
+
+/* Botão CANCELAR ("Não") */
+body.dark-mode .swal-button--cancel {
+    background: #3a3a40 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+body.dark-mode .swal-button--cancel:hover {
+    background: #4a4a52 !important;
+}
+
+/* Botão CONFIRMAR ("Sim") */
+body.dark-mode .swal-button--confirm {
+    background: #786eff !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+body.dark-mode .swal-button--confirm:hover {
+    background: #6a63e0 !important;
+}
+
+/* Quando dangerMode: true → botão "Sim" vermelho */
+body.dark-mode .swal-button--danger {
+    background: #c54242 !important;
+    color: #fff !important;
+}
+
+body.dark-mode .swal-button--danger:hover {
+    background: #b73737 !important;
+}
+
+/* Overlay escuro */
+body.dark-mode .swal-overlay {
+    background-color: rgba(0,0,0,0.65) !important;
+}
+

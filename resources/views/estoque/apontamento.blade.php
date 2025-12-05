@@ -1,8 +1,8 @@
-@extends('layouts.app', ['title' => 'Apontamento Produção'])
+@extends('layouts.app', ['title' => 'Apontamento de Produção'])
 @section('content')
 <div class="card mt-1">
     <div class="card-header">
-        <h4>Apontamento Produção</h4>
+        <h4>Apontamento de Produção</h4>
         <div style="text-align: right; margin-top: -35px;">
             <a href="{{ route('estoque.index') }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar
@@ -26,7 +26,7 @@
 
                 <div class="col-md-2">
                     {!!Form::text('quantidade', 'Quantidade')
-                    ->attrs(['class' => 'quantidade'])->required()
+                    ->attrs(['class' => 'qtd'])->required()
                     !!}
                 </div>
                 <div class="col-1 mt-3" style="text-align: right;">
@@ -51,10 +51,18 @@
                         @forelse($data as $item)
                         <tr>
                             <td>{{ $item->produto->nome }}</td>
-                            <td>{{ number_format($item->quantidade, 3, '.', '') }}</td>
+
+                            <td>
+                                @if(!$item->produto->unidadeDecimal())
+                                {{ number_format($item->quantidade, 0, '.', '') }}
+                                @else
+                                {{ number_format($item->quantidade, 3, '.', '') }}
+                                @endif
+                            </td>
+
                             <td>{{ __data_pt($item->created_at, 0) }}</td>
                             <td>
-                                <a class="btn btn-info btn-sm" href="{{ route('apontamento.imprimir', $item->id) }}"><i class="ri-printer-line"></i></a>
+                                <a target="_blank" class="btn btn-info btn-sm" href="{{ route('apontamento.imprimir', $item->id) }}"><i class="ri-printer-line"></i></a>
                             </td>
                         </tr>
                         @empty

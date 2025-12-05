@@ -43,6 +43,7 @@ class LoginController extends Controller
         $config = ConfigGeral::where('empresa_id', $request->empresa_id)->first();
         if($config != null){
             $empresa->definir_vendedor_pdv_off = $config->definir_vendedor_pdv_off;
+            $empresa->alterar_valor_pdv_off = $config->alterar_valor_pdv_off;
             $empresa->acessos_pdv_off = json_decode($config->acessos_pdv_off);
 
             $empresa->balanca_digito_verificador = $config->balanca_digito_verificador;
@@ -51,6 +52,7 @@ class LoginController extends Controller
             
         }else{
             $empresa->definir_vendedor_pdv_off = 0;
+            $empresa->alterar_valor_pdv_off = 1;
         }
         return response()->json($empresa, 200);
     }

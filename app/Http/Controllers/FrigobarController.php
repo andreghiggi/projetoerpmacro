@@ -24,7 +24,7 @@ class FrigobarController extends Controller
             return $q->where('modelo', 'LIKE', "%$request->modelo%");
         })
         ->orderBy('modelo', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('frigobar.index', compact('data'));
     }
 

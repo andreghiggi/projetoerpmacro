@@ -3,13 +3,18 @@
 	<div class="col-12 col-lg-6">
 		<div class="card">
 			<div class="card-header">
-				<h2>Mesa <strong class="text-danger">{{ $item->mesa }}</strong></h2>
+				<h2><strong class="text-danger">{{ $item->mesa }}</strong></h2>
 			</div>
 			<div class="card-body" style="height: 130px;">
 				@if($item->tipo == 'garcom')
 				<h3>CHAMANDO GARÇOM</h3>
 				@else
-				<h3>FECHAR MESA</h3>
+
+				@if($item->pedido->em_atendimento == 1)
+				<h3>ABERTURA DE MESA</h3>
+				@else
+				<h3>FECHAMENTO DE MESA</h3>
+				@endif
 				@endif
 
 				@if($item->avaliacao)

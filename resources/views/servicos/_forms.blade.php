@@ -53,6 +53,12 @@
     </div>
 
     <div class="col-md-2">
+        {!!Form::tel('prazo_garantia', 'Prazo de garantia (dias)')
+        ->attrs(['data-mask' => '000000'])
+        !!}
+    </div>
+
+    <div class="col-md-2">
         {!!Form::select('status', 'Ativo', ['1' => 'Sim', '0' => 'Não'])
         ->attrs(['class' => 'form-select'])
         !!}
@@ -168,8 +174,8 @@
     </div>
 
     <hr class="">
-    {{-- Imagem --}}
-    <div class="card col-md-3 form-input">
+
+    <div class="card col-md-3 mt-3 form-input" style="width: 210px">
         <div class="preview">
             <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
             @isset($item)
@@ -179,6 +185,12 @@
             @endif
         </div>
         <label for="file-ip-1">Imagem</label>
+        @isset($item)
+        <a class="btn btn-danger btn-sm mt-2 mb-1" href="{{ route('produtos.remove-image', [$item->id])}}">
+            <i class="ri-close-line"></i>
+            Remover imagem
+        </a>
+        @endif
         <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);">
     </div>
     @if($errors->has('image'))
@@ -187,7 +199,7 @@
     </div>
     @endif
     <hr class="mt-2">
-    {{-- Fim Imagem --}}
+
     <div class="col-12" style="text-align: right;">
         <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
     </div>

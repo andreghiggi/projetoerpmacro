@@ -109,7 +109,7 @@
         !!}
     </div>
 
-    <div class="card col-md-3 mt-3 form-input">
+    <div class="card col-md-3 mt-3 form-input" style="width: 210px">
         <div class="preview">
             <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
             @isset($item)

@@ -24,7 +24,7 @@ class ProdutoCompostoController extends Controller
             $request->merge([
                 'produto_id' => $request->produto_id,
                 'ingrediente_id' => $request->ingrediente_id,
-                'quantidade' => $request->quantidade
+                'quantidade' => __convert_value_bd($request->quantidade)
             ]);
             ProdutoComposicao::create($request->all());
             session()->flash("flash_success", "Ingrediente Cadastrado!");

@@ -16,6 +16,16 @@ use DB;
 
 class PedidoController extends Controller
 {
+
+    private function getLastNumero($empresa_id){
+        $last = PedidoDelivery::where('empresa_id', $empresa_id)
+        ->orderBy('numero_sequencial', 'desc')
+        ->where('numero_sequencial', '>', 0)->first();
+        $numero = $last != null ? $last->numero_sequencial : 0;
+        $numero++;
+        return $numero;
+    }
+
     public function save(Request $request){
 
         try{
@@ -52,6 +62,7 @@ class PedidoController extends Controller
                     'horario_cricao' => date('H:i'),
                     'horario_entrega' => '',
                     'horario_leitura' => '',
+                    'numero_sequencial' => $this->getLastNumero($request->empresa_id)
                 ];
                 // return response()->json("do", 401);
                 $pedido = PedidoDelivery::create($dataPedido);

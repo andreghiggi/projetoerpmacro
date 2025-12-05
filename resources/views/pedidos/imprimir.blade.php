@@ -57,7 +57,7 @@
 	<table>
 		<thead>
 			<tr>
-				<th style="width: 120px">Produto</th>
+				<th style="width: 130px">Produto</th>
 				<th style="width: 40px">Qtd</th>
 				<th style="width: 40px">Vl. unit</th>
 				<th style="width: 50px">Subtotal</th>
@@ -66,7 +66,7 @@
 		<tbody>
 			@foreach($item->itens as $i)
 			<tr>
-				@if(sizeof($i->pizzas) > 0)
+				@if(sizeof($i->pizzas) > 0 && str_contains($i->produto->nome, 'izza'))
 				<td>Pizza</td>
 				@else
 				<td>{{ $i->produto->nome }}</td>
@@ -116,15 +116,22 @@
 		</tbody>
 	</table>
 
-	<h6>Total: <strong>{{ __moeda($item->total) }}</strong></h6>
-	<h6 class="mt-25">Total de itens: <strong>{{ sizeof($item->itens) }}</strong></h6>
-
+	<h6 class="mt-1">Total de itens: <strong>{{ sizeof($item->itens) }}</strong></h6>
+	@if($item->_mesa)
+	<h6 class="mt-25"><strong>{{ $item->_mesa->nome }}</strong></h6>
+	@endif
 	@if($item->cliente_nome != '')
 	<h6 class="mt-25">Cliente: <strong>{{ $item->cliente_nome }}</strong></h6>
 	@endif
 
 	@if($item->cliente_fone != '')
 	<h6 class="mt-25">Telefone: <strong>{{ $item->cliente_fone }}</strong></h6>
+	@endif
+	<h6 class="mt-25">Valor total de produtos: <strong>R$ {{ __moeda($item->total) }}</strong></h6>
+
+	@if($item->acrescimo > 0)
+	<h6 class="mt-25">Acréscimo: <strong>R$ {{ __moeda($item->acrescimo) }}</strong></h6>
+	<h6 class="mt-25">Valor total: <strong>R$ {{ __moeda($item->total+$item->acrescimo) }}</strong></h6>
 	@endif
 
 </body>

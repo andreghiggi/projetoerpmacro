@@ -21,7 +21,7 @@
         <link href="/assets/css/app.css" rel="stylesheet" type="text/css" id="app-style" />
         <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" type="text/css" href="/assets/css/toastr.min.css">
-        <link rel="stylesheet" type="text/css" href="/css/style.css">
+        <link rel="stylesheet" type="text/css" href="/css/style_pdv.css">
         <link rel='stylesheet' href='/css/bootstrap-duallistbox.min.css'/>
 
         @yield('css')
@@ -36,7 +36,7 @@
         <input type="hidden" value="{{ Auth::user()->id }}" id="usuario_id">
 
         <div class="wrapper">
-            <div class="content m-2">
+            <div class="content">
                 @yield('content')
             </div>
         </div>
@@ -51,12 +51,12 @@
 
         @include('modals._suprimento_caixa', ['not_submit' => true])
         @include('modals._sangria_caixa', ['not_submit' => true])
-
+        
         <script type="text/javascript">
             let prot = window.location.protocol;
             let host = window.location.host;
             const path_url = prot + "//" + host + "/";
-
+            var casas_decimais_qtd = '{{ __casas_decimais_quantidade() }}';
         </script>
         <script src="/assets/js/vendor.min.js"></script>
         <script src="/assets/vendor/select2/js/select2.min.js"></script>
@@ -66,6 +66,8 @@
         <script src="/assets/vendor/daterangepicker/moment.min.js"></script>
         <script src="/assets/vendor/daterangepicker/daterangepicker.js"></script>
         <script src="/assets/vendor/jquery-mask-plugin/jquery.mask.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.9/jquery.inputmask.min.js" integrity="sha512-F5Ul1uuyFlGnIT1dk2c4kB4DBdi5wnBJjVhL7gQlGh46Xn0VhvD8kgxLtjdZ5YN83gybk/aASUAlpdoWUjRR3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
         <script src="/assets/vendor/admin-resources/jquery.vectormap/jquery-jvectormap-1.2.2.min.js"></script>
         <script src="/assets/vendor/admin-resources/jquery.vectormap/maps/jquery-jvectormap-world-mill-en.js"></script>

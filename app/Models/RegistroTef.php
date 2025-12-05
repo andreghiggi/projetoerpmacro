@@ -11,7 +11,7 @@ class RegistroTef extends Model
 
     protected $fillable = [
         'empresa_id', 'nfce_id', 'nome_rede', 'nsu', 'data_transacao', 'hora_transacao', 'valor_total', 'hash',
-        'estado', 'usuario_id'
+        'estado', 'usuario_id', 'finalizacao'
     ];
 
     public function nfce(){

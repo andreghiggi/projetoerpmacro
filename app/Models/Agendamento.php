@@ -11,7 +11,8 @@ class Agendamento extends Model
 
     protected $fillable = [
         'funcionario_id', 'cliente_id', 'data', 'inicio', 'termino', 'observacao', 'total',
-        'desconto', 'acrescimo', 'status', 'empresa_id', 'prioridade', 'pedido_delivery_id'
+        'desconto', 'acrescimo', 'status', 'empresa_id', 'prioridade', 'pedido_delivery_id',
+        'numero_sequencial'
     ];
 
     public function itens(){

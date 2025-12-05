@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'CTe Os'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -77,26 +77,26 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->emitente ? $item->emitente->razao_social : "--" }}</td>
-                                    <td>{{ $item->tomador_cli ? $item->tomador_cli->razao_social : "--" }}</td>
+                                    <td data-label="Emitente">{{ $item->emitente ? $item->emitente->razao_social : "--" }}</td>
+                                    <td data-label="Tomador">{{ $item->tomador_cli ? $item->tomador_cli->razao_social : "--" }}</td>
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '' }}</td>
+                                    <td data-label="Local" class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '' }}</td>
                                     @endif
-                                    <td>{{ __moeda($item->valor_transporte) }}</td>
-                                    <td>{{ __moeda($item->valor_receber) }}</td>
-                                    <td>{!! $item->estadoEmissao() !!}</td>
-                                    <td>{{ __data_pt($item->created_at, 1) }}</td>
-                                    <td>{{ $item->getTomador() }}</td>
-                                    <td>{{ $item->numero ? $item->numero : '--' }}</td>
-                                    <td>
+                                    <td data-label="Valor serviço">{{ __moeda($item->valor_transporte) }}</td>
+                                    <td data-label="Valor a receber">{{ __moeda($item->valor_receber) }}</td>
+                                    <td data-label="Estado">{!! $item->estadoEmissao() !!}</td>
+                                    <td data-label="Data cadastro">{{ __data_pt($item->created_at, 1) }}</td>
+                                    <td data-label="Tomador (Tipo)">{{ $item->getTomador() }}</td>
+                                    <td data-label="Nº">{{ $item->numero ? $item->numero : '--' }}</td>
+                                    <td data-label="Local de emissão">
                                         @if($item->api)
                                         <span class="text-success">API</span>
                                         @else
                                         <span class="text-primary">Painel</span>
                                         @endif
                                     </td>
-                                    <td width="300">
-                                        <form action="{{ route('cte-os.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                    <td>
+                                        <form style="width: 250px;" action="{{ route('cte-os.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @csrf
                                             @if($item->estado_emissao == 'cancelado')
@@ -116,9 +116,6 @@
                                             <button title="Cancelar CTeOs" type="button" class="btn btn-danger btn-sm" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
                                                 <i class="ri-close-circle-line"></i>
                                             </button>
-                                            {{-- <button title="Corrigir CTe" type="button" class="btn btn-warning btn-sm" onclick="corrigir('{{$item->id}}', '{{$item->numero}}')">
-                                                <i class="ri-file-warning-line"></i>
-                                            </button> --}}
                                             @endif
 
                                             @if($item->estado_emissao == 'aprovado' || $item->estado_emissao == 'rejeitado')
@@ -141,7 +138,7 @@
                                             @can('cte_os_delete')
                                             <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
                                             @endcan
-                                            
+
                                             <button title="Transmitir CTe" type="button" class="btn btn-success btn-sm" onclick="transmitir('{{$item->id}}')">
                                                 <i class="ri-send-plane-fill"></i>
                                             </button>
@@ -165,6 +162,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                     {!! $data->appends(request()->all())->links() !!}
                 </div>

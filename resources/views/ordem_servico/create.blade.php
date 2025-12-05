@@ -23,5 +23,6 @@
 
     </div>
 </div>
+    @include('modals._veiculo')
 
 @endsection

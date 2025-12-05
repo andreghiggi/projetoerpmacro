@@ -2,7 +2,8 @@
 <link rel="stylesheet" type="text/css" href="/css/frontbox2.css">
 @endsection
 
-<input type="hidden" id="inp-valor_total" value="" name="valor_total">
+<input type="hidden" id="inp-valor_total">
+<input type="hidden" id="inp-valor_total2" name="valor_total">
 <input type="hidden" id="abertura" value="{{ $abertura }}" name="">
 <input type="hidden" id="tef_hash" value="" name="tef_hash">
 <input type="hidden" id="config_tef" value="{{ isset($configTef) && $configTef != null ? 1 : 0 }}">
@@ -12,6 +13,7 @@
 <input type="hidden" id="alerta_sonoro" value="{{ $config ? $config->alerta_sonoro : 0 }}">
 <input type="hidden" id="impressao_sem_janela_cupom" value="{{ $config ? $config->impressao_sem_janela_cupom : 0 }}">
 <input type="hidden" id="local_id" value="{{ $caixa->localizacao->id }}">
+<input type="hidden" id="documento_pdv" value="{{ $config ? $config->documento_pdv : 'nfce' }}">
 
 @if($isVendaSuspensa)
 <input type="hidden" value="{{ $item->id }}" name="venda_suspensa_id">
@@ -24,6 +26,9 @@
 <input name="valor_entrega" id="pedido_valor_entrega" value="{{ $pedido->valor_entrega }}" class="d-none">
 @else
 <input name="pedido_id" id="pedido_id" value="{{ $pedido->id }}" class="d-none">
+@isset($pushItensPedido)
+<input name="itens_cliente" id="pedido_id" value="{{ json_encode($pushItensPedido) }}" class="d-none">
+@endif
 @endif
 @endif
 
@@ -34,6 +39,7 @@
 <input type="hidden" id="inp-abrir_modal_cartao" value="0">
 <input type="hidden" id="inp-senha_manipula_valor" value="">
 @endif
+<input type="hidden" id="inp-finalizacao_pdv" value="{{ __finalizacaoPdv() }}">
 
 <div class="row">
 	<div class="col-md-6 col-12">
@@ -108,7 +114,7 @@
 								<div class="d-flex" style="float: right;">
 									<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">-</span> 
 									<input min="0" value="{{ $p->quantidade }}" class="fw-semibold cart-qty m-0 px-2 qtd-row"> 
-									<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">+</span>
+									<span class="increment-decrement btn btn-light rounded-circle btn-incrementa" data-code="{{$code}}">+</span>
 								</div>
 							</div>
 						</div>
@@ -140,7 +146,7 @@
 								<div class="d-flex" style="float: right;">
 									<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">-</span> 
 									<input min="0" value="{{ number_format($p->quantidade) }}" class="fw-semibold cart-qty m-0 px-2 qtd-row"> 
-									<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">+</span>
+									<span class="increment-decrement btn btn-light rounded-circle btn-incrementa" data-code="{{$code}}">+</span>
 								</div>
 							</div>
 						</div>
@@ -166,7 +172,7 @@
 						<div class="col-md-4 col-12">
 							<label class="form-label">Desconto</label>
 							<div class="input-group">
-								<input id="inp-desconto" type="tel" class="form-control moeda" value="{{ isset($item) ? __moeda($item->desconto) : '' }}">
+								<input id="inp-desconto" type="tel" class="form-control moeda inp-modal-pass" value="{{ isset($item) ? __moeda($item->desconto) : '' }}">
 								<input type="hidden" name="desconto" id="inp-valor_desconto" value="{{ isset($item) ? __moeda($item->desconto) : '' }}">
 								<span class="input-group-append">
 									<select class="form-select" id="inp-tipo_desconto" name="tipo_desconto">
@@ -176,10 +182,26 @@
 								</span>
 							</div>
 						</div>
+						@isset($acrescimo)
 						<div class="col-md-4 col-12">
 							<label class="form-label">Acréscimo</label>
 							<div class="input-group">
-								<input value="{{ isset($item) ? __moeda($item->acrescimo) : '' }}" id="inp-acrescimo" type="tel" class="form-control moeda">
+								<input value="{{ __moeda($acrescimo) }}" id="inp-acrescimo" type="tel" class="form-control moeda inp-modal-pass">
+								<input type="hidden" name="acrescimo" id="inp-valor_acrescimo" value="{{ __moeda($acrescimo) }}">
+
+								<span class="input-group-append">
+									<select class="form-select" id="inp-tipo_acrescimo" name="tipo_acrescimo">
+										<option value="R$">R$</option>
+										<option value="%">%</option>
+									</select>
+								</span>
+							</div>
+						</div>
+						@else
+						<div class="col-md-4 col-12">
+							<label class="form-label">Acréscimo</label>
+							<div class="input-group">
+								<input value="{{ isset($item) ? __moeda($item->acrescimo) : '' }}" id="inp-acrescimo" type="tel" class="form-control moeda inp-modal-pass">
 								<input type="hidden" name="acrescimo" id="inp-valor_acrescimo" value="{{ isset($item) ? __moeda($item->acrescimo) : '' }}">
 
 								<span class="input-group-append">
@@ -187,6 +209,20 @@
 										<option value="%">%</option>
 										<option value="R$">R$</option>
 									</select>
+								</span>
+							</div>
+						</div>
+						@endif
+
+						<div class="col-md-4 col-12">
+							<label class="form-label">Frete</label>
+							<div class="input-group">
+								<input value="{{ isset($item) ? __moeda($item->valor_frete) : '' }}" id="inp-valor_frete" type="tel" class="form-control moeda">
+
+								<span class="input-group-append">
+									<button type="button" class="btn btn-dark" onclick="modalFrete()">
+										<i class="ri-truck-line"></i>
+									</button>
 								</span>
 							</div>
 						</div>
@@ -269,7 +305,7 @@
 							</a>
 							@endif
 
-							<a  href="{{ route('frontbox.index')}}" class="btn btn-primary w-100 mt-1">
+							<a href="{{ route('frontbox.index')}}" class="btn btn-primary w-100 mt-1">
 								<i class="ri-arrow-left-s-line"></i>
 								Sair do PDV
 							</a>
@@ -285,13 +321,22 @@
 @include('modals._info_produto')
 @include('modals._edit_item_pdv')
 @include('modals._finalizar_pdv2')
-@include('modals._vendas_suspensas')
 @include('modals._variacao', ['not_submit' => true])
 @include('modals._fatura_venda')
+@include('modals._frete')
+
 @include('modals._lista_precos')
 @include('modals._cashback')
+@include('modals._vendas_suspensas')
 
 @section('js')
+<script>
+    var senhaAcao = "";
+
+    @if(isset($config) && strlen(trim($config->senha_manipula_valor)) > 1)
+        senhaAcao = "{{ $config->senha_manipula_valor }}";
+    @endif
+</script>
 <script type="text/javascript" src="/js/controla_conta_empresa.js"></script>
 <script src="/js/frente_caixa2.js" type=""></script>
 <script src="/js/novo_cliente.js"></script>

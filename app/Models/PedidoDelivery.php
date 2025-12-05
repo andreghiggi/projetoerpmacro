@@ -14,7 +14,7 @@ class PedidoDelivery extends Model
         'telefone', 'estado', 'endereco_id', 'motivo_estado', 'troco_para', 'cupom_id', 'desconto', 'app',
         'empresa_id', 'valor_entrega', 'qr_code_base64', 'qr_code', 'transacao_id', 'status_pagamento',
         'pedido_lido', 'horario_cricao', 'horario_leitura', 'horario_entrega', 'motoboy_id', 'comissao_motoboy',
-        'funcionario_id_agendamento', 'inicio_agendamento', 'fim_agendamento', 'data_agendamento'
+        'funcionario_id_agendamento', 'inicio_agendamento', 'fim_agendamento', 'data_agendamento', 'numero_sequencial'
     ];
 
     public function itens(){
@@ -82,13 +82,25 @@ class PedidoDelivery extends Model
 
     public function _estado(){
         if($this->estado == 'novo'){
-            return "<h5 class='text-dark'>NOVO</h5>";
+            return "<h5 class='badge bg-dark'>NOVO</h5>";
         }else if($this->estado == 'aprovado'){
-            return "<h5 class='text-success'>APROVADO</h5>";
+            return "<h5 class='badge bg-success'>APROVADO</h5>";
         }else if($this->estado == 'cancelado'){
-            return "<h5 class='text-danger'>CANCELADO</h5>";
+            return "<h5 class='badge bg-danger'>CANCELADO</h5>";
         }else{
-            return "<h5 class='text-primary'>FINALIZADO</h5>";
+            return "<h5 class='badge bg-primary'>FINALIZADO</h5>";
         }
+    }
+
+    public function _estadoPagamento(){
+
+        if($this->estado == 'finalizado'){
+            return "<h5 class='badge bg-success'>APROVADO</h5>";
+        }else if($this->tipo_pagamento == 'Pix pelo App' && $this->status_pagamento == "approved"){
+            return "<h5 class='badge bg-success'>APROVADO</h5>";
+        }else{
+            return "<h5 class='badge bg-danger'>PENDENTE</h5>";
+        }
+
     }
 }

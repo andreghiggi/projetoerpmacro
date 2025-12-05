@@ -26,7 +26,7 @@ class TransportadoraController extends Controller
         ->when(!empty($request->cpf_cnpj), function ($q) use ($request) {
             return $q->where('cpf_cnpj', 'LIKE', "%$request->cpf_cnpj%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('transportadoras.index', compact('data'));
     }
 

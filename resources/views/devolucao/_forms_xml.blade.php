@@ -200,6 +200,7 @@
                                         <th>pFCPST</th>
                                         <th>vFCPST</th>
                                         <th>modBCST</th>
+                                        <th>vICMSSubstituto</th>
 
                                         <th>Ações</th>
                                     </tr>
@@ -305,28 +306,32 @@
                                         </td>
 
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->pMVAST) }}" class="form-control" type="tel" name="pMVAST[]">
+                                            <input style="width: 120px" value="{{ ($prod->pMVAST) }}" class="form-control percentual" type="tel" name="pMVAST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vBCST) }}" class="form-control" type="tel" name="vBCST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vBCST) }}" class="form-control moeda" type="tel" name="vBCST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->pICMSST) }}" class="form-control" type="tel" name="pICMSST[]">
+                                            <input style="width: 120px" value="{{ ($prod->pICMSST) }}" class="form-control percentual" type="tel" name="pICMSST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vICMSST) }}" class="form-control" type="tel" name="vICMSST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vICMSST) }}" class="form-control moeda" type="tel" name="vICMSST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vBCFCPST) }}" class="form-control" type="tel" name="vBCFCPST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vBCFCPST) }}" class="form-control moeda" type="tel" name="vBCFCPST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->pFCPST) }}" class="form-control" type="tel" name="pFCPST[]">
+                                            <input style="width: 120px" value="{{ ($prod->pFCPST) }}" class="form-control percentual" type="tel" name="pFCPST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vFCPST) }}" class="form-control" type="tel" name="vFCPST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vFCPST) }}" class="form-control moeda" type="tel" name="vFCPST[]">
                                         </td>
                                         <td width="120px">
                                             <input style="width: 120px" value="{{ ($prod->modBCST) }}" class="form-control" type="tel" name="modBCST[]">
+                                        </td>
+
+                                        <td width="120px">
+                                            <input style="width: 120px" value="{{ ($prod->vICMSSubstituto) }}" class="form-control moeda" type="tel" name="vICMSSubstituto[]">
                                         </td>
 
                                         <td width="30">
@@ -389,6 +394,7 @@
                                                 <option @if($prod->cst_csosn == $key) selected @endif value="{{$key}}">{{$c}}</option>
                                                 @endforeach
                                             </select>
+                                            <div style="width: 400px"></div>
                                         </td>
                                         <td width="250">
                                             <select name="cst_pis[]" class="form-control select2">
@@ -396,6 +402,7 @@
                                                 <option @if($prod->cst_pis == $key) selected @endif value="{{$key}}">{{$c}}</option>
                                                 @endforeach
                                             </select>
+                                            <div style="width: 250px"></div>
                                         </td>
                                         <td width="250">
                                             <select name="cst_cofins[]" class="form-control select2">
@@ -403,13 +410,15 @@
                                                 <option @if($prod->cst_cofins == $key) selected @endif value="{{$key}}">{{$c}}</option>
                                                 @endforeach
                                             </select>
+                                            <div style="width: 250px"></div>
                                         </td>
                                         <td width="250">
-                                            <select style="width: 300px" name="cst_ipi[]" class="form-control select2">
+                                            <select name="cst_ipi[]" class="form-control select2">
                                                 @foreach(App\Models\Produto::listaCST_IPI() as $key => $c)
                                                 <option @if($prod->cst_ipi == $key) selected @endif value="{{$key}}">{{$c}}</option>
                                                 @endforeach
                                             </select>
+                                            <div style="width: 250px"></div>
                                         </td>
                                         <td width="120">
                                             <input style="width: 120px" value="{{ __moeda($prod->vbc_icms) }}" class="form-control moeda" type="tel" name="vbc_icms[]">
@@ -429,29 +438,34 @@
                                         </td>
 
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->pMVAST) }}" class="form-control" type="tel" name="pMVAST[]">
+                                            <input style="width: 120px" value="{{ ($prod->pMVAST) }}" class="form-control percentual" type="tel" name="pMVAST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vBCST) }}" class="form-control" type="tel" name="vBCST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vBCST) }}" class="form-control moeda" type="tel" name="vBCST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->pICMSST) }}" class="form-control" type="tel" name="pICMSST[]">
+                                            <input style="width: 120px" value="{{ ($prod->pICMSST) }}" class="form-control percentual" type="tel" name="pICMSST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vICMSST) }}" class="form-control" type="tel" name="vICMSST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vICMSST) }}" class="form-control moeda" type="tel" name="vICMSST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vBCFCPST) }}" class="form-control" type="tel" name="vBCFCPST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vBCFCPST) }}" class="form-control moeda" type="tel" name="vBCFCPST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->pFCPST) }}" class="form-control" type="tel" name="pFCPST[]">
+                                            <input style="width: 120px" value="{{ ($prod->pFCPST) }}" class="form-control percentual" type="tel" name="pFCPST[]">
                                         </td>
                                         <td width="120px">
-                                            <input style="width: 120px" value="{{ ($prod->vFCPST) }}" class="form-control" type="tel" name="vFCPST[]">
+                                            <input style="width: 120px" value="{{ ($prod->vFCPST) }}" class="form-control moeda" type="tel" name="vFCPST[]">
                                         </td>
                                         <td width="120px">
                                             <input style="width: 120px" value="{{ ($prod->modBCST) }}" class="form-control" type="tel" name="modBCST[]">
                                         </td>
+
+                                        <td width="120px">
+                                            <input style="width: 120px" value="{{ ($prod->vICMSSubstituto) }}" class="form-control moeda" type="tel" name="vICMSSubstituto[]">
+                                        </td>
+
                                         <td width="30">
                                             <button class="btn btn-danger btn-remove-tr">
                                                 <i class="ri-delete-bin-line"></i>
@@ -492,23 +506,23 @@
                         <div class="row">
                             <div class="col-md-3">
                                 {!!Form::text('razao_social_transp', 'Razão Social')
-                                ->value(isset($item->transportadora) ? $item->transportadora->razao_social : '')
+                                ->value(isset($item->transportadora) ? $item->transportadora->razao_social : ($transporta != null ? $transporta['nome'] : ''))
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('nome_fantasia_transp', 'Nome Fantasia')
-                                ->value(isset($item->transportadora) ? $item->transportadora->nome : '')
+                                ->value(isset($item->transportadora) ? $item->transportadora->nome_fantasia : '')
                                 !!}
                             </div>
                             <div class="col-md-2">
                                 {!!Form::tel('cpf_cnpj_transp', 'CNPJ')
-                                ->attrs(['class' => 'cpf_cnpj'])
-                                ->value(isset($item->transportadora) ? $item->transportadora->cpf_cnpj : '')
+                                ->attrs(['class' => 'cnpj'])
+                                ->value(isset($item->transportadora) ? $item->transportadora->cpf_cnpj : ($transporta != null ? $transporta['cnpj'] : ''))
                                 !!}
                             </div>
                             <div class="col-md-2">
                                 {!!Form::tel('ie_transp', 'Incrição Estadual')
-                                ->value(isset($item->transportadora) ? $item->transportadora->ie : '')
+                                ->value(isset($item->transportadora) ? $item->transportadora->ie : ($transporta != null ? $transporta['ie'] : ''))
                                 !!}
                             </div>
                             <div class="col-md-2">
@@ -518,18 +532,18 @@
                             </div>
                             <div class="col-md-3 mt-3">
                                 {!!Form::tel('rua_transp', 'Rua')
-                                ->value(isset($item->transportadora) ? $item->transportadora->rua : '')
+                                ->value(isset($item->transportadora) ? $item->transportadora->rua : ($transporta != null ? $transporta['rua'] : ''))
                                 !!}
                             </div>
                             <div class="col-md-1 mt-3">
                                 {!!Form::tel('numero_transp', 'Número')
-                                ->value(isset($item->transportadora) ? $item->transportadora->numero : '')
+                                ->value(isset($item->transportadora) ? $item->transportadora->numero : ($transporta != null ? $transporta['numero'] : ''))
                                 !!}
                             </div>
                             <div class="col-md-3 mt-3">
                                 {!!Form::select('cidade_id', 'Cidade')
                                 ->attrs(['class' => 'select2'])
-                                ->options(isset($item->transportadora) ? [$item->transportadora->cidade->nome] : [])
+                                ->options(isset($item->transportadora) && $item->transportadora->cidade ? [$item->transportadora->cidade_id => $item->transportadora->cidade->nome] : ($transporta && $transporta['cidade'] != null ? $transporta['cidade'] : []))
                                 !!}
                             </div>
                             <div class="col-md-2 mt-3">

@@ -18,6 +18,7 @@ class ListaPrecoController extends Controller
         $data = ListaPreco::orderBy('nome', 'desc')
         ->select('lista_precos.*')
         ->where('empresa_id', $request->empresa_id)
+        ->where('lista_precos.status', 1)
         ->where('nome', 'like', "%$request->pesquisa%")
         ->when($tipo_pagamento, function ($query) use ($tipo_pagamento) {
             return $query->where('tipo_pagamento', $tipo_pagamento);

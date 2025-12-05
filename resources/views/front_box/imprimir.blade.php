@@ -4,7 +4,7 @@
 
 	@media print {
 		.print{
-			margin: -5px;
+			margin: -8px;
 		}
 	}
 
@@ -58,7 +58,7 @@
 		padding-bottom: 0;
 	}
 	.printer-ticket .title {
-		font-size: 1.5em;
+		font-size: 14px;
 		padding: 15px 0;
 	}
 	.printer-ticket .top td {
@@ -74,11 +74,16 @@
 		<table class="printer-ticket">
 			<thead>
 				<tr>
-					<th class="title" colspan="3">{{ $config->nome }}</th>
+					<th class="title" colspan="3" style="line-height: 1">
+						{{ $config->nome }}<br>
+						<span style="font-size: 14px;">{{ $config->nome_fantasia }}</span><br>
+						<span style="font-size: 14px;">{{ __setMask($config->cpf_cnpj) }}</span><br>
+						<span style="font-size: 14px;">Inscrição Estadual: {{ $config->ie }}</span><br>
+						<span style="font-size: 14px;">{{ $config->endereco }}</span><br>
+						<span style="font-size: 14px;">{{ $config->celular }}</span><br>
+					</th>
 				</tr>
-				<tr>
-					<th colspan="3">{{ date('d/m/Y H:i:s') }}</th>
-				</tr>
+				
 				@if($item->cliente)
 				<tr>
 					<th colspan="3">
@@ -89,47 +94,83 @@
 				@endif
 				<tr>
 					<th class="ttu" colspan="3">
-						<b>CUPOM NÃO FISCAL</b>
+						<b>DOCUMENTO AUXILIAR</b>
 					</th>
 				</tr>
 			</thead>
 			<tbody>
 				@foreach($item->itens as $i)
 				<tr class="top">
-					<td colspan="3">{{ $i->produto->nome }}</td>
+					<td colspan="3">
+						#{{ $i->produto->numero_sequencial }} 
+						@if(sizeof($i->pizzas) > 0)
+						@foreach($i->pizzas as $s)
+						1/{{ sizeof($i->pizzas) }} {{ $s->sabor->nome }}
+						@endforeach
+						@else
+						{{ $i->produto->nome }}
+						@endif
+						@if($i->tamanho)
+						<strong>Tamanho:</strong> {{ $i->tamanho->nome }}
+						@endif
+					</td>
 				</tr>
+				@if(sizeof($i->adicionais) > 0)
+				<tr>
+					<td colspan="3">
+						<strong>Adicionais:</strong>
+						@foreach($i->adicionais as $a)
+						{{ $a->adicional->nome }}@if(!$loop->last), @endif
+						@endforeach
+					</td>
+				</tr>
+				@endif
 				<tr>
 					<td>R${{ __moeda($i->valor_unitario) }}</td>
 					<td>x{{ number_format($i->quantidade, 2) }}</td>
 					<td>R${{ __moeda($i->sub_total) }}</td>
 				</tr>
+				@if($i->observacao)
+				<tr>
+					<td colspan="3">
+						<strong>Observação:</strong>
+						{{ $i->observacao }}
+					</td>
+				</tr>
+				@endif
 				@endforeach
 			</tbody>
 			<tfoot>
 				<tr class="sup ttu p--0">
 					<td colspan="3">
-						<b>Totais</b>
 					</td>
 				</tr>
 				<tr class="ttu">
-					<td colspan="2">Sub-total</td>
+					<td colspan="2">Qtde total de itens:</td>
+					<td align="right">{{ sizeof($item->itens) }}</td>
+				</tr>
+				<tr class="ttu">
+					<td colspan="2">Valor total:</td>
 					<td align="right">R${{ __moeda($item->total + $item->desconto - $item->acrescimo) }}</td>
 				</tr>
 				<tr class="ttu">
-					<td colspan="2">Acréscimo</td>
+					<td colspan="2">Acréscimo:</td>
 					<td align="right">R${{ __moeda($item->acrescimo) }}</td>
 				</tr>
 				<tr class="ttu">
-					<td colspan="2">Desconto</td>
+					<td colspan="2">Desconto:</td>
 					<td align="right">R${{ __moeda($item->desconto) }}</td>
 				</tr>
+				@if($item->valor_entrega)
 				<tr class="ttu">
-					<td colspan="2">Total</td>
-					<td align="right">R${{ __moeda($item->total) }}</td>
+					<td colspan="2">Valor entrega:</td>
+					<td align="right">R${{ __moeda($item->valor_entrega) }}</td>
 				</tr>
+				@endif
+				
 				<tr class="sup ttu p--0">
 					<td colspan="3">
-						<b>Pagamentos</b>
+						<b>FORMA DE PAGAMENTO</b>
 					</td>
 				</tr>
 				@foreach($item->fatura as $f) 
@@ -138,6 +179,21 @@
 					<td align="right">R${{ __moeda($f->valor) }}</td>
 				</tr>
 				@endforeach
+
+				<tr class="ttu">
+					<td colspan="2">Troco:</td>
+					<td align="right">R${{ __moeda($item->troco) }}</td>
+				</tr>
+
+				<tr class="ttu">
+					<td colspan="2">Data:</td>
+					<td align="right">{{ __data_pt($item->created_at) }}</td>
+				</tr>
+
+				<tr class="ttu">
+					<td colspan="2">Código da venda:</td>
+					<td align="right">{{ $item->numero_sequencial }}</td>
+				</tr>
 				
 				@if($item->observacao)
 				<tr class="sup">
@@ -147,17 +203,31 @@
 					</td>
 				</tr>
 				@endif
+
 				<tr class="sup">
+					<td colspan="3" align="center">
+					</td>
+				</tr>
+				<tr class="">
+					<td colspan="3" align="center">
+					</td>
+				</tr>
+				<!-- <tr class="sup">
 					<td colspan="3" align="center">
 						{{ env("APP_URL") }}
 					</td>
-				</tr>
+				</tr> -->
 			</tfoot>
 		</table>
 	</div>
 </body>
 
 <script type="text/javascript">
-	window.onload = function() { window.print(); window.close() }
+	window.onload = function() { 
+		window.print();
+		setTimeout(() => {
+			window.close() 
+		}, 10)
+	}
 </script>
 </html>

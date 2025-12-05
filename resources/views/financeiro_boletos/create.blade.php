@@ -14,7 +14,7 @@
         {!!Form::open()
         ->post()
         ->route('financeiro-boleto.store')
-
+        ->id('form-financeiro')
         !!}
         <div class="pl-lg-4">
             @include('financeiro_boletos._forms')

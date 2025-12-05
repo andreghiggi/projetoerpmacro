@@ -25,6 +25,15 @@ class Estoque extends Model
         return $this->belongsTo(ProdutoVariacao::class, 'produto_variacao_id');
     }
 
+    public function quantidadeLocal($local_id){
+        $estoque = Estoque::where('produto_id', $this->produto_id)
+        ->where('local_id', $local_id)->first();
+        if($estoque){
+            return $estoque->quantidade;
+        }
+        return 0;
+    }
+
     public function descricao(){
         if($this->produto_variacao_id == null){
             return $this->produto->nome;

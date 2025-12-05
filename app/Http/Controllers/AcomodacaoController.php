@@ -26,7 +26,7 @@ class AcomodacaoController extends Controller
             return $q->where('categoria_id', $request->categoria_id);
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $categorias = CategoriaAcomodacao::where('empresa_id', request()->empresa_id)->get();
 

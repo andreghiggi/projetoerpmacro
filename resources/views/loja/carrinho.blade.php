@@ -1,51 +1,6 @@
 @extends('loja.default', ['title' => 'Carrinho'])
 @section('css')
-<style type="text/css">
-	.cart-item{
-		margin-top: 10px;
-		border-bottom: 1px solid #E7E9EB;
-	}
-
-	.cart-item label{
-
-	}
-	.cart-item img{
-
-		width: 180px;
-		height: 120px;
-		border-radius: 10px;
-	}
-
-	.sub_total{
-		font-size: 20px;
-		color: #D10024;
-	}
-
-	.btn-delete{
-		margin-top: 30px;
-		margin-bottom: 10px;
-	}
-
-	h4{
-		margin-top: 10px;
-		color: #D10024;
-		font-size: 24px;
-	}
-
-	.p-cart{
-		margin-top: 10px;
-		font-size: 22px;
-	}
-
-	.btn-frete{
-		margin-top: 24px;
-	}
-
-	.btn-pagamento{
-		float: right;
-		margin-top: 10px;
-	}
-</style>
+<link rel="stylesheet" type="text/css" href="/css/ecommerce_carrinho.css">
 @endsection
 @section('content')
 
@@ -65,13 +20,14 @@
 							<div class="col-md-3 col-8">
 								<img src="{{ $i->produto->img }}"><br><br>
 							</div>
-							<div class="col-md-3 col-4">
+							<div class="col-md-2 col-4">
 								<div class="qty-label">
 									<form action="{{ route('loja.atualiza-quantidade', [$i->id, 'link='.$config->loja_id]) }}" method="post" id="form-update-{{$i->id}}">
 										@csrf
 										@method('put')
-										Quantidade
+										Quantidade<br>
 										<input type="hidden" name="link" value="{{ $config->loja_id }}">
+										<input type="hidden" name="produto_variacao_id" value="{{ $i->variacao_id }}">
 										<div class="input-number">
 											<input class="qtd" name="quantidade" type="number" value="{{ number_format($i->quantidade, 0) }}">
 											<span class="qty-up">+</span>
@@ -80,14 +36,13 @@
 									</form>
 								</div>
 							</div>
-							<div class="col-md-4 col-12" style="text-align:right;">
-								<label>{{ $i->produto->nome }} {{ $i->variacao ? $i->variacao->descricao : '' }}</label><br>
+							<div class="col-md-6 col-12" style="text-align:right;">
+								<label class="nome-produto">{{ $i->produto->nome }} {{ $i->variacao ? $i->variacao->descricao : '' }}</label><br>
 								<label>Valor unitário R$ {{ __moeda($i->valor_unitario) }}</label><br>
 								<label class="sub_total">R$ {{ __moeda($i->sub_total) }}</label>
-
 							</div>
 
-							<div class="col-md-2 col-12">
+							<div class="col-md-1 col-12">
 								<form action="{{ route('loja.remove-item', [$i->id, 'link='.$config->loja_id]) }}" method="post" id="form-{{$i->id}}">
 									@csrf
 									@method('delete')
@@ -110,7 +65,7 @@
 						@csrf
 						<div class="row">
 							<div class="col-8 col-md-3">
-								<div class="input-number">
+								<div class="input-cep">
 									<label>CEP</label>
 									<input data-mask="00000-000" class="form-control" name="cep" id="cep" type="tel" value="">
 								</div>

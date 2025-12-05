@@ -12,7 +12,9 @@ use App\Models\FaturaReserva;
 use App\Models\ServicoReserva;
 use App\Models\Servico;
 use App\Models\Empresa;
+use App\Models\Cliente;
 use App\Models\Cidade;
+use App\Models\ContaReceber;
 use App\Models\Nfe;
 use App\Models\PadraoFrigobar;
 use App\Models\Transportadora;
@@ -51,7 +53,7 @@ class ReservaController extends Controller
             return $query->where('estado', $estado);
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('reservas.index', compact('data'));
     }
@@ -84,10 +86,25 @@ class ReservaController extends Controller
             ]);
 
             for($i=0; $i<$request->qtd_hospedes; $i++){
-                HospedeReserva::create([
+                $hospede = HospedeReserva::create([
                     'reserva_id' => $reserva->id,
                     'descricao' => 'Hóspede #'.$i+1
                 ]);
+
+                if($i == 0){
+                    $cliente = Cliente::find($request->cliente_id);
+                    $hospede->nome_completo = $cliente->razao_social;
+                    $hospede->cpf = $cliente->cpf_cnpj;
+                    $hospede->rua = $cliente->rua;
+                    $hospede->numero = $cliente->numero;
+                    $hospede->bairro = $cliente->bairro;
+                    $hospede->cidade_id = $cliente->cidade_id;
+                    $hospede->telefone = $cliente->telefone;
+                    $hospede->cep = $cliente->cep;
+                    $hospede->email = $cliente->email;
+
+                    $hospede->save();
+                }
             }
             session()->flash("flash_success", "Reserva criada com sucesso!");
         } catch (\Exception $e) {
@@ -336,26 +353,57 @@ class ReservaController extends Controller
         $item = Reserva::findOrFail($id);
         try{
 
+            $caixa = __isCaixaAberto();
+            if($caixa == null){
+                session()->flash("flash_error", 'É necessário o caixa estar aberto para definir fatura!');
+                return redirect()->back();
+            }
+
             $item->desconto = __convert_value_bd($request->desconto);
             $item->valor_outros = __convert_value_bd($request->valor_outros);
             $item->save();
-            $item->fatura()->delete();
+            foreach($item->fatura as $f){
+                if($f->contaReceber){
+                    $f->contaReceber->delete();
+                }
+                $f->delete();
+            }
 
             for($i=0; $i<sizeof($request->tipo_pagamento); $i++){
-                FaturaReserva::create([
+                $fatura = FaturaReserva::create([
                     'reserva_id' => $item->id,
                     'tipo_pagamento' => $request->tipo_pagamento[$i],
                     'data_vencimento' => $request->data_vencimento[$i],
                     'valor' => __convert_value_bd($request->valor[$i])
                 ]);
+                if($request->gerar_conta_receber){
+                    $descricao = "Reserva #".$item->numero_sequencial." -  Parcela " .($i+1)." de " . sizeof($request->tipo_pagamento)+1;
+
+                    $data = [
+                        'venda_id' => null,
+                        'data_vencimento' => $request->data_vencimento[$i],
+                        'valor_integral' => __convert_value_bd($request->valor[$i]),
+                        'valor_recebido' => 0,
+                        'descricao' => $descricao,
+                        'status' => 0,
+                        'empresa_id' => $request->empresa_id,
+                        'cliente_id' => $item->cliente_id,
+                        'tipo_pagamento' => $request->tipo_pagamento[$i],
+                        'local_id' => $caixa->local_id,
+                    ];
+                    $conta = ContaReceber::create($data);
+
+                    $fatura->conta_receber_id = $conta->id;
+                    $fatura->save();
+                }
             }
 
             $this->atualizaTotais($item->id);
             
             session()->flash("flash_success", "Fatura gerada!");
         } catch (\Exception $e) {
-            // echo $e->getMessage();
-            // die;
+            echo $e->getMessage();
+            die;
             session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
         }
         return redirect()->back();

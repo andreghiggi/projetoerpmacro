@@ -1,4 +1,10 @@
 @extends('food.default', ['title' => 'Carrinho'])
+
+@section('css')
+
+<link rel="stylesheet" href="/food-files/css/extend_cart.css">
+
+@endsection
 @section('content')
 
 <div class="minfit" style="min-height: 472px;">
@@ -148,7 +154,7 @@
 									</tr>
 									@if(sizeof($i->adicionais) > 0)
 									<tr class="sacola-{{ $i->id }}">
-										<td colspan="5">
+										<td colspan="7">
 											Adicionais: 
 											@foreach($i->adicionais as $a)
 											<strong>{{ $a->adicional->nome }}@if(!$loop->last), @endif</strong>
@@ -179,11 +185,17 @@
 						@if($funcionamento && $funcionamento->aberto)
 						@if($carrinho && $carrinho->valor_total >= $config->pedido_minimo)
 						<div class="row">
+
 							<div class="col-md-4">
+								<a class="botao-continuar" href="{{ route('food.index', ['link='.$config->loja_id]) }}">
+									<i class="lni lni-cart"></i> <span>Continuar Comprando</span>
+								</a>
 								<div class="subtotal"><strong>Subtotal:</strong> <span class="subtotal-valor">R$ {{ $carrinho ? __moeda($carrinho->valor_total) : '0,00' }}</span></div>
 								@if($tempoServico > 0)
 								<div><strong>Tempo de serviço:</strong> {{ $tempoServico }} Minutos</div>
 								@endif
+
+								
 							</div>
 							<div class="clear visible-xs visible-sm"><br></div>
 

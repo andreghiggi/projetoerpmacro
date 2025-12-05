@@ -59,14 +59,16 @@
                         <div class="col-md-5">
                             <label>Cliente</label>
                             <div class="input-group flex-nowrap">
-                                <select id="inp-cliente_id" name="cliente_id">
+                                <select id="inp-cliente_id" class="cliente_id" name="cliente_id">
                                     @if(isset($item) && $item->cliente)
                                     <option value="{{ $item->cliente_id }}">{{ $item->cliente->razao_social }}</option>
                                     @endif
                                 </select>
+                                @can('clientes_create')
                                 <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button">
                                     <i class="ri-add-circle-fill"></i>
                                 </button>
+                                @endcan
                             </div>
                         </div>
                         <hr class="mt-3">

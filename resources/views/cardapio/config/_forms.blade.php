@@ -54,7 +54,7 @@
 
     <div class="col-md-4">
         <label class="required">Token</label>
-        <button type="button" class="btn btn-link btn-tooltip btn-sm" data-toggle="tooltip" data-placement="top" title="Esse Token é inserido no app para conectar o App com este servidor"><i class="ri-file-info-fill"></i></button>
+        <button type="button" class="btn btn-link btn-tooltip btn-sm" data-toggle="tooltip" data-placement="top" title="Esse Token é inserido para conectar o App com este servidor"><i class="ri-file-info-fill"></i></button>
         <div class="input-group">
             <input readonly type="text" class="form-control tooltipp" id="api_token" name="api_token" value="{{ isset($item) ? $item->api_token : '' }}">
             <button type="button" class="btn btn-info" id="btn_token"><a class="ri-refresh-line text-white"></a></button>
@@ -96,8 +96,40 @@
         ->attrs(['class' => 'form-select'])
         !!}
     </div>
+
+    <div class="col-md-2">
+        {!!Form::tel('percentual_taxa_servico', '% taxa de serviço')
+        ->attrs(['class' => 'percentual'])
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::select('qr_code_mesa', 'Qr Code mesa', [0 => 'Não', 1 => 'Sim'])
+        ->attrs(['class' => 'form-select'])
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::tel('limite_pessoas_qr_code', 'Limite de pessoas por QR Code')
+        ->attrs(['data-mask' => '00'])
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::text('cor_principal', 'Cor principal')
+        ->attrs(['class' => 'tooltipp'])
+        ->type('color')
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::select('confirma_mesa', 'Confirmar mesa automatico', [1 => 'Sim', 0 => 'Não'])
+        ->attrs(['class' => 'form-select'])
+        !!}
+    </div>
+    
     <hr>
-    <div class="card col-md-3 mt-3 form-input">
+    <div class="card col-md-3 mt-3 form-input" style="width: 210px">
         <div class="preview">
             <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
             @isset($item)

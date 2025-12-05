@@ -74,7 +74,8 @@ class CteController extends Controller
             return $query->whereIn('local_id', $locais);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
+
         return view('cte.index', compact('data'));
     }
 

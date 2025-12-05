@@ -82,6 +82,7 @@ class EmailUtil {
 					$m->from(env('MAIL_USERNAME'), $nomeEmail);
 					$m->subject($assunto);
 					$m->to($destinatario);
+
 				});
 			}
 			return 1;
@@ -106,11 +107,12 @@ class EmailUtil {
 
 				$result = $this->enviaEmailPHPMailer($destinatario, $assunto, $body, $emailConfig, $fileDir);
 			}else{
-				Mail::send('mail.envio_xml', ['body' => $body], function($m) use ($destinatario, $assunto){
+				Mail::send('mail.envio_xml', ['body' => $body], function($m) use ($destinatario, $assunto, $fileDir){
 
 					$nomeEmail = env('MAIL_FROM_NAME');
 					$m->from(env('MAIL_USERNAME'), $nomeEmail);
 					$m->subject($assunto);
+					$m->attach($fileDir);
 					$m->to($destinatario);
 				});
 			}

@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Configurações'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -51,7 +51,31 @@
                                 ->attrs(['class' => 'form-select'])
                                 !!}
                             </div>
-                            <hr class="mt-4">
+
+                            <div class="col-md-2">
+                                {!!Form::select('cobrar_apos_auto_cadastro', 'Cobrar após auto cadastro', [0 => 'Não', 1 => 'Sim'])
+                                ->required()
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
+
+                            <div class="col-md-2">
+                                {!!Form::select('usuario_alterar_plano', 'Permitir usuário alterar plano', [1 => 'Sim', 0 => 'Não'])
+                                ->required()
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
+
+                            <div class="col-md-2">
+                                {!!Form::select('landing_page', 'Landing page', [1 => 'Sim', 0 => 'Não'])
+                                ->required()
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
+
+                            <p class="text-muted">Se ativar Landing page o caminho para modificar a pagina fica em resources/views/landing_page.blade.php</p>
+
+                            <hr class="mt-1">
                             <h5 class="text-success">Recebimento dos planos (PIX)</h5>
 
                             <div class="col-md-2">
@@ -103,6 +127,11 @@
                             </div>
                             <div class="col-md-2">
                                 {!!Form::tel('dias_atraso_suspender_boleto', 'Dias de atraso suspensão')
+                                ->attrs(['data-mask' => '00'])
+                                !!}
+                            </div>
+                            <div class="col-md-2">
+                                {!!Form::tel('dias_alerta_boleto', 'Dias de alerta boleto')
                                 ->attrs(['data-mask' => '00'])
                                 !!}
                             </div>
@@ -171,6 +200,37 @@
                             <div class="col-md-2">
                                 {!!Form::tel('timeout_mdfe', 'Tempo de espera MDFe')
                                 ->attrs(['data-mask' => '00'])
+                                !!}
+                            </div>
+
+                            <hr class="mt-4">
+                            <h5 class="text-success">Geral</h5>
+
+                            <div class="col-md-2">
+                                {!!Form::select('info_topo_menu', 'Informações topo do menu', [1 => 'Sim', 0 => 'Não'])
+                                ->attrs(['class' => 'form-select tooltipp'])
+                                !!}
+                                <div class="text-tooltip d-none">
+                                    Apresenta ao usuário as informações de ambiente, ip, plano e tour.
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                {!!Form::select('tema_padrao', 'Tema padrão', ['light' => 'Light', 'dark' => 'Dark'])
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
+
+                            <div class="col-md-2">
+                                {!!Form::select('duplicar_cpf_cnpj', 'Permitir duplicar CPF/CNPJ empresa', [1 => 'Sim', 0 => 'Não'])
+                                ->required()
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
+
+                            <div class="col-md-4">
+                                {!!Form::tel('email_aviso_novo_cadastro', 'Email para aviso novo cadastro de empresa')
+                                ->type('email')
                                 !!}
                             </div>
 

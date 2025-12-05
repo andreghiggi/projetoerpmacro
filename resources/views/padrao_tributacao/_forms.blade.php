@@ -20,7 +20,7 @@
 
     <div class="col-md-4">
         {!!Form::select('ncm', 'NCM')
-        ->options(isset($item) && $item->ncm ? [$item->ncm => $item->_ncm->descricao] : [])
+        ->options(isset($item) && $item->_ncm ? [$item->ncm => $item->_ncm->descricao] : [])
         !!}
     </div>
     <div class="col-md-2">
@@ -141,6 +141,38 @@
 
     <div class="col-md-2">
         {!!Form::tel('redBCST', '% Red BC ST')
+        ->attrs(['class' => 'percentual'])
+        !!}
+    </div>
+
+    <div class="col-md-4">
+        {!!Form::select('cst_ibscbs', 'CST IBS/CBS', ['' => 'Selecione'] + App\Models\Produto::listaCSTCbsIbs())
+        ->attrs(['class' => 'form-select select2'])
+        !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::text('cclass_trib', 'Classificação Tributária')
+        ->attrs(['class' => ''])
+        !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::tel('perc_ibs_uf', '% IBS UF')
+        ->attrs(['class' => 'percentual'])
+        !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::tel('perc_ibs_mun', '% IBS Municipal')
+        ->attrs(['class' => 'percentual'])
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::tel('perc_cbs', '% CBS')
+        ->attrs(['class' => 'percentual'])
+        !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::tel('perc_dif', '% Diferido')
         ->attrs(['class' => 'percentual'])
         !!}
     </div>

@@ -12,7 +12,7 @@ class ClienteController extends Controller
 {
     public function find($id)
     {
-        $item = Cliente::with(['cidade', 'listaPreco', 'tributacao'])->findOrFail($id);
+        $item = Cliente::with(['cidade', 'listaPreco', 'tributacao', 'fatura'])->findOrFail($id);
         return response()->json($item, 200);
     }
 

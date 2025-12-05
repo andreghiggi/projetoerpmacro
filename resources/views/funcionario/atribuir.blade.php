@@ -28,7 +28,7 @@
                     <br>
                     <button type="submit" class="btn btn-success px-5">
                         <i class="ri-play-list-add-fill"></i>
-                        atribuir
+                        Atribuir
                     </button>
                 </div>
             </div>
@@ -48,7 +48,7 @@
                     <tbody>
                         @foreach($data as $item)
                         <tr>
-                            <td>{{ $item->servico->nome }}</td>
+                            <td>{{ $item->servico ? $item->servico->nome : '' }}</td>
                             <td>
                                 <form action="{{ route('funcionarios.deletarAtribuicao', $item->id) }}" method="post" id="form-{{$item->id}}">
                                     @method('delete')

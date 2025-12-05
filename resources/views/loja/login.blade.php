@@ -1,36 +1,7 @@
 @extends('loja.default', ['title' => 'Cadastro'])
 @section('css')
 
-<style type="text/css">
-	.order-submit{
-		width: 100%;
-	}
-
-	.select2-selection__rendered {
-		line-height: 38px !important;
-	}
-	.select2-container .select2-selection--single {
-		height: 40px !important;
-		border: 1px solid #E4E7ED;
-	}
-	.select2-selection__arrow {
-		height: 38px !important;
-	}
-
-	.invalid-feedback{
-		font-size: 12px;
-		color: red;
-		position: fixed;
-	}
-
-	.form-group{
-		margin-top: 5px;
-	}
-
-	.title{
-		margin-left: 15px!important;
-	}
-</style>
+<link rel="stylesheet" type="text/css" href="/css/ecommerce_login.css">
 @endsection
 @section('content')
 
@@ -67,14 +38,9 @@
 					Ainda não tem cadastro? <a style="color: red" href="{{ route('loja.cadastro', ['link='.$config->loja_id])}}">quero me cadastrar</a>
 				</label>
 			</div>
-			
 		</form>
-		<!-- /row -->
 	</div>
-	<!-- /container -->
 </div>
-
-
 
 @endsection
 @section('js')

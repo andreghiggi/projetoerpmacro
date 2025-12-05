@@ -13,8 +13,14 @@
                     !!}
                     @csrf
                     <div class="row mt-3">
-                        <div class="col-md-4">
-                            {!!Form::select('adicional_id', 'Adicional', ['' => 'Selecione'] + $adicionais->pluck('nome', 'id')->all())->required()
+                        <div class="col-md-3">
+                            {!!Form::select('adicional_id', 'Adicional', ['' => 'Selecione'] + $adicionais->pluck('nome', 'id')->all())
+                            ->attrs(['class' => 'select2'])
+                            !!}
+                        </div>
+
+                        <div class="col-md-2">
+                            {!!Form::select('categoria_id', 'Categoria', ['' => 'Selecione'] + $categorias->pluck('nome', 'id')->all())
                             ->attrs(['class' => 'select2'])
                             !!}
                         </div>

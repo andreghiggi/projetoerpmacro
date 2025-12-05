@@ -27,4 +27,12 @@ class UserController extends Controller
             return response()->json($e->getMessage(), 401);
         }
     }
+
+    public function updateTheme(Request $request){
+        $user = User::findOrFail($request->usuario_id);
+        $user->tema_padrao = $request->tema;
+        $user->save();
+        return response()->json($user->tema_padrao, 200);
+    }
+
 }

@@ -19,7 +19,13 @@
 		<div class="d-flex" style="float: right;">
 			<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">-</span> 
 			<input min="0" value="1" class="fw-semibold cart-qty m-0 px-2 qtd-row"> 
-			<span class="increment-decrement btn btn-light rounded-circle" data-code="{{$code}}">+</span>
+			<span class="increment-decrement btn btn-light rounded-circle btn-incrementa" data-code="{{$code}}">+</span>
 		</div>
 	</div>
+
+	@if($item->precoComPromocao())
+	<div class="col-md-12">
+		<p>Promoção: <strong class="text-primary">{{ __data_pt($item->precoComPromocao()->data_inicio, 0) }}</strong> até <strong class="text-primary">{{ __data_pt($item->precoComPromocao()->data_fim, 0) }}</strong></p>
+	</div>
+	@endif
 </div>

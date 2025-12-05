@@ -18,7 +18,10 @@ class NotaServicoController extends Controller
         $params = [
             'token' => $empresa->token_nfse,
             'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
+            'debug' => false,
+            'timeout' => 60,
+            'port' => 443,
+            'http_version' => CURL_HTTP_VERSION_NONE,
             'options' => [
                 'debug' => false,
                 'timeout' => 60,
@@ -29,8 +32,6 @@ class NotaServicoController extends Controller
 
         $nfse = new Nfse($params);
         $servico = $item->servico;
-
-        $novoNumeroNFse = $empresa->numero_ultima_nfse+1;
 
         try {
 
@@ -44,8 +45,14 @@ class NotaServicoController extends Controller
             if($config != null){
                 $regimeTributacao = $config->regime_nfse;
             }
+
+            $empresa->numero_ultima_nfse = $item->numero_nfse;
+            $empresa->save();
+
+            $valorLiquido = $servico->valor_servico - $servico->desconto_incondicional - $servico->desconto_condicional;
+
             $payload = [
-                "numero" => $novoNumeroNFse,
+                "numero" => $item->numero_nfse,
                 "serie" => $empresa->numero_serie_nfse,
                 "tipo" => "1",
                 "status" => "1",
@@ -76,6 +83,9 @@ class NotaServicoController extends Controller
                     "valor_servicos" => $servico->valor_servico,
                     "valor_pis" => $servico->aliquota_pis,
                     "valor_aliquota" => $servico->aliquota_iss,
+                    "valor_iss" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
+                    "valor_iss_retido" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
+                    "valor_liquido" => $valorLiquido - ($servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : 0),
                     "codigo_cnae" => $servico->codigo_cnae,
                     "itens" => [
                         [
@@ -86,42 +96,61 @@ class NotaServicoController extends Controller
                             "valor_servicos" => $servico->valor_servico,
                             "valor_pis" => $servico->aliquota_pis,
                             "valor_aliquota" => $servico->aliquota_iss,
+                            "valor_liquido" => $valorLiquido - ($servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : 0),
                             "codigo_cnae" => $servico->codigo_cnae,
+                            "valor_iss" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
+                            "valor_iss_retido" => $servico->iss_retido == 1 ? $servico->valor_servico * ($servico->aliquota_iss/100) : null,
                         ]
                     ]
                 ]
             ];
 
+            if($servico->desconto_incondicional > 0){
+                $payload['servico']['valor_desconto_incondicionado'] = $servico->desconto_incondicional;
+                $payload['servico']['itens'][0]['valor_desconto_incondicionado'] = $servico->desconto_incondicional;
+            }
+
+            if($servico->desconto_condicional > 0){
+                $payload['servico']['valor_desconto_condicionado'] = $servico->desconto_condicional;
+                $payload['servico']['itens'][0]['valor_desconto_condicionado'] = $servico->desconto_condicional;
+            }
+
+            if($servico->iss_retido == 1){
+                $payload['servico']['iss_retido'] = true;
+                $payload['servico']['responsavel_retencao'] = $servico->responsavel_retencao_iss;
+            }
+
             $resp = $nfse->cria($payload);
-            if($resp->sucesso == true){
+            $resp = json_decode($resp);
+            if(isset($resp->sucesso) && $resp->sucesso == true){
                 if(isset($resp->chave)){
                     $item->chave = $resp->chave;
                     $item->save();
                 }
                 // return response()->json($resp, 200);
 
-
                 $chave = $resp->chave;
                 sleep(15);
                 $tentativa = 1;
-                while ($tentativa <= 5) {
+                while ($tentativa <= 2) {
                     $payload = [
                         'chave' => $item->chave
                     ];
                     $resp = $nfse->consulta($payload);
-                    if ($resp->codigo != 5023) {
+                    $resp = json_decode($resp);
+                    if($resp->codigo != 5023) {
                         if ($resp->sucesso) {
                     // autorizado
 
                             $item->estado = 'aprovado';
                             $item->url_pdf_nfse = $resp->link_pdf;
-                            $item->numero_nfse = $resp->numero;
+                            // $item->numero_nfse = $resp->numero;
                             $item->codigo_verificacao = $resp->codigo_verificacao;
 
                             $item->save();
 
-                            $empresa->numero_ultima_nfse = (int)$resp->numero;
-                            $empresa->save();
+                            // $empresa->numero_ultima_nfse = (int)$resp->numero;
+                            // $empresa->save();
                             $xml = $resp->xml;
                             file_put_contents(public_path('xml_nota_servico/')."$item->chave.xml", $xml);
                             return response()->json($resp, 200);
@@ -149,10 +178,24 @@ class NotaServicoController extends Controller
     public function consultar(Request $request){
         $item = NotaServico::findOrFail($request->id);
         $empresa = $item->empresa;
+        // $params = [
+        //     'token' => $empresa->token_nfse,
+        //     'ambiente' => Nfse::AMBIENTE_PRODUCAO,
+        //     // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
+        //     'options' => [
+        //         'debug' => false,
+        //         'timeout' => 60,
+        //         'port' => 443,
+        //         'http_version' => CURL_HTTP_VERSION_NONE
+        //     ]
+        // ];
         $params = [
             'token' => $empresa->token_nfse,
             'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
+            'debug' => false,
+            'timeout' => 60,
+            'port' => 443,
+            'http_version' => CURL_HTTP_VERSION_NONE,
             'options' => [
                 'debug' => false,
                 'timeout' => 60,
@@ -167,19 +210,30 @@ class NotaServicoController extends Controller
                 'chave' => $item->chave
             ];
             $resp = $nfse->consulta($payload);
-            if($resp->sucesso == true){
+            $resp = json_decode($resp);
+            if(isset($resp->sucesso) && $resp->sucesso == true){
                 if($resp->codigo == 100){
                     $item->estado = 'aprovado';
+                    if($resp->status == 'Cancelado'){
+                        $item->estado = 'cancelado';
+                    }
+
                     $item->url_pdf_nfse = $resp->link_pdf;
-                    $item->numero_nfse = $resp->numero;
+                    // $item->numero_nfse = $resp->numero;
                     $item->codigo_verificacao = $resp->codigo_verificacao;
 
                     $item->save();
 
-                    $empresa->numero_ultima_nfse = (int)$resp->numero;
-                    $empresa->save();
+                    // $empresa->numero_ultima_nfse = (int)$resp->numero;
+                    // $empresa->save();
                     $xml = $resp->xml;
                     file_put_contents(public_path('xml_nota_servico/')."$item->chave.xml", $xml);
+                }else if($resp->codigo == 101){
+                    if($resp->status == 'Cancelado'){
+                        $item->estado = 'cancelado';
+                    }
+
+                    $item->save();
                 }
                 return response()->json($resp, 200);
             }
@@ -196,6 +250,10 @@ class NotaServicoController extends Controller
             'token' => $empresa->token_nfse,
             'ambiente' => Nfse::AMBIENTE_PRODUCAO,
             // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
+            'debug' => false,
+            'timeout' => 60,
+            'port' => 443,
+            'http_version' => CURL_HTTP_VERSION_NONE,
             'options' => [
                 'debug' => false,
                 'timeout' => 60,
@@ -211,8 +269,8 @@ class NotaServicoController extends Controller
                 'justificativa' => $request->motivo
             ];
             $resp = $nfse->cancela($payload);
-            if($resp->sucesso == true){
-                return response()->json($resp, 404);
+            if(isset($resp->sucesso) && $resp->sucesso == true){
+                return response()->json($resp, 200);
             }
 
             return response()->json($resp, 404);

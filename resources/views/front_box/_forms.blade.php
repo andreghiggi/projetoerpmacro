@@ -1,28 +1,5 @@
 @section('css')
-<style>
-    .active {
-        background: rgb(85, 114, 245) !important;
-        color: #fff !important;
-    }
-
-    #salvar_venda:hover {
-        cursor: pointer;
-    }
-
-    .btn-cat{
-        height: 30px;
-        display: block;
-        min-width: 200px;
-    }
-
-    .qrcode{
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 50%;
-    }
-
-</style>
+<link rel="stylesheet" type="text/css" href="/css/pdv.css">
 @endsection
 
 <input type="hidden" id="abertura" value="{{ $abertura }}" name="">
@@ -35,9 +12,19 @@
 <input type="hidden" id="alerta_sonoro" value="{{ $config ? $config->alerta_sonoro : 0 }}">
 <input type="hidden" id="local_id" value="{{ $caixa->localizacao->id }}">
 <input type="hidden" id="impressao_sem_janela_cupom" value="{{ $config ? $config->impressao_sem_janela_cupom : 0 }}">
+<input type="hidden" id="documento_pdv" value="{{ $config ? $config->documento_pdv : 'nfce' }}">
+<input type="hidden" id="NFECNPJ" value="{{ env('NFECNPJ') }}">
 
 @if($isVendaSuspensa)
 <input type="hidden" value="{{ $item->id }}" name="venda_suspensa_id">
+@endif
+
+@if(isset($isOrcamento) && $isOrcamento)
+<input type="hidden" value="{{ $item->id }}" name="orcamento_id">
+@endif
+
+@isset($acrescimo)
+<input type="hidden" value="{{ $acrescimo }}" id="acrescimo_pedido">
 @endif
 
 @isset($pedido)
@@ -47,27 +34,24 @@
 <input name="valor_entrega" id="pedido_valor_entrega" value="{{ $pedido->valor_entrega }}" class="d-none">
 @else
 <input name="pedido_id" id="pedido_id" value="{{ $pedido->id }}" class="d-none">
+@isset($pushItensPedido)
+<input name="itens_cliente" id="pedido_id" value="{{ json_encode($pushItensPedido) }}" class="d-none">
 @endif
 @endif
-
-@if(isset($config))
-<input type="hidden" id="inp-abrir_modal_cartao" value="{{ $config != null ? $config->abrir_modal_cartao : 0 }}">
-<input type="hidden" id="inp-senha_manipula_valor" value="{{ $config != null ? $config->senha_manipula_valor : '' }}">
-@else
-<input type="hidden" id="inp-abrir_modal_cartao" value="0">
-<input type="hidden" id="inp-senha_manipula_valor" value="">
 @endif
 
 @isset($agendamento)
 <input name="agendamento_id" value="{{ $agendamento->id }}" class="d-none">
 @endif
 
+<input type="hidden" id="inp-finalizacao_pdv" value="{{ __finalizacaoPdv() }}">
+
 <input type="hidden" id="estoque_view" value="@can('estoque_view') 1 @else 0 @endif">
 
 <div class="row">
     <div class="col-lg-4">
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-6 col-md-6">
                 <div class="card widget-icon-box">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
@@ -88,7 +72,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6 col-md-6">
                 <div class="card widget-icon-box">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
@@ -110,12 +94,13 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="height: 750px">
+        <div class="card" style="height: 757px">
 
             <hr>
             <h5 class="text-center">Categorias</h5>
             <div class="card categorias m-1" data-simplebar data-simplebar-lg style="height: 60px;">
-                <div class="d-flex g m-2">
+                <div class="d-flex g m-1">
+
                     <button type="button" id="cat_todos" onclick="todos()" class="btn btn-cat">Todos</button>
                     @foreach ($categorias as $cat)
                     <button type="button" class="btn btn_cat_{{ $cat->id }} btn-cat" onclick="selectCat('{{ $cat->id }}')">{{$cat->nome}}</button>
@@ -123,13 +108,13 @@
                 </div>
             </div>
             <h4 class="text-center mt-3">Produtos</h4>
-            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg style="max-height: 522px;">
+            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg style="max-height: 532px;">
                 <div class="row cards-categorias">
                 </div>
             </div>
             <div class="row" style="margin-top: 0px">
                 <div class="col-1 text-center">
-                    <input class="mousetrap" type="" autofocus style="border: none; width: 10px; height: 10px; background-color:black" id="codBarras" name="">
+                    <input class="mousetrap" type="" autofocus style="border: none; width: 10px; height: 10px; background-color:black" id="codBarras">
                 </div>
                 <div class="col-6 leitor_ativado text-info">
                     Leitor Ativado
@@ -161,7 +146,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    {!! Form::tel('quantidade', 'Quantidade')->attrs(['data-mask' => '00000,000', 'data-mask-reverse' => "true"]) !!}
+                    {!! Form::tel('quantidade', 'Quantidade')->attrs(['class' => 'qtd']) !!}
                 </div>
                 <div class="col-md-2">
                     {!! Form::tel('valor_unitario', 'Valor Unitário')->attrs(['class' => 'moeda value_unit']) !!}
@@ -183,7 +168,7 @@
             <div class="card m-1">
                 <div data-bs-target="#navbar-example2" class="scrollspy-example" style="height: 440px">
                     <table class="table table-striped dt-responsive nowrap table-itens">
-                        <thead>
+                        <thead class="table-dark">
                             <tr>
                                 <th></th>
                                 <th>Produto</th>
@@ -228,8 +213,27 @@
                                     <input style="width: 100px" readonly type="tel" name="subtotal_item[]" class="form-control subtotal-item" value="{{ __moeda($product->valor_unitario * $product->quantidade) }}">
                                 </td>
                                 <td>
+
+                                    @php
+                                    $adds = '';
+
+                                    if($product && $product->adicionais){
+                                        foreach($product->adicionais as $a){
+                                            $adds .= "$a->id,";
+                                        }
+                                    }
+                                    @endphp
+                                    <div class="inputs-adicional">
+                                        @if($product->adicionais)
+                                        @foreach($product->adicionais as $a)
+                                        <input class='add' type='hidden' value='{{ $a->adicional_id }}' />
+                                        @endforeach
+                                        @endif
+                                    </div>
+                                    <input type="hidden" value="{{ $adds }}" class="adicionais" name="adicionais[]">
                                     <button type="button" class="btn btn-danger btn-sm btn-delete-row"><i class="ri-delete-bin-line"></i></button>
                                 </td>
+
                             </tr>
                             @endforeach
                             @endif
@@ -314,10 +318,21 @@
             </div>
         </div>
         <div class="">
-            <h4 class="text-center">Finalização da Venda</h4>
+
             <div class="row">
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
+                <div class="col-md-6">
+                    <h5 style="margin-left: 10px">Total de itens: <strong class="total-itens text-danger">0</strong></h5>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h5 style="margin-right: 10px">Total de linhas: <strong class="total-linhas text-danger">0</strong></h5>
+                </div>
+                <!-- <div class="col-md-7">
+                    <h4 class="">Finalização da Venda</h4>
+                </div> -->
+            </div>
+            <div class="row m-1">
+                <div class="col-lg-3 col-md-4">
+                    <div class="card widget-icon-box ">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div class="flex-grow-1 overflow-hidden">
@@ -333,8 +348,8 @@
                         </div> <!-- end card-body-->
                     </div> <!-- end card-->
                 </div> <!-- end col-->
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
+                <div class="col-lg-3 col-md-4">
+                    <div class="card widget-icon-box ">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div class="flex-grow-1 overflow-hidden">
@@ -351,15 +366,15 @@
                     </div> <!-- end card-->
                 </div> <!-- end col-->
 
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
+                <div class="col-lg-3 col-md-4">
+                    <div class="card widget-icon-box ">
                         <div class="card-body">
-                            <div class="row">
+                            <div class="row mt-1">
                                 <div class="col-6">
                                     <div class="row">
                                         <h5 class="text-center">SUPRIMENTO</h5>
                                     </div>
-                                    <div class="avatar-sm m-1">
+                                    <div class="avatar-sm m-1 mt-2">
                                         <button type="button" style="margin-left: 35px" data-bs-toggle="modal" data-bs-target="#suprimento_caixa" class="avatar-title text-bg-info rounded rounded-3 fs-3 widget-icon-box-avatar">
                                             <i class="ri-add-box-line"></i>
                                         </button>
@@ -369,7 +384,7 @@
                                     <div class="row">
                                         <h5 class="text-center">SANGRIA</h5>
                                     </div>
-                                    <div class="avatar-sm m-1">
+                                    <div class="avatar-sm m-1 mt-2">
                                         <button type="button" style="margin-left: 35px" data-bs-toggle="modal" data-bs-target="#sangria_caixa" class="avatar-title text-bg-danger rounded rounded-3 fs-3 widget-icon-box-avatar">
                                             <i class="ri-checkbox-indeterminate-line"></i>
                                         </button>
@@ -380,8 +395,8 @@
                     </div> <!-- end card-->
                 </div> <!-- end col-->
 
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
+                <div class="col-lg-3 col-md-4">
+                    <div class="card widget-icon-box ">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div class="flex-grow-1 overflow-hidden">
@@ -403,10 +418,9 @@
                         </div> <!-- end card-body-->
                     </div> <!-- end card-->
                 </div> <!-- end col-->
-            </div>
-            <div class="row">
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento" style="height: 93%">
+
+                <div class="col-lg-3 col-md-8">
+                    <div class="card widget-icon-box ">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div class="flex-grow-1 overflow-hidden">
@@ -424,8 +438,8 @@
                         </div> <!-- end card-body-->
                     </div> <!-- end card-->
                 </div> <!-- end col-->
-                <div class="col-lg-3 col-6 div-troco d-none">
-                    <div class="card div-pagamento" style="height: 93%">
+                <div class="col-lg-5 col-md-6 div-troco d-none">
+                    <div class="card " style="height: 140px">
                         <div class="row m-2">
                             <div class="col-lg-5 mt-4">
                                 <h5>Valor Recebido</h5>
@@ -442,8 +456,9 @@
                         </div>
                     </div> <!-- end card-->
                 </div> <!-- end col-->
-                <div class="col-lg-2 col-6 div-vencimento d-none">
-                    <div class="card div-pagamento" style="height: 93%">
+                
+                <!-- <div class="col-lg-2 col-6 div-vencimento d-none">
+                    <div class="card ">
                         <div class="row m-2">
                             <div class="text-center">
                                 <h5>Data de vencimento</h5>
@@ -452,33 +467,51 @@
                                 {!! Form::date('data_vencimento', '')->attrs(['class' => 'data_atual']) !!}
                             </div>
                         </div>
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-                <div class="col">
-                    <div class="card widget-icon-box div-pagamento" style="height: 93%">
+                    </div>
+                </div> -->
+
+                <div class="col-xl-5 col-md-6 div-btns">
+                    <div class="card widget-icon-box" style="height: 140px">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-12 col-xl-6 col-12">
                                     <button type="button" class="btn btn-sm btn-warning w-100 btn-pagamento-multi mt-1" data-bs-toggle="modal" data-bs-target="#pagamento_multiplo"><i class="ri-list-check-3"></i> Pagamento múltiplo</button>
                                 </div>
-                                
+
                                 <div class="col-md-12 col-xl-6 col-12">
                                     <button type="button" class="btn btn-sm btn-dark w-100 mt-1" data-bs-toggle="modal" data-bs-target="#lista_precos"><i class="ri-cash-line"></i> Lista de preços</button>
                                 </div>
                                 <div class="col-md-12 col-xl-6 col-12">
                                     <button type="button" class="btn btn-sm btn-primary w-100 mt-1" data-bs-toggle="modal" data-bs-target="#observacao_pdv"><i class="ri-file-edit-fill"></i> Observação</button>
                                 </div>
+                                @if(!isset($item))
                                 <div class="col-md-12 col-xl-6 col-12">
-                                    @if(!isset($item))
-                                    <button type="button" class="btn btn-sm btn-light w-100 btn-vendas-suspensas mt-1" data-bs-toggle="modal" data-bs-target="#vendas_suspensas"><i class="ri-time-fill "></i> Vendas suspensas</button>
-                                    @endif
+                                    <button type="button" class="btn btn-sm btn-light w-100 btn-vendas-suspensas mt-1" data-bs-toggle="modal" data-bs-target="#vendas_suspensas"><i class="ri-time-fill"></i> Vendas suspensas</button>
+                                </div>
+                                @endif
+
+                                <div class="col-md-12 col-xl-6 col-12">
+                                    <button type="button" class="btn btn-sm btn-light w-100 mt-1" onclick="modalFrete()"><i class="ri-truck-line"></i> Frete <strong class="valor-frete">R$ {{ isset($item) ? __moeda($item->valor_frete) : '0,00' }}</strong></button>
+                                </div>
+
+                                @if(!isset($item))
+                                <div class="col-md-12 col-xl-6 col-12">
+                                    <button type="button" class="btn btn-sm btn-secondary w-100 btn-orcamentos mt-1" data-bs-toggle="modal" data-bs-target="#orcamentos"><i class="ri-list-settings-fill"></i> Orçamentos</button>
+                                </div>
+                                @endif
+
+                                <div class="col-md-12 col-xl-6 col-12">
+                                    <button type="button" class="btn btn-sm btn-dark w-100 mt-1 btn-fatura-padrao d-none">
+                                        <i class="ri-booklet-line"></i>
+                                        Fatura Padrão do Cliente
+                                    </button>
                                 </div>
                             </div>
                         </div> <!-- end card-body-->
                     </div> <!-- end card-->
                 </div> <!-- end col-->
-                <div class="col">
-                    <div class="card widget-icon-box div-pagamento" style="height: 93%">
+                <div class="col-md-6 col-xl-4">
+                    <div class="card widget-icon-box " style="height: 140px">
                         <div class="card-body">
                             <div class="row">
 
@@ -487,7 +520,7 @@
                                     Sair do PDV
                                 </a>
 
-                                @if($isVendaSuspensa == 0)
+                                @if($isVendaSuspensa == 0 && $isOrcamento == 0)
                                 <button type="button" id="btn-suspender" class="btn btn-light btn-sm w-50 mt-2" style="margin-top: -20px">
                                     <i class="ri-timer-line"></i>
                                     Suspender Venda
@@ -499,14 +532,14 @@
                                 </a>
                                 @endif
 
-                                @if(isset($item) && $isVendaSuspensa == 0)
+                                @if(isset($item) && $isVendaSuspensa == 0 && $isOrcamento == 0)
                                 <button type="button" class="btn btn-success w-100 mt-4" disabled id="editar_venda">
-                                    <i class="ri-checkbox-line"></i>
+                                    <i class="ri-checkbox-circle-line"></i>
                                     Editar venda
                                 </button>
                                 @else
                                 <button type="button" class="btn btn-success w-100 mt-4" disabled id="salvar_venda">
-                                    <i class="ri-checkbox-line"></i>
+                                    <i class="ri-checkbox-circle-line"></i>
                                     Finalizar venda
                                 </button>
                                 @endif
@@ -514,19 +547,20 @@
                         </div> <!-- end card-body-->
                     </div> <!-- end card-->
                 </div> <!-- end col-->
-            </div>
-            {{-- <div class="row">
-                <div class="col-sm-6 col-lg-3">
-                    {!! Form::select('forma_pagamento', 'Forma de Pagamento')->attrs(['class' => 'form-select']) !!}
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    {!! Form::select('tipo_pagamento', 'Tipo de Pagamento')->attrs(['class' => 'form-select']) !!}
-                </div>
-            </div> --}}
 
+                @if($isVendaSuspensa)
+                <button id="btnSuspenderVenda" class="btn-bolinha-flutuante">
+                    <i class="ri-pause-circle-fill"></i>
+                </button>
+                @endif
+
+            </div>
         </div>
     </div>
 </div>
+
+
+
 </div>
 
 @include('modals._pagamento_multiplo', ['not_submit' => true])
@@ -536,16 +570,28 @@
 @include('modals._variacao', ['not_submit' => true])
 @include('modals._lista_precos')
 @include('modals._vendas_suspensas')
+@include('front_box.partials._modal_orcamentos')
 @include('modals._tef_consulta')
 @include('modals._valor_credito')
 @include('modals._modal_pix')
 @include('modals._fatura_venda')
+@include('modals._frete')
 
 @include('modals._observacao_pdv')
+@include('modals._adicionais_pdv')
 @include('modals._cliente', ['cashback' => 1])
 
 @section('js')
+<script>
+    var senhaAcao = "";
+
+    @if(isset($config) && strlen(trim($config->senha_manipula_valor)) > 1)
+    senhaAcao = "{{ $config->senha_manipula_valor }}";
+    @endif
+</script>
 <script src="/js/frente_caixa.js" type=""></script>
+<script src="/js/comanda_pdv.js"></script>
+
 <script type="text/javascript" src="/js/mousetrap.js"></script>
 <script type="text/javascript" src="/js/controla_conta_empresa.js"></script>
 <script src="/js/novo_cliente.js"></script>

@@ -15,15 +15,17 @@ use App\Utils\EmailUtil;
 use Mail;
 use NFePHP\DA\NFe\Danfce;
 use App\Utils\SiegUtil;
+use App\Utils\EstoqueUtil;
 
 class NFCePainelController extends Controller
 {
     protected $emailUtil;
     protected $siegUtil;
 
-    public function __construct(EmailUtil $util, SiegUtil $siegUtil){
+    public function __construct(EmailUtil $util, SiegUtil $siegUtil, EstoqueUtil $estoqueUtil){
         $this->emailUtil = $util;
         $this->siegUtil = $siegUtil;
+        $this->estoqueUtil = $estoqueUtil;
 
         if (!is_dir(public_path('xml_nfce'))) {
             mkdir(public_path('xml_nfce'), 0777, true);
@@ -56,7 +58,8 @@ class NFCePainelController extends Controller
             "razaosocial" => $empresa->nome,
             "siglaUF" => $empresa->cidade->uf,
             "cnpj" => preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj),
-            "schemes" => "PL_009_V4",
+            // "schemes" => "PL_009_V4",
+            "schemes" => "PL_010_V1.21",
             "versao" => "4.00",
             "CSC" => $empresa->csc,
             "CSCid" => $empresa->csc_id
@@ -247,6 +250,12 @@ class NFCePainelController extends Controller
 
             if (!isset($doc['erro'])) {
                 $nfce->estado = 'cancelado';
+
+                foreach ($nfce->itens as $i) {
+                    if ($i->produto->gerenciar_estoque) {
+                        $this->estoqueUtil->incrementaEstoque($i->produto_id, $i->quantidade, $i->variacao_id, $nfce->local_id);
+                    }
+                }
                 $nfce->save();
                 // return response()->json($doc, 200);
                 $motivo = $doc['retEvento']['infEvento']['xMotivo'];
@@ -270,6 +279,10 @@ class NFCePainelController extends Controller
                 }
             } else {
                 $arr = $doc['data'];
+                if(!isset($arr['retEvento'])){
+                    return response()->json($arr, $doc['status']);
+                }
+
                 $cStat = $arr['retEvento']['infEvento']['cStat'];
                 $motivo = $arr['retEvento']['infEvento']['xMotivo'];
                 

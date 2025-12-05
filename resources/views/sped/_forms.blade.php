@@ -25,14 +25,17 @@
         !!}
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-2">
         {!!Form::select('motivo_inventario', 'Motivo de inventário', App\Models\Sped::motivosInventario())
         ->attrs(['class' => 'form-select'])
         !!}
     </div>
 
-    <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
+    <div class="col-md-2">
+        <br>
+        <button type="submit" class="btn btn-success px-5" id="btn-store">
+            Gerar
+        </button>
     </div>
 </div>
 

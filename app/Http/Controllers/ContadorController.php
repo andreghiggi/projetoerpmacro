@@ -24,7 +24,7 @@ class ContadorController extends Controller
             return $q->where('cpf_cnpj', 'LIKE', "%$request->cpf_cnpj%");
         })
         ->where('tipo_contador', 1)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('contadores.index', compact('data'));
     }
@@ -51,7 +51,8 @@ class ContadorController extends Controller
                 $email = $request->email;
                 $request->merge([
                     'email' => $request->email_empresa,
-                    'tipo_contador' => 1
+                    'tipo_contador' => 1,
+                    'percentual_comissao' => __convert_value_bd($request->percentual_comissao)
                 ]);
 
                 $empresa = Empresa::create($request->all());
@@ -73,7 +74,7 @@ class ContadorController extends Controller
                 }
                 return true;
             });
-            session()->flash("flash_success", "Contador cadastrado!");
+            session()->flash("flash_success", "Representante/Contador cadastrado!");
         } catch (\Exception $e) {
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
@@ -90,7 +91,7 @@ class ContadorController extends Controller
             ]);
             
             $item->fill($request->all())->save();
-            session()->flash("flash_success", "Contador atualizado!");
+            session()->flash("flash_success", "Representante/Contador atualizado!");
         } catch (\Exception $e) {
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
@@ -140,7 +141,6 @@ class ContadorController extends Controller
 
         $item = Empresa::findOrFail($id);
         foreach($item->usuarios as $u){
-            die;
             $u->usuario->acessos()->delete();
         }
         $item->usuarios()->delete();
@@ -150,7 +150,7 @@ class ContadorController extends Controller
         ContadorEmpresa::where('contador_id', $id)->delete();
         try {
             $item->delete();
-            session()->flash("flash_success", "Contador removido!");
+            session()->flash("flash_success", "Representante/Contador removido!");
         } catch (\Exception $e) {
             session()->flash("flash_error", "Algo deu Errado: " . $e->getMessage());
         }
@@ -182,7 +182,7 @@ class ContadorController extends Controller
         $item = ContadorEmpresa::findOrFail($id);
         try {
             $item->delete();
-            session()->flash("flash_success", "Empresa removida do contador!");
+            session()->flash("flash_success", "Empresa removida!");
         } catch (\Exception $e) {
             session()->flash("flash_error", "Algo deu Errado: " . $e->getMessage());
         }
@@ -306,7 +306,7 @@ class ContadorController extends Controller
         ->when(!empty($cidade_id), function ($q) use ($cidade_id) {
             return $q->where('cidade_id', $cidade_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $cidade = null;
         if(!empty($cidade_id)){

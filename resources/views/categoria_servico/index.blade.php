@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Categoria de Serviço'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -49,19 +49,22 @@
                                     <th width="10%">Ações</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
                                     @can('categoria_servico_delete')
-                                    <td>
+                                    <td data-label="Selecionar">
                                         <div class="form-check form-checkbox-danger mb-2">
                                             <input class="form-check-input check-delete" type="checkbox" name="item_delete[]" value="{{ $item->id }}">
                                         </div>
                                     </td>
                                     @endcan
-                                    <td>{{ $item->nome }}</td>
+
+                                    <td data-label="Nome">{{ $item->nome }}</td>
+
                                     @if(__isActivePlan(Auth::user()->empresa, 'Delivery'))
-                                    <td>
+                                    <td data-label="MarketPlace">
                                         @if($item->marketplace)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
@@ -69,8 +72,9 @@
                                         @endif
                                     </td>
                                     @endif
+
                                     <td>
-                                        <form action="{{ route('categoria-servico.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 100px" action="{{ route('categoria-servico.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @can('categoria_servico_edit')
                                             <a class="btn btn-warning btn-sm" href="{{ route('categoria-servico.edit', [$item->id]) }}">
@@ -86,6 +90,7 @@
                                         </form>
                                     </td>
                                 </tr>
+
                                 @empty
                                 <tr>
                                     <td colspan="3" class="text-center">Nada encontrado</td>
@@ -93,6 +98,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
                         @can('categoria_servico_delete')
                         <form action="{{ route('categoria-servico.destroy-select') }}" method="post" id="form-delete-select">
@@ -106,6 +112,7 @@
                         @endcan
                     </div>
                 </div>
+                <br>
                 {!! $data->appends(request()->all())->links() !!}
             </div>
         </div>

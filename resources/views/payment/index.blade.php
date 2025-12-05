@@ -13,11 +13,11 @@
     <div class="row m-3">
         @foreach($planos as $item)
         <div class="col-lg-3 col-12">
-            <div class="card" style="height: 31rem;">
+            <div class="card">
                 <div class="m-1">
                     <img class="card-img-top" src="{{ $item->img }}" alt="Card image cap">
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="height: 12rem;">
                     <h4>{{ $item->nome }}</h4>
 
                     <button class="btn btn-primary w-100" onclick="verDescricao('{{ $item->id }}')">
@@ -27,7 +27,7 @@
                     <br>
                     @if($item->valor_implantacao > 0)
                     <h6>Valor de implantação <strong class="text-dark">R$ {{ __moeda($item->valor_implantacao) }}</strong></h6>
-                    <h6>Valor do plano<strong class="text-danger"> R$ {{ __moeda($item->valor - $item->valor_implantacao) }}</strong></h6>
+
                     @endif
 
                     <h5>Valor total<strong class="text-primary"> R$ {{ __moeda($item->valor) }}</strong></h5>
@@ -146,13 +146,35 @@
         $('.plano_nome').text(nome + " R$ " + convertFloatToMoeda(valor))
         $('#plano_id').val(id)
         $('#plano_valor').val(valor)
+
+        let empresa_id = $('#empresa_id').val()
+        $.get(path_url + 'api/empresas/find', {empresa_id: empresa_id})
+        .done((res) => {
+
+            let cpf_cnpj = res.cpf_cnpj.replace(/[^0-9]/g,'')
+
+            let n = res.nome.split(' ')
+            $('#inp-docNumber').val(cpf_cnpj)
+            $('#inp-nome').val(n[0])
+            $('#inp-sobre_nome').val(n[1])
+            $('#inp-email').val(res.email)
+
+            if(cpf_cnpj.length == 14){
+                $('#docType').val('CNPJ').change()
+            }
+
+        })
+        .fail((err) => {
+            console.log(err)
+            swal("Erro", "Algo deu errado", "error")
+        })
     }
 
     function verDescricao(id){
 
         $.get(path_url + 'api/planos/findOne/'+id)
         .done((res) => {
-            console.log(res)
+            // console.log(res)
             $('#modal-descricao').modal('show')
             $('#modal-descricao .modal-body').html(res.descricao)
             $('#modal-descricao .plano_nome').html(res.nome)

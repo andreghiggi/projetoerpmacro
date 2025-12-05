@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Lista de Preços'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -66,34 +66,48 @@
                                     <th>% Alteração</th>
                                     <th>Data de cadastro</th>
                                     <th>Tipo de pagamento</th>
-                                    <th>Funcionario</th>
+                                    <th>Funcionário</th>
                                     <th width="10%">Ações</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
                                     @can('lista_preco_delete')
-                                    <td>
+                                    <td data-label="Selecionar">
                                         <div class="form-check form-checkbox-danger mb-2">
                                             <input class="form-check-input check-delete" type="checkbox" name="item_delete[]" value="{{ $item->id }}">
                                         </div>
                                     </td>
                                     @endcan
-                                    <td>{{ $item->nome }}</td>
-                                    <td>{{ $item->ajuste_sobre == 'valor_venda' ? 'Valor de venda' : 'Valor de compra' }}</td>
-                                    <td>{{ $item->tipo == 'incremento' ? 'Incremento' : 'Redução' }}</td>
-                                    <td>
+
+                                    <td data-label="Nome">{{ $item->nome }}</td>
+
+                                    <td data-label="Ajuste sobre">
+                                        {{ $item->ajuste_sobre == 'valor_venda' ? 'Valor de venda' : 'Valor de compra' }}
+                                    </td>
+
+                                    <td data-label="Tipo">
+                                        {{ $item->tipo == 'incremento' ? 'Incremento' : 'Redução' }}
+                                    </td>
+
+                                    <td data-label="Status">
                                         @if($item->status)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
                                         @endif
                                     </td>
-                                    <td>{{ $item->percentual_alteracao }}%</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>{{ $item->tipo_pagamento ? $item->getTipoPagamento() : '' }}</td>
-                                    <td>{{ $item->funcionario ? $item->funcionario->nome : '' }}</td>
+
+                                    <td data-label="% Alteração">{{ $item->percentual_alteracao }}%</td>
+
+                                    <td data-label="Data de cadastro">{{ __data_pt($item->created_at) }}</td>
+
+                                    <td data-label="Tipo de pagamento">{{ $item->tipo_pagamento ? $item->getTipoPagamento() : '' }}</td>
+
+                                    <td data-label="Funcionário">{{ $item->funcionario ? $item->funcionario->nome : '' }}</td>
+
                                     <td>
                                         <form style="width: 150px;" action="{{ route('lista-preco.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
@@ -108,20 +122,21 @@
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                             @endcan
-
                                             <a title="Ver produtos" class="btn btn-dark btn-sm text-white" href="{{ route('lista-preco.show', [$item->id]) }}">
                                                 <i class="ri-file-list-2-fill"></i>
                                             </a>
                                         </form>
                                     </td>
                                 </tr>
+
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">Nada encontrado</td>
+                                    <td colspan="10" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
                         @can('lista_preco_delete')
                         <form action="{{ route('lista-preco.destroy-select') }}" method="post" id="form-delete-select">

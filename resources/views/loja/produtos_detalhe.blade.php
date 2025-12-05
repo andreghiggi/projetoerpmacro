@@ -1,21 +1,12 @@
 @extends('loja.default', ['title' => $produto->nome])
 @section('css')
-<style type="text/css">
-	.w-100{
-		width: 100%;
-		margin-bottom: 10px;
-	}
-</style>
-
+<link rel="stylesheet" type="text/css" href="/css/ecommerce_produto.css">
 @endsection
 @section('content')
 
 <div class="section">
-	<!-- container -->
 	<div class="container">
-		<!-- row -->
 		<div class="row">
-			<!-- Product main img -->
 			<div class="col-md-5 col-md-push-2">
 				<div id="product-main-img">
 					<div class="product-preview">
@@ -28,9 +19,7 @@
 					@endforeach
 				</div>
 			</div>
-			<!-- /Product main img -->
 
-			<!-- Product thumb imgs -->
 			<div class="col-md-2  col-md-pull-5">
 				<div id="product-imgs">
 					<div class="product-preview">
@@ -44,9 +33,7 @@
 
 				</div>
 			</div>
-			<!-- /Product thumb imgs -->
 
-			<!-- Product details -->
 			<div class="col-md-5">
 				<div class="product-details">
 					<h2 class="product-name">{{ $produto->nome }}</h2>
@@ -74,7 +61,7 @@
 								<select id="variacao_id" name="variacao_id" class="input-select" style="width: 100%">
 									@foreach($produto->variacoes as $v)
 									@if($v->valor > 0)
-									<option value="{{ $v->id }}">{{ $v->descricao }}</option>
+									<option @if($v->estoqueNegativo() == 1) disabled @endif value="{{ $v->id }}">{{ $v->descricao }}</option>
 									@endif
 									@endforeach
 								</select>
@@ -82,10 +69,17 @@
 						</div>
 						@endif
 
+						@if($produto->gerenciar_estoque)
+						<ul class="product-links" style="margin-bottom: 10px;">
+							<li>Quantidade disponível:</li>
+							<li style="font-size: 18px;" class="qtd-disponivel">{{ number_format($produto->estoque->quantidade, 0) }}</li>
+						</ul>
+						@endif
+
 						<div class="add-to-cart">
 							<div class="qty-label">
 								Quantidade
-								<div class="input-number">
+								<div class="input-number" style="margin-left: 5px;">
 									<input name="quantidade" type="number" value="1">
 									<span class="qty-up">+</span>
 									<span class="qty-down">-</span>
@@ -101,21 +95,11 @@
 						<li><a href="#">{{ $produto->categoria->nome }}</a></li>
 					</ul>
 					@endif
-
 				</div>
 			</div>
-			<!-- /Product details -->
-
-			<!-- Product tab -->
 			<div class="col-md-12">
 				<div id="product-tab">
-					<!-- product tab nav -->
-
-					<!-- /product tab nav -->
-
-					<!-- product tab content -->
 					<div class="tab-content">
-						<!-- descrição  -->
 						<div id="tab1" class="tab-pane fade in active">
 							<div class="row">
 								<div class="col-md-12">
@@ -124,16 +108,11 @@
 							</div>
 						</div>
 
-
 					</div>
-					<!-- /product tab content  -->
 				</div>
 			</div>
-			<!-- /product tab -->
 		</div>
-		<!-- /row -->
 	</div>
-	<!-- /container -->
 </div>
 
 @endsection

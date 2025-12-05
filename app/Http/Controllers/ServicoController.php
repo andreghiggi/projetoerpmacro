@@ -62,7 +62,7 @@ class ServicoController extends Controller
         ->when($status != '', function ($q) use ($status) {
             return $q->where('status', $status);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('servicos.index', compact('data'));
     }

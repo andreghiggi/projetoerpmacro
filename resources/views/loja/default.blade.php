@@ -29,6 +29,8 @@
 	<link type="text/css" rel="stylesheet" href="/ecommerce/css/style.css"/>
 	<link rel="stylesheet" type="text/css" href="/assets/css/toastr.min.css">
 
+	<link type="text/css" rel="stylesheet" href="/css/ecommerce_extend2.css"/>
+
 	@yield('css')
 
 	<style type="text/css">
@@ -72,13 +74,13 @@
 
 	@if($config->cor_principal)
 	<style type="text/css">
-        :root {
-            --color-main: {{ $config->cor_principal }}
-        }
-    </style>
+		:root {
+			--color-main: {{ $config->cor_principal }}
+		}
+	</style>
 	<link type="text/css" rel="stylesheet" href="/css/ecommerce_extend.css"/>
 
-    @endif
+	@endif
 
 </head>
 <body>
@@ -124,7 +126,9 @@
 								<select name="categoria" class="input-select inp-categorias">
 									<option value="">Categorias</option>
 									@foreach($categorias as $c)
+									@if($c->hash_ecommerce)
 									<option @isset($categoria_pesquisa) @if($categoria_pesquisa == $c->hash_ecommerce) selected @endif @endif value="{{ $c->hash_ecommerce }}">{{ $c->nome }}</option>
+									@endif
 									@endforeach
 								</select>
 								<input class="input inp-pesquisa" placeholder="Digite aqui" name="pesquisa" @isset($pesquisa) value="{{ $pesquisa }}"  @endif>
@@ -268,7 +272,9 @@
 							<h3 class="footer-title">Categorias</h3>
 							<ul class="footer-links">
 								@foreach($categorias as $c)
+								@if($c->hash_ecommerce)
 								<li><a href="{{ route('loja.produtos-categoria', [$c->hash_ecommerce, 'link='.$config->loja_id]) }}">{{ $c->nome }}</a></li>
+								@endif
 								@endforeach
 							</ul>
 						</div>

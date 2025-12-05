@@ -18,6 +18,7 @@ class VariacaoController extends Controller
     public function modeloVariacoes(Request $request){
         $item = VariacaoModelo::findOrFail($request->variacao_modelo_id);
         $sub = VariacaoModelo::findOrFail($request->sub_variacao_modelo_id);
+        // die;
         return view('variacao_modelo.table', compact('item', 'sub'));
     }
 

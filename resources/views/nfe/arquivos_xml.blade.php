@@ -48,28 +48,32 @@
                     <table class="table table-striped table-centered mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>Cliente</th>
-                                <th>Número</th>
-                                <th>Chave</th>
-                                <th>Valor</th>
+                                <th data-label="Cliente">Cliente</th>
+                                <th data-label="Número">Número</th>
+                                <th data-label="Chave">Chave</th>
+                                <th data-label="Valor">Valor</th>
                             </tr>
                         </thead>
+                        @php $total = 0; @endphp
                         <tbody>
                             @foreach($data as $item)
                             @if(file_exists(public_path("xml_nfe/").$item->chave.".xml"))
                             <tr>
-                                <td>{{ $item->cliente ? $item->cliente->info : '--' }}</td>
-                                <td>{{ $item->numero }}</td>
-                                <td>{{ $item->chave }}</td>
-                                <td>{{ __moeda($item->total) }}</td>
+                                <td data-label="Cliente">{{ $item->cliente ? $item->cliente->info : '--' }}</td>
+                                <td data-label="Número">{{ $item->numero }}</td>
+                                <td data-label="Chave">{{ $item->chave }}</td>
+                                <td data-label="Valor">{{ __moeda($item->total) }}</td>
                             </tr>
+
+                            @php $total += $item->total; @endphp
+
                             @endif
                             @endforeach
                         </tbody>
                         @if(sizeof($data) > 0)
                         <tfoot style="font-weight: bold;">
                             <td colspan="3" style="text-align: right;">Total</td>
-                            <td>{{ __moeda($data->sum('total')) }}</td>
+                            <td>{{ __moeda($total) }}</td>
                         </tfoot>
                         @endif
                     </table>
@@ -79,27 +83,28 @@
             @if(sizeof($data) > 0)
             <br>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-2 mt-1">
                     <form method="get" action="{{ route('nfe-xml.download') }}">
                         <input type="hidden" name="start_date" value="{{ request()->start_date }}">
                         <input type="hidden" name="end_date" value="{{ request()->end_date }}">
                         <input type="hidden" name="estado" value="{{ request()->estado }}">
                         <input type="hidden" name="local_id" value="{{ request()->local_id }}">
-                        <button class="btn btn-dark">
+                        <button class="btn btn-dark w-100">
                             <i class="ri-file-zip-line"></i>
                             Download Zip
                         </button>
                     </form>
                 </div>
+                <div class="col-md-7"></div>
 
                 @if($escritorio != null && $escritorio->email)
-                <div class="col-md-6 text-end">
+                <div class="col-md-3 text-end mt-1">
                     <form method="get" action="{{ route('nfe-xml.envio-contador') }}">
                         <input type="hidden" name="start_date" value="{{ request()->start_date }}">
                         <input type="hidden" name="end_date" value="{{ request()->end_date }}">
                         <input type="hidden" name="estado" value="{{ request()->estado }}">
                         <input type="hidden" name="local_id" value="{{ request()->local_id }}">
-                        <button class="btn btn-success">
+                        <button class="btn btn-success w-100">
                             <i class="ri-mail-send-fill"></i>
                             Enviar XML para o contador
                         </button>

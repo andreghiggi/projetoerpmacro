@@ -1,12 +1,15 @@
 <div class="row g-2">
-    <div class="col-md-4">
-        {!!Form::select('empresa_boleto', 'Empresa')->required()
-        !!}
-    </div>
 
     <div class="card">
         <div class="card-body">
             <div class="row g-2">
+
+                <div class="col-md-4">
+                    {!!Form::select('empresa_boleto', 'Empresa')->required()
+                    !!}
+                </div>
+                <div class="col-12"></div>
+
                 <div class="col-md-4">
                     {!!Form::text('razao_social', 'Razão social')->required()
                     !!}
@@ -59,6 +62,16 @@
                 <div class="col-md-2">
                     {!!Form::date('vencimento', 'Vencimento')->required()
                     !!}
+                </div>
+
+                <div class="col-md-2">
+                    {!!Form::tel('qtd_boletos', 'Qtd. de boletos')
+                    ->attrs(['data-mask' => '00', 'class' => 'tooltipp2'])
+                    !!}
+
+                    <div class="text-tooltip2 d-none">
+                        Preencher se precisar gerar mais de 1 boleto para o mês seguinte ao campo vencimento.
+                    </div>
                 </div>
                 <hr>
 

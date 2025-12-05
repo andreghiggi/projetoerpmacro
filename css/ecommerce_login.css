@@ -1,0 +1,39 @@
+.order-submit{
+	width: 100%;
+}
+.invalid-feedback{
+	font-size: 12px;
+	color: red;
+	position: fixed;
+}
+
+.form-group{
+	margin-top: 5px;
+}
+
+.title{
+	margin-left: 15px!important;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: #333;
+  background: #fff;
+  transition: all 0.25s ease-in-out;
+}
+
+.input:focus {
+  border-color: var(--color-main, #c62828);
+  box-shadow: 0 0 0 3px rgba(198,40,40,0.15);
+  outline: none;
+}
+
+.invalid-feedback {
+  color: #c62828;
+  font-size: 13px;
+  font-weight: 500;
+}

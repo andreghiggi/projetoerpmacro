@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Inutilização ' . ($modelo == '55' ? 'NFe' : 'NFCe')])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -35,11 +35,10 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-centered">
                             <thead class="table-dark">
                                 <tr>
-
                                     <th>Número inicial</th>
                                     <th>Número final</th>
                                     <th>Número série</th>
@@ -53,31 +52,28 @@
                             <tbody>
                                 @foreach($data as $item)
                                 <tr>
-
-                                    <td>{{ $item->numero_inicial }}</td>
-                                    <td>{{ $item->numero_final }}</td>
-                                    <td>{{ $item->numero_serie }}</td>
-                                    <td>{{ $item->modelo == '55' ? 'NFe' : 'NFCe' }}</td>
-                                    <td width="150">
+                                    <td data-label="Número inicial">{{ $item->numero_inicial }}</td>
+                                    <td data-label="Número final">{{ $item->numero_final }}</td>
+                                    <td data-label="Número série">{{ $item->numero_serie }}</td>
+                                    <td data-label="Modelo">{{ $item->modelo == '55' ? 'NFe' : 'NFCe' }}</td>
+                                    <td data-label="Estado">
                                         @if($item->estado == 'aprovado')
-                                        <span class="btn btn-success text-white btn-sm w-100">aprovado</span>
+                                        <span class="btn btn-success text-white btn-sm">aprovado</span>
                                         @elseif($item->estado == 'rejeitado')
-                                        <span class="btn btn-warning text-white btn-sm w-100">rejeitado</span>
+                                        <span class="btn btn-warning text-white btn-sm">rejeitado</span>
                                         @else
-                                        <span class="btn btn-info text-white btn-sm w-100">novo</span>
+                                        <span class="btn btn-info text-white btn-sm">novo</span>
                                         @endif
                                     </td>
-                                    <td>{{ $item->justificativa }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') }}</td>
+                                    <td data-label="Justificativa">{{ $item->justificativa }}</td>
+                                    <td data-label="Data">{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') }}</td>
 
-                                    <td width="300">
-                                        <form action="{{ route('nfe-inutilizar.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                    <td>
+                                        <form style="width: 100px;" action="{{ route('nfe-inutilizar.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @csrf
 
-
                                             @if($item->estado == 'novo' || $item->estado == 'rejeitado')
-
                                             <button type="button" class="btn btn-danger btn-sm btn-delete">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
@@ -86,14 +82,13 @@
                                                 <i class="ri-send-plane-fill"></i>
                                             </button>
                                             @endif
-
                                         </form>
-
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+
                     </div>
                 </div>
             </div>

@@ -14,6 +14,7 @@ use App\Models\ItemPizzaPedido;
 use App\Models\ItemAdicional;
 use App\Models\TamanhoPizza;
 use App\Models\NotificaoCardapio;
+use App\Models\ImpressoraPedidoProduto;
 use App\Models\Nfe;
 
 class CardapioController extends Controller
@@ -32,6 +33,7 @@ class CardapioController extends Controller
         $data = CategoriaProduto::where('empresa_id', $request->empresa_id)
         ->orderBy('nome', 'asc')
         ->where('status', 1)
+        ->where('categoria_id', null)
         ->where('cardapio', 1)->get();
         return response()->json($data, 200);
     }
@@ -86,6 +88,12 @@ class CardapioController extends Controller
         return response()->json($ingredientes, 200);
     }
 
+    private function validaItemImpressao($produto_id){
+
+        $imprime = ImpressoraPedidoProduto::where('produto_id', $produto_id)->first();
+        return $imprime != null ? 0 : 1;
+    }
+
     public function storePedido(Request $request){
 
         $item = Pedido::where('empresa_id', $request->empresa_id)
@@ -112,6 +120,7 @@ class CardapioController extends Controller
             if($prod->tempo_preparo){
                 $estado = 'pendente';
             }
+            $impresso = $this->validaItemImpressao($cartItem->produto_id);
             $itemPedido = ItemPedido::create([
                 'pedido_id' => $item->id,
                 'produto_id' => $cartItem->produto_id,
@@ -121,7 +130,8 @@ class CardapioController extends Controller
                 'sub_total' => $cartItem->sub_total,
                 'ponto_carne' => $cartItem->ponto_carne,
                 'tamanho_id' => $cartItem->tamanho_id,
-                'estado' => $estado
+                'estado' => $estado,
+                'impresso' => $impresso
             ]);
 
             foreach($cartItem->sabores as $s){
@@ -157,6 +167,8 @@ class CardapioController extends Controller
         ->where('mesa', $request->mesa)
         ->first();
 
+        // dd($request->all());
+
         if($item != null){
             return response()->json("esta mesa já se encontra aberta", 401);
         }
@@ -167,7 +179,8 @@ class CardapioController extends Controller
             'cliente_fone' => $request->telefone,
             'mesa' => $request->mesa,
             'total' => 0,
-            'comanda' => 'M'.$request->mesa
+            'comanda' => 'M'.$request->mesa,
+            'local_pedido' => 'App'
         ]);
         return response()->json($item, 200);
     }

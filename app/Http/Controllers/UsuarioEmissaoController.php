@@ -25,7 +25,7 @@ class UsuarioEmissaoController extends Controller
         ->when(!empty($request->usuario_id), function ($q) use ($request) {
             return $q->where('usuario_emissaos.usuario_id', $request->usuario_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $usuario = User::find($request->usuario_id);
         return view('configuracao_usuario_emissao.index', compact('data', 'usuario'));

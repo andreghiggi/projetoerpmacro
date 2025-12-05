@@ -13,6 +13,7 @@
     
     <div class="col-md-2">
         {!!Form::tel('telefone', 'Telefone')->attrs(['class' => ''])->required()
+        ->attrs(['class' => 'fone'])
         !!}
     </div>
     
@@ -23,6 +24,10 @@
     <div class="col-md-3">
         {!! Form::text('email', 'Email')->attrs(['class' => ''])->type('email') !!}
     </div>
+
+    <!-- <div class="col-md-2">
+        {!! Form::text('senha', 'Senha')->attrs(['class' => ''])->type('password')->value('') !!}
+    </div> -->
    
     <hr class="mt-4">
     <div class="col-12" style="text-align: right;">

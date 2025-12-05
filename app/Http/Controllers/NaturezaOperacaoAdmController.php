@@ -15,7 +15,7 @@ class NaturezaOperacaoAdmController extends Controller
         ->when(!empty($request->descricao), function ($q) use ($request) {
             return $q->where('descricao', 'LIKE', "%$request->descricao%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $empresa = Empresa::findOrFail($request->empresa);
         return view('natureza_operacao_adm.index', compact('data', 'empresa'));

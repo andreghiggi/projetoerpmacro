@@ -14,7 +14,7 @@ class ModeloEtiquetaController extends Controller
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $super = ModeloEtiqueta::where('empresa_id', null)->count();
         $importar = false;

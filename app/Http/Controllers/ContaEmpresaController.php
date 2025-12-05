@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ContaEmpresa;
 use App\Models\PlanoConta;
 use App\Models\ItemContaEmpresa;
+use Dompdf\Dompdf;
 
 class ContaEmpresaController extends Controller
 {
@@ -42,6 +43,8 @@ class ContaEmpresaController extends Controller
 
     public function edit(Request $request, $id){
         $item = ContaEmpresa::findOrFail($id);
+
+        __validaObjetoEmpresa($item);
         $countPlanos = PlanoConta::where('empresa_id', $request->empresa_id)->count();
         if($countPlanos == 0){
             session()->flash('flash_warning', 'Defina o plano de contas');
@@ -74,6 +77,7 @@ class ContaEmpresaController extends Controller
 
     public function destroy($id){
         $item = ContaEmpresa::findOrFail($id);
+        __validaObjetoEmpresa($item);
         try{
             $descricaoLog = $item->nome;
             $item->itens()->delete();
@@ -115,6 +119,8 @@ class ContaEmpresaController extends Controller
         $tipo = $request->tipo;
 
         $item = ContaEmpresa::findOrFail($id);
+        __validaObjetoEmpresa($item);
+
         $data = ItemContaEmpresa::where('conta_id', $id)
         ->orderBy('id', 'desc')
         ->when($start_date, function ($q) use ($start_date) {
@@ -129,6 +135,38 @@ class ContaEmpresaController extends Controller
         ->paginate(50);
 
         return view('conta_empresa.show', compact('data', 'item'));
+    }
+
+    public function print(Request $request, $id){
+
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        $tipo = $request->tipo;
+
+        $item = ContaEmpresa::findOrFail($id);
+        __validaObjetoEmpresa($item);
+
+        $data = ItemContaEmpresa::where('conta_id', $id)
+        ->orderBy('id', 'desc')
+        ->when($start_date, function ($q) use ($start_date) {
+            return $q->whereDate('created_at', '>=', $start_date);
+        })
+        ->when($end_date, function ($q) use ($end_date) {
+            return $q->whereDate('created_at', '<=', $end_date);
+        })
+        ->when($tipo, function ($q) use ($tipo) {
+            return $q->where('tipo', $tipo);
+        })
+        ->get();
+
+        $p = view('conta_empresa.print', compact('data', 'item'));
+
+        $domPdf = new Dompdf(["enable_remote" => true]);
+        $domPdf->loadHtml($p);
+        $pdf = ob_get_clean();
+        $domPdf->setPaper("A4", "landscape");
+        $domPdf->render();
+        $domPdf->stream("Movimentação.pdf", array("Attachment" => false));
     }
 
 }

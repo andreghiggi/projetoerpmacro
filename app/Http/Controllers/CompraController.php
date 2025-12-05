@@ -12,11 +12,13 @@ use App\Models\ProdutoFornecedor;
 use App\Models\Cidade;
 use App\Models\ModeloEtiqueta;
 use App\Models\RelacaoDadosFornecedor;
+use App\Models\PadraoTributacaoProduto;
 use App\Models\ContaPagar;
 use App\Models\NaturezaOperacao;
 use App\Models\Transportadora;
 use App\Models\Empresa;
 use App\Models\Contigencia;
+use App\Models\Funcionario;
 use App\Models\FaturaNfe;
 use App\Models\Cotacao;
 use App\Models\ConfigGeral;
@@ -24,7 +26,6 @@ use App\Models\ProdutoUnico;
 use App\Models\CategoriaProduto;
 use App\Models\Marca;
 use App\Models\UnidadeMedida;
-
 use App\Utils\EstoqueUtil;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProdutoLocalizacao;
@@ -76,6 +77,12 @@ class CompraController extends Controller
     }
 
     private function corrigeNumeros($empresa_id){
+
+        $config = ConfigGeral::where('empresa_id', $empresa_id)->first();
+        if($config != null && $config->corrigir_numeracao_fiscal == 0){
+            return;
+        }
+
         $empresa = Empresa::findOrFail($empresa_id);
         if($empresa->ambiente == 1){
             $numero = $empresa->numero_ultima_nfe_producao;
@@ -128,7 +135,7 @@ class CompraController extends Controller
             return $query->whereIn('local_id', $locais);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $contigencia = $this->getContigencia($request->empresa_id);
         return view('compras.index', compact('data', 'fornecedores', 'contigencia'));
@@ -173,9 +180,12 @@ class CompraController extends Controller
 
         $isCompra = 1;
 
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
+        $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
         return view(
             'nfe.create', compact('produtos', 'transportadoras', 'cidades', 'naturezas', 'numeroNfe', 'isCompra', 
-                'cotacao', 'empresa', 'caixa')
+                'cotacao', 'empresa', 'caixa', 'funcionarios', 'config')
         );
     }
 
@@ -240,6 +250,15 @@ class CompraController extends Controller
             }
 
             $chave = substr($xml->NFe->infNFe->attributes()->Id, 3, 44);
+
+            $nfeImportada = Nfe::where('empresa_id', $request->empresa_id)
+            ->where('chave_importada', $chave)->first();
+
+            if($nfeImportada != null){
+                session()->flash('flash_error', 'Este XML já foi importado!');
+                return redirect()->back();
+            }
+
             $file->move(public_path('xml_entrada'), $chave . ".xml");
 
             $cidade = Cidade::where('codigo', $xml->NFe->infNFe->emit->enderEmit->cMun)
@@ -262,7 +281,7 @@ class CompraController extends Controller
                 'ie' => $xml->NFe->infNFe->emit->IE,
                 'contribuinte' => $xml->NFe->infNFe->emit->IE != '' ? 1 : 0,
                 'consumidor_final' => 0,
-                'email' => $xml->NFe->infNFe->emit->enderEmit->xBairro,
+                'email' => $xml->NFe->infNFe->emit->email,
                 'telefone' => $xml->NFe->infNFe->emit->enderEmit->fone,
                 'cidade_id' => $cidade->id,
                 'rua' => $xml->NFe->infNFe->emit->enderEmit->xLgr,
@@ -271,7 +290,7 @@ class CompraController extends Controller
                 'bairro' => $xml->NFe->infNFe->emit->enderEmit->xBairro,
                 'complemento' => $xml->NFe->infNFe->emit->enderEmit->xBairro
             ];
-
+            // dd($xml->NFe->infNFe->emit);
             $fornecedor = $this->cadastraFornecedor($dataFornecedor);
             $vFrete = (float)$xml->NFe->infNFe->total->ICMSTot->vFrete;
             $vDesc = (float)$xml->NFe->infNFe->total->ICMSTot->vDesc;
@@ -286,7 +305,7 @@ class CompraController extends Controller
                     $item->prod->cProd,
                     $request->empresa_id
                 );
-
+                // $produto = null;
                 // if($produto == null){
                 //     dd($item->prod->xProd);
                 // }
@@ -332,6 +351,7 @@ class CompraController extends Controller
                 }
 
                 $vCompra = (float)$item->prod->vUnCom + $vIpi + $vICMSST;
+                // dd($vCompra);
                 $vVenda = $vCompra + ($vCompra*($lucroPadraoProduto/100));
                 $caixa = __isCaixaAberto();
                 $local = $caixa->local_id;
@@ -348,8 +368,12 @@ class CompraController extends Controller
                 $prod->ncm = $produto == null ? (string)$item->prod->NCM : $produto->ncm;
                 $prod->cest = (string)$item->prod->CEST;
                 $prod->cfop = (string)$item->prod->CFOP;
-                $prod->unidade = (string)$item->prod->uCom;
+                $prod->unidade = $produto == null ? strtoupper((string)$item->prod->uCom) : $produto->unidade;
                 $prod->valor_unitario = number_format((float)$item->prod->vUnCom + $vIpi + $vICMSST, 2, '.', '');
+
+                $prod->valor_venda = $produto != null ? $produto->valor_unitario : 
+                ($prod->valor_unitario + (($prod->valor_unitario * $lucroPadraoProduto)/100));
+
                 $prod->quantidade = (float)$item->prod->qCom;
                 $prod->sub_total = $prod->valor_unitario*$prod->quantidade;
 
@@ -358,15 +382,23 @@ class CompraController extends Controller
                     $barcode = '';
                 }
                 $prod->codigo_barras = $produto == null ? $barcode : $produto->codigo_barras;
-                $prod->valor_venda = $produto == null ? $vVenda : $produto->valor_venda;
+                // $prod->valor_venda = $produto == null ? $vVenda : $produto->valor_venda;
+                $prod->valor_atacado = $produto == null ? 0 : $produto->valor_atacado;
+                $prod->codigo_barras2 = $produto == null ? '' : $produto->codigo_barras2;
+
+                $prod->quantidade_atacado = $produto == null ? '' : $produto->quantidade_atacado;
+                $prod->valor_minimo_venda = $produto == null ? 0 : $produto->valor_minimo_venda;
+
                 $prod->valor_compra = $produto == null ? $vCompra : $produto->valor_compra;
                 $prod->margem = $lucroPadraoProduto;
                 $prod->categoria_id = $produto == null ? 0 : $produto->categoria_id;
+                $prod->sub_categoria_id = $produto == null ? 0 : $produto->sub_categoria_id;
+                $prod->sub_categoria_nome = $produto != null && $produto->subcategoria ? $produto->subcategoria->nome : '';
                 $prod->estoque_minimo = $produto == null ? '' : $produto->estoque_minimo;
                 $prod->marca_id = $produto == null ? 0 : $produto->marca_id;
                 $prod->gerenciar_estoque = $produto == null ? $configGerenciaEstoque : $produto->gerenciar_estoque;
 
-                $prod->refernecia = $produto == null ? '' : $produto->refernecia;
+                $prod->referencia = $produto == null ? '' : $produto->referencia;
                 $prod->referencia_balanca = $produto == null ? '' : $produto->referencia_balanca;
                 $prod->exportar_balanca = $produto == null ? 0 : $produto->exportar_balanca;
                 $prod->observacao = $produto == null ? '' : $produto->observacao;
@@ -492,14 +524,20 @@ class CompraController extends Controller
 
             $isCompra = 1;
 
-            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)->get();
+            $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->where('status', 1)
+            ->where('categoria_id', null)
+            ->get();
+            
             $marcas = Marca::where('empresa_id', request()->empresa_id)->get();
 
             $unidades = UnidadeMedida::where('empresa_id', request()->empresa_id)
             ->where('status', 1)->get();
+            $config = ConfigGeral::where('empresa_id', $request->empresa_id)->first();
+
+            $padroes = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->get();
 
             return view('compras.import_xml', compact('dadosXml', 'transportadoras', 'cidades', 'naturezas', 'fornecedor', 'caixa', 
-                'lucroPadraoProduto', 'isCompra', 'categorias', 'marcas', 'configGerenciaEstoque', 'unidades'));
+                'lucroPadraoProduto', 'isCompra', 'categorias', 'marcas', 'configGerenciaEstoque', 'unidades', 'config', 'padroes'));
         } else {
             session()->flash('flash_error', 'XML inválido!');
             return redirect()->back();
@@ -568,7 +606,7 @@ class CompraController extends Controller
                 
                 if (isset($request->fornecedor_id)) {
                     if ($request->fornecedor_id == null) {
-                        $fornecedor_id = $this->cadastrarFornecedor($request);
+                        // $fornecedor_id = $this->cadastrarFornecedor($request);
                     } else {
                         $this->atualizaFornecedor($request);
                     }
@@ -585,6 +623,11 @@ class CompraController extends Controller
                 $caixa = __isCaixaAberto();
 
                 $tipoPagamento = $request->tipo_pagamento;
+
+                $local_id = $caixa->local_id;
+                if(isset($request->local_id)){
+                    $local_id = $request->local_id;
+                }
                 $request->merge([
                     'emissor_nome' => $config->nome,
                     'emissor_cpf_cnpj' => $config->cpf_cnpj,
@@ -602,7 +645,7 @@ class CompraController extends Controller
                     'valor_produtos' => __convert_value_bd($request->valor_produtos),
                     'valor_frete' => $request->valor_frete ? __convert_value_bd($request->valor_frete) : 0,
                     'caixa_id' => $caixa ? $caixa->id : null,
-                    'local_id' => $caixa->local_id,
+                    'local_id' => $local_id,
                     'tipo_pagamento' => isset($request->tipo_pagamento[0]) ? $request->tipo_pagamento[0] : null,
                     'user_id' => \Auth::user()->id
                 ]);
@@ -611,40 +654,62 @@ class CompraController extends Controller
                 $nfe = Nfe::create($request->all());
                 $nfe->data_emissao = $request->data_emissao;
                 $nfe->save();
-                for ($i = 0; $i < sizeof($request->produto_id); $i++) {
+                // dd($request->all());
+                for ($i = 0; $i < sizeof($request->cProd); $i++) {
 
-                    if ($request->produto_id[$i] == 0) {
+                    if ($request->cadastrar_produto[$i] == 1) {
                         //cadastrar produto
+
                         $product = $this->cadastrarProduto($request, $i, $caixa->local_id);
                     } else {
                         //atualizar produto
                         $product = Produto::findOrFail($request->produto_id[$i]);
+                        $product->padrao_id = $request->padrao_id;
+                        if($request->padrao_item_id[$i]){
+                            $product->padrao_id = $request->padrao_item_id[$i];
+                        }
                         $product->referencia_xml = $request->cProd[$i];
                         $product->ncm = $request->ncm[$i];
                         $product->categoria_id = $request->_categoria_id[$i];
+                        $product->sub_categoria_id = $request->_sub_categoria_id[$i];
                         $product->marca_id = $request->_marca_id[$i];
                         $product->codigo_barras = $request->codigo_barras[$i];
+                        $product->codigo_barras2 = $request->_codigo_barras2[$i];
                         $product->gerenciar_estoque = $request->_gerenciar_estoque[$i];
                         $product->estoque_minimo = __convert_value_bd($request->_estoque_minimo[$i]);
+
+                        $product->quantidade_atacado = __convert_value_bd($request->_quantidade_atacado[$i]);
+                        $product->valor_minimo_venda = ($request->_valor_minimo_venda[$i]);
+
                         $product->nome = $request->nome_produto[$i];
                         $product->valor_compra = __convert_value_bd($request->valor_unitario[$i]);
                         $product->valor_unitario = __convert_value_bd($request->valor_venda[$i]);
+                        $product->valor_atacado = ($request->_valor_atacado[$i]);
                         $product->percentual_lucro = __convert_value_bd($request->_margem[$i]);
 
                         $product->referencia = __convert_value_bd($request->_referencia[$i]);
                         $product->referencia_balanca = __convert_value_bd($request->_referencia_balanca[$i]);
-                        $product->observacao = __convert_value_bd($request->_observacao[$i]);
-                        $product->observacao2 = __convert_value_bd($request->_observacao2[$i]);
-                        $product->observacao3 = __convert_value_bd($request->_observacao3[$i]);
-                        $product->observacao4 = __convert_value_bd($request->_observacao4[$i]);
+                        $product->observacao = $request->_observacao[$i];
+                        $product->observacao2 = $request->_observacao2[$i];
+                        $product->observacao3 = $request->_observacao3[$i];
+                        $product->observacao4 = $request->_observacao4[$i];
 
                         $disponibilidade = json_decode($request->_disponibilidade[$i]);
-                        foreach($disponibilidade as $d){
+
+                        if(is_array($disponibilidade)){
+                            foreach($disponibilidade as $d){
+                                ProdutoLocalizacao::updateOrCreate([
+                                    'produto_id' => $product->id, 
+                                    'localizacao_id' => $d
+                                ]);
+                            }
+                        }else{
                             ProdutoLocalizacao::updateOrCreate([
                                 'produto_id' => $product->id, 
-                                'localizacao_id' => $d
+                                'localizacao_id' => $disponibilidade
                             ]);
                         }
+
                         $product->save();
                         //atualizar outros campos
                     }
@@ -654,6 +719,10 @@ class CompraController extends Controller
 
                     $valorUnitario = __convert_value_bd($request->valor_unitario[$i]);
                     $valorUnitario = $valorUnitario / ((float)$request->conversao_estoque[$i] == 0 ? 1 : (float)$request->conversao_estoque[$i]);
+
+                    $valorVenda = __convert_value_bd($request->valor_venda[$i]);
+                    $valorVenda = $valorVenda / ((float)$request->conversao_estoque[$i] == 0 ? 1 : (float)$request->conversao_estoque[$i]);
+                    
                     ItemNfe::create([
                         'nfe_id' => $nfe->id,
                         'produto_id' => $product->id,
@@ -680,10 +749,16 @@ class CompraController extends Controller
                     ]);
 
                     $product->valor_compra = $valorUnitario;
+                    $product->valor_unitario = $valorVenda;
                     $product->save();
 
                     if ($product->gerenciar_estoque) {
                         $this->util->incrementaEstoque($product->id, $quantidade, null);
+                        $tipo = 'incremento';
+                        $codigo_transacao = $nfe->id;
+                        $tipo_transacao = 'compra';
+
+                        $this->util->movimentacaoProduto($product->id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, null);
                     }
                 }
 
@@ -691,6 +766,7 @@ class CompraController extends Controller
                     $dfe = ManifestoDfe::where('chave', $request->chave_dfe)->first();
                     if($dfe){
                         $dfe->compra_id = $nfe->id;
+                        $dfe->tpNF = $request->tpNF_importada;
                         $dfe->save();
                     }
                 }
@@ -743,6 +819,7 @@ return redirect()->route('compras.index');
 private function cadastrarProduto($request, $i, $local_id)
 {
     $disponibilidade = json_decode($request->_disponibilidade[$i]);
+
     $cfop = $request->cfop[$i];
     $cfopOutroEstado = '';
     $cfopEstado = '';
@@ -754,22 +831,41 @@ private function cadastrarProduto($request, $i, $local_id)
     $last = Produto::where('empresa_id', $request->empresa_id)
     ->orderBy('numero_sequencial', 'desc')
     ->where('numero_sequencial', '>', 0)->first();
+
+    $padrao = null;
+    if($request->padrao_id){
+        $padrao = PadraoTributacaoProduto::findOrfail($request->padrao_id);
+    }
+    if($request->padrao_item_id[$i]){
+        $padrao = PadraoTributacaoProduto::findOrfail($request->padrao_item_id[$i]);
+    }
+
     $numeroSequencial = $last != null ? $last->numero_sequencial : 0;
     $numeroSequencial++;
-
+    // dd($request->all());
     $p = Produto::create([
         'numero_sequencial' => $numeroSequencial,
         'empresa_id' => $request->empresa_id,
         'nome' => $request->nome_produto[$i],
         'ncm' => $request->ncm[$i],
+        'padrao_id' => $request->padrao_id,
         'codigo_barras' => $request->codigo_barras[$i],
+        'codigo_barras2' => $request->_codigo_barras2[$i],
         'gerenciar_estoque' => $request->_gerenciar_estoque[$i],
-        'unidade' => $request->unidade[$i],
+        'unidade' => $request->unidade[$i] ?? 'UN',
         'valor_unitario' => __convert_value_bd($request->valor_venda[$i]),
+        'quantidade_atacado' => __convert_value_bd($request->_quantidade_atacado[$i]),
+        'valor_minimo_venda' => ($request->_valor_minimo_venda[$i]),
+
+        'valor_atacado' => ($request->_valor_atacado[$i]),
         'perc_red_bc' => __convert_value_bd($request->perc_red_bc[$i]),
         'cfop_estadual' => $cfopEstado,
         'cest' => $request->cest[$i],
         'cfop_outro_estado' => $cfopOutroEstado,
+
+        'cfop_entrada_estadual' => $padrao ? $padrao->cfop_entrada_estadual : '',
+        'cfop_entrada_outro_estado' => $padrao ? $padrao->cfop_entrada_outro_estado : '',
+
         'valor_compra' => __convert_value_bd($request->valor_unitario[$i]),
 
         'perc_red_bc' => __convert_value_bd($request->perc_red_bc[$i]),
@@ -785,18 +881,18 @@ private function cadastrarProduto($request, $i, $local_id)
         'estoque_minimo' => __convert_value_bd($request->_estoque_minimo[$i]),
         'referencia_xml' => $request->cProd[$i],
         'categoria_id' => $request->_categoria_id[$i] > 0 ? $request->_categoria_id[$i] : null,
+        'sub_categoria_id' => $request->_sub_categoria_id[$i] > 0 ? $request->_sub_categoria_id[$i] : null,
         'marca_id' => $request->_marca_id[$i] > 0 ? $request->_marca_id[$i] : null,
         'percentual_lucro' => $request->_margem[$i] ?? 0,
 
         'referencia' => $request->_referencia[$i] ?? 0,
         'referencia_balanca' => $request->_referencia_balanca[$i] ?? 0,
         'exportar_balanca' => $request->_exportar_balanca[$i] ?? 0,
-        'observacao' => $request->_observacao[$i] ?? 0,
-        'observacao2' => $request->_observacao2[$i] ?? 0,
-        'observacao3' => $request->_observacao3[$i] ?? 0,
-        'observacao4' => $request->_observacao4[$i] ?? 0,
+        'observacao' => $request->_observacao[$i] ?? '',
+        'observacao2' => $request->_observacao2[$i] ?? '',
+        'observacao3' => $request->_observacao3[$i] ?? '',
+        'observacao4' => $request->_observacao4[$i] ?? '',
         'valor_prazo' => 0
-
     ]);
 
     if($disponibilidade == null){
@@ -806,10 +902,17 @@ private function cadastrarProduto($request, $i, $local_id)
             'localizacao_id' => $caixa->local_id
         ]);
     }else{
-        foreach($disponibilidade as $d){
+        if(is_array($disponibilidade)){
+            foreach($disponibilidade as $d){
+                ProdutoLocalizacao::updateOrCreate([
+                    'produto_id' => $p->id, 
+                    'localizacao_id' => $d
+                ]);
+            }
+        }else{
             ProdutoLocalizacao::updateOrCreate([
                 'produto_id' => $p->id, 
-                'localizacao_id' => $d
+                'localizacao_id' => $disponibilidade
             ]);
         }
     }
@@ -898,6 +1001,36 @@ public function infoValidade($id)
         }
     }
     return view('compras.info_validade', compact('produtos', 'compra'));
+}
+
+public function validade(Request $request)
+{
+
+    $produto = null;
+    if($request->produto_id){
+        $produto = Produto::findOrFail($request->produto_id);
+    }
+
+    $tipo_pesquisa = $request->get('tipo_pesquisa');
+    $start_date = $request->get('start_date');
+    $end_date = $request->get('end_date');
+    $produto_id = $request->get('produto_id');
+
+    $data = ItemNfe::where('nves.empresa_id', $request->empresa_id)
+    ->join('nves', 'nves.id', '=', 'item_nves.nfe_id')
+    ->when(!empty($start_date), function ($query) use ($start_date, $tipo_pesquisa) {
+        return $query->whereDate('item_nves.'.$tipo_pesquisa, '>=', $start_date);
+    })
+    ->when(!empty($end_date), function ($query) use ($end_date, $tipo_pesquisa) {
+        return $query->whereDate('item_nves.'.$tipo_pesquisa, '<=', $end_date);
+    })
+    ->when(!empty($produto_id), function ($query) use ($produto_id) {
+        return $query->where('item_nves.produto_id', $produto_id);
+    })
+    ->where('item_nves.data_vencimento', '!=', null)
+    ->orderBy('item_nves.id', 'desc')
+    ->paginate(__itensPagina());
+    return view('compras.validade', compact('data', 'produto'));
 }
 
 public function setarInfoValidade(Request $request)
@@ -1005,11 +1138,13 @@ public function etiquetaStore(Request $request, $id){
                 'tipo' => $request->tipo,
                 'codigo_barras_numerico' => $request->codigo_barras_numerico ? true : false,
                 'nome' => $nome,
-                'codigo' => $item->id . ($item->referencia != '' ? ' | REF'.$item->referencia : ''),
+                'codigo' => $i->produto->numero_sequencial,
                 'valor' => $valor,
                 'unidade' => $unidade,
                 'rand' => $rand,
-                'empresa' => $item->empresa->nome
+                'empresa' => $item->empresa->nome,
+                'valor_atacado' => $i->produto->valor_atacado,
+                'referencia' => $i->produto->referencia,
             ];
 
             $generatorPNG = new \Picqer\Barcode\BarcodeGeneratorPNG();
@@ -1024,7 +1159,6 @@ public function etiquetaStore(Request $request, $id){
         }
     }
 
-
     $quantidade_por_linhas = $request->etiquestas_por_linha;
     $quantidade = $request->quantidade_etiquetas;
     $altura = $request->altura;
@@ -1033,11 +1167,27 @@ public function etiquetaStore(Request $request, $id){
     $distancia_lateral = $request->distancia_etiquetas_lateral;
     $tamanho_fonte = $request->tamanho_fonte;
     $tamanho_codigo = $request->tamanho_codigo_barras;
-        // dd($data);
+    $distancia_entre_linhas = $request->distancia_entre_linhas;
+    $referencia = $request->referencia;
+    $valor_atacado = $request->valor_atacado;
+    // dd($data);
     return view('compras.etiqueta_print', compact('altura', 'largura', 'rand', 'codigo', 'quantidade', 'distancia_topo',
-        'distancia_lateral', 'quantidade_por_linhas', 'tamanho_fonte', 'tamanho_codigo', 'data'));
+        'distancia_lateral', 'quantidade_por_linhas', 'tamanho_fonte', 'tamanho_codigo', 'data', 'distancia_entre_linhas', 'referencia', 
+        'valor_atacado'));
 
 
+}
+
+public function downloadXmlImportado($id){
+    $item = Nfe::findOrFail($id);
+    __validaObjetoEmpresa($item);
+
+    if (file_exists(public_path('xml_entrada/') . $item->chave_importada . '.xml')) {
+        return response()->download(public_path('xml_entrada/') . $item->chave_importada . '.xml');
+    }else{
+        session()->flash("flash_error", "Arquivo não encontrado");
+        return redirect()->back();
+    }
 }
 
 }

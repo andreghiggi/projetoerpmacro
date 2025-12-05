@@ -22,7 +22,7 @@ class MetaResultadoController extends Controller
         ->when(!empty($request->funcionario_id), function ($q) use ($request) {
             return $q->where('funcionario_id', $request->funcionario_id);
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $funcionario = Funcionario::find($request->funcionario_id);
         return view('metas_resultado.index', compact('data', 'funcionario'));

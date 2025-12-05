@@ -16,7 +16,64 @@ use App\Models\Localizacao;
 
 class GraficoController extends Controller
 {
-    public function dadosDards(Request $request){
+    public function cardsConta(Request $request){
+        $empresa_id = $request->empresa_id;
+        $periodo_inicial = $request->periodo_inicial;
+        $periodo_final = $request->periodo_final;
+
+
+        $recebidas = ContaReceber::where('empresa_id', $empresa_id)
+        ->where('status', 1)
+        ->when($periodo_inicial, function ($query) use ($periodo_inicial){
+            return $query->whereDate('data_vencimento', '>=', $periodo_inicial);
+        })
+        ->when($periodo_final, function ($query) use ($periodo_final){
+            return $query->whereDate('data_vencimento', '<=', $periodo_final);
+        })
+        ->sum('valor_recebido');
+
+        $aReceber = ContaReceber::where('empresa_id', $empresa_id)
+        ->where('status', 0)
+        ->when($periodo_inicial, function ($query) use ($periodo_inicial){
+            return $query->whereDate('data_vencimento', '>=', $periodo_inicial);
+        })
+        ->when($periodo_final, function ($query) use ($periodo_final){
+            return $query->whereDate('data_vencimento', '<=', $periodo_final);
+        })
+        ->sum('valor_integral');
+
+
+        $pagas = ContaPagar::where('empresa_id', $empresa_id)
+        ->where('status', 1)
+        ->when($periodo_inicial, function ($query) use ($periodo_inicial){
+            return $query->whereDate('data_vencimento', '>=', $periodo_inicial);
+        })
+        ->when($periodo_final, function ($query) use ($periodo_final){
+            return $query->whereDate('data_vencimento', '<=', $periodo_final);
+        })
+        ->sum('valor_pago');
+
+        $aPagar = ContaPagar::where('empresa_id', $empresa_id)
+        ->where('status', 0)
+        ->when($periodo_inicial, function ($query) use ($periodo_inicial){
+            return $query->whereDate('data_vencimento', '>=', $periodo_inicial);
+        })
+        ->when($periodo_final, function ($query) use ($periodo_final){
+            return $query->whereDate('data_vencimento', '<=', $periodo_final);
+        })
+        ->sum('valor_integral');
+
+        $data = [
+            'recebidas' => $recebidas,
+            'aReceber' => $aReceber,
+            'pagas' => $pagas,
+            'aPagar' => $aPagar,
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    public function dadosCards(Request $request){
         $periodo = $request->periodo;
         $empresa_id = $request->empresa_id;
         $usuario_id = $request->usuario_id;
@@ -37,7 +94,7 @@ class GraficoController extends Controller
             return $query->whereRaw('WEEK(created_at) = ' . (date('W')-1));
         })
         ->when($periodo == 30, function ($query) {
-            return $query->whereMonth('created_at', date('m'));
+            return $query->whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'));
         })
         ->when($periodo == 365, function ($query) {
             return $query->whereYear('created_at', date('Y'));
@@ -48,12 +105,14 @@ class GraficoController extends Controller
         ->when(!$local_id, function ($query) use ($locais) {
             return $query->whereIn('local_id', $locais);
         })
+        ->where('estado', '!=', 'cancelado')
         ->where('tpNF', 1)
         ->where('orcamento', 0)
         ->sum('total');
 
         $somaVendasPdv = Nfce::
         where('empresa_id', $empresa_id)
+        ->where('estado', '!=', 'cancelado')
         ->when($periodo == 1, function ($query) {
             return $query->whereDate('created_at', date('Y-m-d'));
         })
@@ -61,7 +120,7 @@ class GraficoController extends Controller
             return $query->whereRaw('WEEK(created_at) = ' . (date('W')-1));
         })
         ->when($periodo == 30, function ($query) {
-            return $query->whereMonth('created_at', date('m'));
+            return $query->whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'));
         })
         ->when($periodo == 365, function ($query) {
             return $query->whereYear('created_at', date('Y'));
@@ -80,10 +139,10 @@ class GraficoController extends Controller
             return $query->whereDate('created_at', date('Y-m-d'));
         })
         ->when($periodo == 7, function ($query) {
-            return $query->whereRaw('WEEK(created_at) = ' . (date('W')-1));
+            return $query->whereRaw('WEEK(created_at) = ' . (date('W')-1))->whereYear('created_at', date('Y'));
         })
         ->when($periodo == 30, function ($query) {
-            return $query->whereMonth('created_at', date('m'));
+            return $query->whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'));
         })
         ->when($periodo == 365, function ($query) {
             return $query->whereYear('created_at', date('Y'));
@@ -97,10 +156,10 @@ class GraficoController extends Controller
             return $query->whereDate('produtos.created_at', date('Y-m-d'));
         })
         ->when($periodo == 7, function ($query) {
-            return $query->whereRaw('WEEK(produtos.created_at) = ' . (date('W')-1));
+            return $query->whereRaw('WEEK(produtos.created_at) = ' . (date('W')-1))->whereYear('produtos.created_at', date('Y'));
         })
         ->when($periodo == 30, function ($query) {
-            return $query->whereMonth('produtos.created_at', date('m'));
+            return $query->whereMonth('produtos.created_at', date('m'))->whereYear('produtos.created_at', date('Y'));
         })
         ->when($periodo == 365, function ($query) {
             return $query->whereYear('produtos.created_at', date('Y'));

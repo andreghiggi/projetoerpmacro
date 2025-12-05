@@ -1,6 +1,5 @@
-@extends('food.default', ['title' => 'Home'])
+@extends('food.default', ['title' => 'Pesquisa'])
 @section('content')
-
 
 <div class="middle">
 	<div class="container">
@@ -62,6 +61,7 @@
 		</div>
 	</div>
 </div>
-
-
+@endsection
+@section('js')
+<script src="/food-files/js/main.js"></script>
 @endsection

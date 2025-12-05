@@ -50,17 +50,17 @@ class ImportadorController extends Controller
 
             if($zip->extractTo($destino) == TRUE){
 
-                $data = $this->salvaCategorias($destino);
-                $data = $this->salvaClientes($destino);
-                $data = $this->salvaFornecedores($destino);
-                $data = $this->salvaNaturezasOperacao($destino);
-                $data = $this->salvaTransportadoras($destino);
-                $data = $this->salvaProdutos($destino);
-                $data = $this->salvaVendasPedido($destino);
-                $data = $this->salvaVendasCaixa($destino);
-                $data = $this->salvaListaPreco($destino);
-                $data = $this->salvaContasReceber($destino);
-                $data = $this->salvaContasPagar($destino);
+                $this->salvaCategorias($destino);
+                $this->salvaClientes($destino);
+                $this->salvaFornecedores($destino);
+                $this->salvaNaturezasOperacao($destino);
+                $this->salvaTransportadoras($destino);
+                $this->salvaProdutos($destino);
+                $this->salvaVendasPedido($destino);
+                $this->salvaVendasCaixa($destino);
+                $this->salvaListaPreco($destino);
+                $this->salvaContasReceber($destino);
+                $this->salvaContasPagar($destino);
 
                 session()->flash('flash_success', 'Dados importados!');
                 return redirect()->route('home');
@@ -213,8 +213,8 @@ class ImportadorController extends Controller
                         'empresa_id' => request()->empresa_id,
                         '_id_import' => $r[0],
                         'nome' => $r[1],
-                        'valor_unitario' => __convert_value_bd($r[2]),
-                        'valor_compra' => __convert_value_bd($r[3]),
+                        'valor_unitario' => ($r[2]),
+                        'valor_compra' => ($r[3]),
                         'unidade' => $r[4],
                         'codigo_barras' => $r[5],
                         'categoria_id' => $categoria != null ? $categoria->id : null,
@@ -265,6 +265,7 @@ class ImportadorController extends Controller
         $localizacaoPadrao = Localizacao::where('empresa_id', request()->empresa_id)
         ->first();
         $empresa = Empresa::findOrFail(request()->empresa_id);
+
         foreach ($rows as $row) {
 
             foreach ($row as $key => $r) {
@@ -300,9 +301,9 @@ class ImportadorController extends Controller
                                     'cliente_id' => $cliente->id,
                                     'natureza_id' => $natureza->id,
                                     'transportadora_id' => $transportadora ? $transportadora->id : null,
-                                    'total' => __convert_value_bd($r[4]),
-                                    'desconto' => __convert_value_bd($r[5]),
-                                    'acrescimo' => __convert_value_bd($r[6]),
+                                    'total' => ($r[4]),
+                                    'desconto' => ($r[5]),
+                                    'acrescimo' => ($r[6]),
                                     'estado' => Nfe::getEstadoImport($r[7]),
                                     'numero' => $r[8],
                                     'chave' => $r[9] ?? '',
@@ -323,7 +324,6 @@ class ImportadorController extends Controller
                                     }
                                 }
 
-
                                 $nfe = Nfe::create($objetoVenda);
                                 $nfe->created_at = $r[11];
                                 $nfe->save();
@@ -337,9 +337,9 @@ class ImportadorController extends Controller
                                 $objetoItem = [
                                     'nfe_id' => $nfe->id,
                                     'produto_id' => $produto->id,
-                                    'quantidade' => __convert_value_bd($r[1]),
-                                    'valor_unitario' => __convert_value_bd($r[2]),
-                                    'sub_total' => __convert_value_bd($r[3]),
+                                    'quantidade' => ($r[1]),
+                                    'valor_unitario' => ($r[2]),
+                                    'sub_total' => ($r[3]),
                                 ];
                                 ItemNfe::create($objetoItem);
                             }
@@ -349,14 +349,15 @@ class ImportadorController extends Controller
                                     'nfe_id' => $nfe->id,
                                     'tipo_pagamento' => $r[0],
                                     'data_vencimento' => $r[1],
-                                    'valor' => __convert_value_bd($r[2])
+                                    'valor' => ($r[2])
                                 ]);
                                 // dd($fat);
                             }
                             $proximoVenda = 0;
                         }
                     }catch(\Exception $e){
-                        // echo $e->getMessage();
+                        echo $e->getMessage();
+                        die;
 
                     }
                 }
@@ -411,9 +412,9 @@ class ImportadorController extends Controller
                                     'cliente_id' => $cliente ? $cliente->id : null,
                                     'natureza_id' => $natureza->id,
                                     'ambiente' => $empresa->ambiente,
-                                    'total' => __convert_value_bd($r[3]),
-                                    'desconto' => __convert_value_bd($r[4]),
-                                    'acrescimo' => __convert_value_bd($r[5]),
+                                    'total' => ($r[3]),
+                                    'desconto' => ($r[4]),
+                                    'acrescimo' => ($r[5]),
                                     'estado' => Nfe::getEstadoImport($r[11]),
                                     'numero' => $r[12],
                                     'chave' => $r[13] ?? '',
@@ -448,9 +449,9 @@ class ImportadorController extends Controller
                                 $objetoItem = [
                                     'nfce_id' => $nfe->id,
                                     'produto_id' => $produto->id,
-                                    'quantidade' => __convert_value_bd($r[1]),
-                                    'valor_unitario' => __convert_value_bd($r[2]),
-                                    'sub_total' => __convert_value_bd($r[3]),
+                                    'quantidade' => ($r[1]),
+                                    'valor_unitario' => ($r[2]),
+                                    'sub_total' => ($r[3]),
                                 ];
                                 // dd($objetoItem);
                                 ItemNfce::create($objetoItem);
@@ -461,7 +462,7 @@ class ImportadorController extends Controller
                                     'nfce_id' => $nfe->id,
                                     'tipo_pagamento' => $r[0],
                                     'data_vencimento' => $r[1],
-                                    'valor' => __convert_value_bd($r[2])
+                                    'valor' => ($r[2])
                                 ]);
                                 // dd($fat);
                             }
@@ -497,7 +498,7 @@ class ImportadorController extends Controller
                             $objeto = [
                                 'empresa_id' => request()->empresa_id,
                                 'nome' => $r[1],
-                                'percentual_alteracao' => __convert_value_bd($r[2]),
+                                'percentual_alteracao' => ($r[2]),
                                 'ajuste_sobre' => $r[3] == 1 ? 'valor_compra' : 'valor_venda',
                                 'tipo' => $r[3] == 1 ? 'incremento' : 'reducao',
                             ];
@@ -511,8 +512,8 @@ class ImportadorController extends Controller
                             ItemListaPreco::create([
                                 'lista_id' => $lista->id,
                                 'produto_id' => $produto->id,
-                                'valor' => __convert_value_bd($r[3]),
-                                'percentual_lucro' => __convert_value_bd($r[2]),
+                                'valor' => ($r[3]),
+                                'percentual_lucro' => ($r[2]),
                             ]);
                         }
 
@@ -540,8 +541,8 @@ class ImportadorController extends Controller
                         'cliente_id' => $cliente ? $cliente->id : null,
                         'data_vencimento' => $r[2],
                         'data_recebimento' => $r[3],
-                        'valor_integral' => __convert_value_bd($r[4]),
-                        'valor_recebido' => __convert_value_bd($r[5]),
+                        'valor_integral' => ($r[4]),
+                        'valor_recebido' => ($r[5]),
                         'status' => $r[6],
                         'observacao' => $r[7] ?? '',
                         'tipo_pagamento' => $r[8] ?? '01',
@@ -572,8 +573,8 @@ class ImportadorController extends Controller
                         'fornecedor' => $fornecedor ? $fornecedor->id : null,
                         'data_vencimento' => $r[2],
                         'data_pagamento' => $r[3],
-                        'valor_integral' => __convert_value_bd($r[4]),
-                        'valor_pago' => __convert_value_bd($r[5]),
+                        'valor_integral' => ($r[4]),
+                        'valor_pago' => ($r[5]),
                         'status' => $r[6],
                         'observacao' => $r[7] ?? '',
                         'tipo_pagamento' => $r[8] ?? '01',

@@ -20,11 +20,13 @@ class ApiConfig extends Model
             'clientes' => 'Clientes',
             'fornecedores' => 'Fornecedores',
             'vendas_pdv' => 'Vendas PDV',
+            'vendas_pedido' => 'Vendas Pedido',
             'usuarios' => 'Usuários',
             'caixa' => 'Caixa',
             'cotacao' => 'Cotação',
             'natureza_operacao' => 'Natureza de operação',
             'padrao_fiscal' => 'Padrão fiscal',
+            'emitente' => 'Emitente',
         ];
     }
 
@@ -48,11 +50,13 @@ class ApiConfig extends Model
             'clientes' => ['create', 'update', 'read', 'delete'],
             'fornecedores' => ['create', 'update', 'read', 'delete'],
             'vendas_pdv' => ['create', 'update', 'read', 'delete'],
+            'vendas_pedido' => ['create', 'update', 'read', 'delete'],
             'usuarios' => ['read'],
             'caixa' => ['read', 'create'],
             'cotacao' => ['create', 'update', 'read', 'delete'],
             'natureza_operacao' => ['create', 'update', 'read', 'delete'],
             'padrao_fiscal' => ['create', 'update', 'read', 'delete'],
+            'emitente' => ['read', 'update'],
         ];
 
         $p = $data[$key];

@@ -198,7 +198,6 @@ class Permission extends \Spatie\Permission\Models\Permission
             array('name' => 'delivery_view', 'description' => 'Visualiza delivery'),
             array('name' => 'mercado_livre_view', 'description' => 'Visualiza mercado livre'),
             array('name' => 'nuvem_shop_view', 'description' => 'Visualiza nuvem shop'),
-            array('name' => 'conecta_venda_view', 'description' => 'Visualiza conecta venda'),
 
             array('name' => 'relatorio_view', 'description' => 'Visualiza relatório'),
             array('name' => 'caixa_view', 'description' => 'Visualiza caixa'),
@@ -365,9 +364,47 @@ class Permission extends \Spatie\Permission\Models\Permission
             array('name' => 'crm_delete', 'description' => 'Deleta crm'),
 
             array('name' => 'plano_contas_view', 'description' => 'Visualiza plano de contas'),
+            array('name' => 'ifood_view', 'description' => 'Visualiza ifood'),
 
-            array('name' => 'relatorios_sistema_view', 'description' => 'Visualiza Relatórios do sistema'),
-            array('name' => 'relatorios_comerciais_view', 'description' => 'Visualiza Relatórios do comerciais do sistema'),
+            array('name' => 'impressora_pedido_view', 'description' => 'Visualiza impressora pedido'),
+            array('name' => 'impressora_pedido_create', 'description' => 'Cria impressora pedido'),
+            array('name' => 'impressora_pedido_edit', 'description' => 'Edita impressora pedido'),
+            array('name' => 'impressora_pedido_delete', 'description' => 'Deleta impressora pedido'),
+
+            array('name' => 'mesa_view', 'description' => 'Visualiza mesa'),
+            array('name' => 'mesa_create', 'description' => 'Cria mesa'),
+            array('name' => 'mesa_edit', 'description' => 'Edita mesa'),
+            array('name' => 'mesa_delete', 'description' => 'Deleta mesa'),
+
+            array('name' => 'categoria_conta_view', 'description' => 'Visualiza categoria de conta'),
+            array('name' => 'categoria_conta_create', 'description' => 'Cria categoria de conta'),
+            array('name' => 'categoria_conta_edit', 'description' => 'Edita categoria de conta'),
+            array('name' => 'categoria_conta_delete', 'description' => 'Deleta categoria de conta'),
+
+            array('name' => 'planejamento_custo_view', 'description' => 'Visualiza planejamento de custos'),
+            array('name' => 'planejamento_custo_create', 'description' => 'Cria planejamento de custos'),
+            array('name' => 'planejamento_custo_edit', 'description' => 'Edita planejamento de custos'),
+            array('name' => 'planejamento_custo_delete', 'description' => 'Deleta planejamento de custos'),
+
+            array('name' => 'projeto_custo_view', 'description' => 'Visualiza projeto de custos'),
+            array('name' => 'projeto_custo_create', 'description' => 'Cria projeto de custos'),
+            array('name' => 'projeto_custo_edit', 'description' => 'Edita projeto de custos'),
+            array('name' => 'projeto_custo_delete', 'description' => 'Deleta projeto de custos'),
+
+            array('name' => 'promocao_produtos_view', 'description' => 'Visualiza promoção de produtos'),
+            array('name' => 'promocao_produtos_create', 'description' => 'Cria promoção de produtos'),
+            array('name' => 'promocao_produtos_edit', 'description' => 'Edita promoção de produtos'),
+            array('name' => 'promocao_produtos_delete', 'description' => 'Deleta promoção de produtos'),
+
+            array('name' => 'gestao_producao_view', 'description' => 'Deleta gestão de custos'),
+            array('name' => 'gestao_producao_create', 'description' => 'Cria gestão de custos'),
+            array('name' => 'gestao_producao_edit', 'description' => 'Edita gestão de custos'),
+            array('name' => 'gestao_producao_delete', 'description' => 'Deleta gestão de custos'),
+
+            array('name' => 'garantias_view', 'description' => 'Deleta garantias'),
+            array('name' => 'garantias_create', 'description' => 'Cria garantias'),
+            array('name' => 'garantias_edit', 'description' => 'Edita garantias'),
+            array('name' => 'garantias_delete', 'description' => 'Deleta garantias'),
         ];
     }
 }

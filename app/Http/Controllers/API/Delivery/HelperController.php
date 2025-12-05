@@ -20,6 +20,7 @@ use App\Models\ItemPizzaPedidoDelivery;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
+
 class HelperController extends Controller
 {
     public function cupom(Request $request){
@@ -38,21 +39,21 @@ class HelperController extends Controller
             $carrinho->valor_frete = 0;
             $carrinho->valor_total = $carrinho->itens->sum('sub_total') + $carrinho->valor_frete;
             $carrinho->save();
-            return response()->json('cupom não encontrado', 404);
+            return response()->json(['erro' => 'Cupom não encontrado'], 403);
         }
         $total = $carrinho->valor_total;
 
         if($carrinho->valor_desconto > 0){
-            return response()->json("Desconto já foi aplicado", 401);
+            return response()->json(['erro' => "Desconto já foi aplicado"], 403);
         }
 
         if($total < $item->valor_minimo_pedido){
-            return response()->json("valor minímo para este cupom R$ " . __moeda($item->valor_minimo_pedido), 401);
+            return response()->json(['erro' => "Valor minímo para este cupom R$ " . __moeda($item->valor_minimo_pedido)], 422);
         }
 
         $cliente = $carrinho->cliente;
         if($cliente == null){
-            return response()->json("cliente não encontrado", 404);
+            return response()->json(['erro' => "Cliente não encontrado"], 403);
         }
 
         $cupomUsuado = CupomDescontoCliente::where('empresa_id', $request->empresa_id)
@@ -60,7 +61,7 @@ class HelperController extends Controller
         ->where('cliente_id', $cliente->id)
         ->first();
         if($cupomUsuado != null){
-            return response()->json("cupom já utilizado no pedido #$cupomUsuado->pedido_id", 404);
+            return response()->json(['erro' => "Cupom já utilizado no pedido #$cupomUsuado->pedido_id"], 403);
         }
 
         $desconto = 0;
@@ -76,7 +77,6 @@ class HelperController extends Controller
         $carrinho->save();
 
         return response()->json($desconto, 200);
-
     }
 
     public function validaFone(Request $request){
@@ -187,6 +187,15 @@ class HelperController extends Controller
 
     }
 
+    private function getLastNumero($empresa_id){
+        $last = PedidoDelivery::where('empresa_id', $empresa_id)
+        ->orderBy('numero_sequencial', 'desc')
+        ->where('numero_sequencial', '>', 0)->first();
+        $numero = $last != null ? $last->numero_sequencial : 0;
+        $numero++;
+        return $numero;
+    }
+
     private function createPedido($request){
 
         try{
@@ -209,7 +218,8 @@ class HelperController extends Controller
                     'cupom_id' => $cupom ? $cupom->id : null,
                     'desconto' => $carrinho->valor_desconto,
                     'valor_entrega' => $carrinho->valor_frete,
-                    'horario_cricao' => date('H:i')
+                    'horario_cricao' => date('H:i'),
+                    'numero_sequencial' => $this->getLastNumero($config->empresa_id)
                 ]);
 
                 if($cupom){

@@ -1,14 +1,22 @@
 @extends('loja.default', ['title' => 'Produtos'])
 @section('css')
-<style type="text/css">
-	.w-100{
-		width: 100%;
-		margin-bottom: 10px;
-	}
-</style>
-
+<link rel="stylesheet" type="text/css" href="/css/ecommerce_produtos_categoria.css">
 @endsection
 @section('content')
+<nav id="navigation">
+	<div class="container">
+		<div id="responsive-nav">
+			<ul class="main-nav nav navbar-nav">
+				<li class="active"><a href="{{ route('loja.index', ['link='.$config->loja_id]) }}">Home</a></li>
+				@foreach($categorias as $c)
+				@if($c->hash_ecommerce)
+				<li><a href="{{ route('loja.produtos-categoria', [$c->hash_ecommerce, 'link='.$config->loja_id]) }}">{{ $c->nome }}</a></li>
+				@endif
+				@endforeach
+			</ul>
+		</div>
+	</div>
+</nav>
 <div class="section">
 	<div class="container">
 		<div class="row">
@@ -23,12 +31,11 @@
 			<div class="col-md-12">
 				<div class="row">
 					<div class="products-tabs">
-						<!-- tab -->
 
 						<div class="row" data-nav="#slick-nav-">
 							
 							@foreach($produtos as $p)
-							<div class="product col-md-4 col-12" style="margin: 5px; height: 480px">
+							<div class="product col-md-4 col-12" style="height: 480px;">
 								<div class="product-img">
 									<img src="{{ $p->img }}" alt="" style="height: 320px">
 									<div class="product-label">
@@ -55,7 +62,7 @@
 									
 								</div>
 								<div class="add-to-car">
-									<a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id])}}" class="btn w-100 btn-success"><i class="fa fa-shopping-cart"></i> 
+									<a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id])}}" class="btn w-100 btn-success">
 										Adicionar ao carrinho
 									</a>
 								</div>

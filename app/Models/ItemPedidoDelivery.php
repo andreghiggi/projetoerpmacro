@@ -11,7 +11,7 @@ class ItemPedidoDelivery extends Model
 
     protected $fillable = [
         'pedido_id', 'produto_id', 'status', 'quantidade', 'observacao', 'tamanho_id', 'valor_unitario', 'sub_total',
-        'estado', 'servico_id'
+        'estado', 'servico_id', 'impresso'
     ];
 
     public function produto(){

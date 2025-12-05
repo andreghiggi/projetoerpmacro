@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Atendimento Garçom'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -49,12 +49,12 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->funcionario ? $item->funcionario->nome : '' }}</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
-                                    <td>{{ $item->pedido->comanda }}</td>
-                                    <td>{{ $item->produto->nome }}</td>
-                                    <td>{{ __moeda($item->sub_total) }}</td>
-                                    <td>
+                                    <td data-label="Garçom">{{ $item->funcionario ? $item->funcionario->nome : '' }}</td>
+                                    <td data-label="Data Registro">{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Comanda">{{ $item->pedido->comanda }}</td>
+                                    <td data-label="Produto">{{ $item->produto->nome }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->sub_total) }}</td>
+                                    <td data-label="Quantidade">
                                         @if($item->produto->unidade == 'UN')
                                         {{ number_format($item->quantidade, 0) }}
                                         @else
@@ -75,8 +75,10 @@
                                 </tr>
                             </tfoot>
                         </table>
+
                     </div>
                 </div>
+                <br>
                 {!! $data->appends(request()->all())->links() !!}
                 <br>
                 <h4>Total: <strong class="text-success">R$ {{ __moeda($soma) }}</strong></h4>

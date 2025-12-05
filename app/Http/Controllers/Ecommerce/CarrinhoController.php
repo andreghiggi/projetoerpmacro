@@ -11,6 +11,7 @@ use App\Models\Cliente;
 use App\Models\ItemCarrinho;
 use App\Models\ProdutoVariacao;
 use App\Models\CategoriaProduto;
+use App\Models\Estoque;
 use Illuminate\Support\Str;
 use App\Utils\CorreioUtil;
 
@@ -81,15 +82,25 @@ class CarrinhoController extends Controller
 
         $quantidade = __convert_value_bd($request->quantidade);
 
+        // dd($request->all());
         if($produto->gerenciar_estoque){
             if(!$produto->estoque){
                 session()->flash("flash_error", 'Produto sem estoque');
                 return redirect()->back();
             }
 
-            if($quantidade > $produto->estoque->quantidade){
-                session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($produto->estoque->quantidade, 0) . ' ' . $produto->unidade .  ' para este item!');
-                return redirect()->back();
+            if(sizeof($produto->variacoes) == 0){
+                if($quantidade > $produto->estoque->quantidade){
+                    session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($produto->estoque->quantidade, 0) . ' ' . $produto->unidade .  ' para este item!');
+                    return redirect()->back();
+                }
+            }else{
+                $estoque = Estoque::where('produto_id', $produto->id)->where('produto_variacao_id', $request->variacao_id)
+                ->first();
+                if($quantidade > $estoque->quantidade){
+                    session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($estoque->quantidade, 0) . ' ' . $produto->unidade .  ' para este item!');
+                    return redirect()->back();
+                }
             }
         }
 
@@ -181,9 +192,22 @@ class CarrinhoController extends Controller
             $item->quantidade = (float)$request->quantidade;
             if($item->produto->gerenciar_estoque){
 
-                if($item->quantidade > $item->produto->estoque->quantidade){
-                    session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($item->produto->estoque->quantidade, 0) . ' ' . $item->produto->unidade .  ' para este item!');
-                    return redirect()->back();
+
+
+                if(sizeof($item->produto->variacoes) == 0){
+
+                    if($item->quantidade > $item->produto->estoque->quantidade){
+                        session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($item->produto->estoque->quantidade, 0) . ' ' . $item->produto->unidade .  ' para este item!');
+                        return redirect()->back();
+                    }
+                }else{
+                    $estoque = Estoque::where('produto_id', $item->produto->id)->where('produto_variacao_id', $request->produto_variacao_id)
+                    ->first();
+                    // dd($estoque);
+                    if($item->quantidade > $estoque->quantidade){
+                        session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($estoque->quantidade, 0) . ' ' . $item->produto->unidade .  ' para este item!');
+                        return redirect()->back();
+                    }
                 }
             }
             $item->sub_total = $item->valor_unitario * (float)$request->quantidade;
@@ -191,6 +215,7 @@ class CarrinhoController extends Controller
             $this->_atualizaValorCarrinho($item->carrinho_id);
             session()->flash("flash_success", "Quantidade atualizada com sucesso!");
         } catch (\Exception $e) {
+
             session()->flash("flash_error", 'Algo deu errado.', $e->getMessage());
         }
         return redirect()->back();

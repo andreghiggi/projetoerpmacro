@@ -80,7 +80,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">Nada encontrado</td>
+                                    <td colspan="11" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>

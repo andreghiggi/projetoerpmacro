@@ -26,11 +26,19 @@ Route::get('/clear-all', function () {
     return redirect()->back();
 })->name('clear');
 
-Route::get('/', function(){
-    return redirect()->route('home');
-});
+// Route::get('/', function(){
+//     return redirect()->route('home');
+// });
+
+// Route::get('/', function(){
+//     return redirect()->route('home');
+// });
+
+Route::get('/', 'LandingPageController@index');
 
 Route::get('/cotacoes-resposta/{hash_link}', 'CotacaoRespostaController@index')->name('cotacoes.resposta');
+Route::get('/ordem-servico-link/{hash}', 'OrdemServicoViewController@index')->name('ordem-servico.link');
+
 Route::post('/cotacoes-resposta-store', 'CotacaoRespostaController@store')->name('cotacoes.resposta-store');
 Route::get('/cotacoes-finish', 'CotacaoRespostaController@finish')->name('cotacoes.finish');
 Route::get('/imprimir-nfce/{chave}', 'ImprimirNfceController@imprimir');
@@ -38,6 +46,20 @@ Route::get('/registro', 'RegistroController@index')->name('registro');
 
 Route::get('/reserva-cliente/{codigo}', 'ReservaClienteController@index');
 Route::post('/reserva-checkin-start-cliente/{id}', 'ReservaClienteController@checkinStart')->name('reservas.checkin-start-cliente');
+
+Route::middleware(['validaCardapio'])->group(function () {
+    Route::get('cardapio', 'Cardapio\\HomeController@index')->name('cardapio.index');
+    Route::get('cardapio-pesquisa', 'Cardapio\\HomeController@pesquisa')->name('cardapio.pesquisa');
+    Route::get('cardapio-conta', 'Cardapio\\HomeController@conta')->name('cardapio.conta');
+    Route::get('cardapio-produtos-categoria/{hash}', 'Cardapio\\HomeController@produtosDaCategoria')->name('cardapio.produtos-categoria');
+    Route::post('cardapio-carrinho-adicionar', 'Cardapio\\CarrinhoController@adicionar')->name('cardapio.adicionar-carrinho');
+    Route::get('cardapio-carrinho', 'Cardapio\\CarrinhoController@index')->name('cardapio.carrinho');
+    Route::get('cardapio-ofertas', 'Cardapio\\HomeController@ofertas')->name('cardapio.ofertas');
+    Route::post('cardapio-enviar-pedido', 'Cardapio\\CarrinhoController@enviarPedido')->name('cardapio.enviar-pedido');
+    Route::get('cardapio-produto-detalhe/{hash}', 'Cardapio\\HomeController@produtoDetalhe')->name('cardapio.produto-detalhe');
+    Route::get('cardapio-pedir-fechar', 'Cardapio\\CarrinhoController@pedirFechar')->name('cardapio.pedir-fechar');
+
+});
 
 Route::middleware(['validaDelivery'])->group(function () {
     Route::get('food', 'Delivery\\HomeController@index')->name('food.index');
@@ -48,9 +70,9 @@ Route::middleware(['validaDelivery'])->group(function () {
     Route::get('food-pesquisa', 'Delivery\\HomeController@pesquisa')->name('food.pesquisa');
     Route::get('food-ofertas', 'Delivery\\HomeController@ofertas')->name('food.ofertas');
     Route::post('food-carrinho-adicionar', 'Delivery\\CarrinhoController@adicionar')->name('food.adicionar-carrinho');
-
+    
     Route::post('food-carrinho-adicionar-servico', 'Delivery\\CarrinhoController@adicionarServico')->name('food.adicionar-carrinho-servico');
-
+    
     Route::get('food-carrinho', 'Delivery\\CarrinhoController@index')->name('food.carrinho');
     Route::get('food-carrinho-update', 'Delivery\\CarrinhoController@updateQuantidades')->name('food.carrinho-update');
     Route::delete('remove-item-food/{id}', 'Delivery\\CarrinhoController@removeItem')->name('food.remove-item');
@@ -70,7 +92,7 @@ Route::middleware(['validaDelivery'])->group(function () {
     Route::get('food-qr_code/{transacao_id}', 'Delivery\\PagamentoController@qrCode')->name('food.qr_code');
     Route::post('food-pagamento-pix', 'Delivery\\PagamentoController@pagamentoPix')->name('food.pagamento-pix');
     Route::post('food-pagamento-cartao', 'Delivery\\PagamentoController@pagamentoCartao')->name('food.pagamento-cartao');
-
+    
 });
 
 Route::middleware(['validaEcommerce'])->group(function () {
@@ -115,6 +137,8 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::get('/cte-all', [App\Http\Controllers\HomeController::class, 'cte'])->name('cte-all');
         Route::get('/mdfe-all', [App\Http\Controllers\HomeController::class, 'mdfe'])->name('mdfe-all');
         Route::resource('empresas', 'EmpresaController');
+        Route::delete('empresas-destroy-produtos/{id}', 'EmpresaController@destroyProdutos')->name('empresas.destroy-produtos');
+
         Route::resource('contadores', 'ContadorController');
         Route::get('contadores-financeiro/{id}', 'ContadorController@financeiro')->name('contadores.financeiro');
         Route::get('contadores-financeiro-create/{id}', 'ContadorController@createFinanceiro')->name('contadores.financeiro-create');
@@ -166,7 +190,17 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
 
         Route::get('set-version', 'UpdateFileController@setVersion');
 
+        Route::resource('sugestao', 'SugestaoController');
+        Route::post('/sugestao-response/{id}', 'SugestaoController@response')->name('sugestao.response');
+        Route::get('/sugestao-like/{id}', 'SugestaoController@like')->name('sugestao.like');
+        Route::post('/sugestao-auth', 'SugestaoController@auth')->name('sugestao.auth');
+
         Route::resource('ncm', 'NcmController');
+        Route::get('/ncm-refresh', 'NcmController@refresh')->name('ncm.refresh');
+        Route::post('/ncm-store-xls', 'NcmController@import')->name('ncm.store-xls');
+
+        Route::resource('natureza-operacao-super', 'NaturezaOperacaoSuperController');
+        Route::resource('padrao-tributacao-produto-super', 'PadraoTributacaoProdutoSuperController');
         Route::resource('logs', 'LogController');
         Route::resource('notificacao-super', 'NotificacaoSuperController');
         Route::delete('notificacao-super-destroy-select', 'NotificacaoSuperController@destroySelecet')->name('notificacao-super.destroy-select');
@@ -185,21 +219,42 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
             Route::get('historico-acesso', 'RelatorioAdmController@historicoAcesso')->name('relatorios-adm.historico-acesso');
             Route::get('planos', 'RelatorioAdmController@planos')->name('relatorios-adm.planos');
             Route::get('certificados', 'RelatorioAdmController@certificados')->name('relatorios-adm.certificados');
+            Route::get('resumo-operacional', 'RelatorioAdmController@resumoOperacional')->name('relatorios-adm.resumo-operacional');
         });
 
         Route::resource('cidades', 'CidadeController');
-
     });
 
-
     // rotas do contador
+Route::get('contador-profile', 'ContadorAdminController@profile')->name('contador.profile');
+Route::put('contador-profile/{id}', 'ContadorAdminController@profileUpdate')->name('contador.profile-update');
 Route::get('contador-set/{id}', 'ContadorAdminController@setEmpresa')->name('contador.set-empresa');
 Route::get('contador-empresa', 'ContadorAdminController@show')->name('contador.show');
 Route::put('contador-empresa-update/{id}', 'ContadorAdminController@update')->name('contador-empresa.update');
 Route::get('contador-empresa-produtos', 'ContadorAdminController@produtos')->name('contador-empresa.produtos');
 Route::get('contador-empresa-produtos/{id}', 'ContadorAdminController@produtoShow')->name('contador-empresa-produtos.show');
+Route::get('contador-empresa-produtos-edit/{id}', 'ContadorAdminController@produtoEdit')->name('contador-empresa-produtos.edit');
+Route::get('contador-empresa-clientes-edit/{id}', 'ContadorAdminController@clienteEdit')->name('contador-empresa-clientes.edit');
 Route::get('contador-empresa-clientes', 'ContadorAdminController@clientes')->name('contador-empresa.clientes');
 Route::get('contador-empresa-fornecedores', 'ContadorAdminController@fornecedores')->name('contador-empresa.fornecedores');
+Route::get('contador-empresa-fornecedores-edit/{id}', 'ContadorAdminController@fornecedorEdit')->name('contador-empresa-fornecedores.edit');
+
+Route::resource('contador-natureza-operacao', 'ContadorNaturezaOperacaoController');
+Route::resource('contador-produto-tributacao', 'ContadorPadraoTributacaoProdutoController');
+
+Route::resource('contador-empresas', 'ContadorEmpresaController');
+Route::resource('contador-planos', 'ContadorPlanoController');
+Route::resource('contador-gerencia', 'ContadorGerenciaPlanoController');
+
+Route::get('contador-produtotributacao-alterar', 'ContadorPadraoTributacaoProdutoController@alterarProdutos')
+->name('contador-produto-tributacao.alterar');
+
+Route::post('contador-produtotributacao-set-tributacao', 'ContadorPadraoTributacaoProdutoController@setTributacao')
+->name('contador-produto-tributacao.set-tributacao');
+
+Route::put('contador-empresa-produtos-update/{id}', 'ContadorAdminController@produtoUpdate')->name('contador-empresa-produtos.update');
+Route::put('contador-empresa-clientes-update/{id}', 'ContadorAdminController@clienteUpdate')->name('contador-empresa-clientes.update');
+Route::put('contador-empresa-fornecedores-update/{id}', 'ContadorAdminController@fornecedorUpdate')->name('contador-empresa-fornecedores.update');
 
 Route::get('contador-empresa-create', 'ContadorAdminController@empresaCreate')->name('contador.empresa-create');
 Route::post('contador-empresa-store', 'ContadorAdminController@empresaStore')->name('contador.empresa-store');
@@ -210,13 +265,29 @@ Route::put('contador-empresa-set-plano/{empresa_id}', 'ContadorAdminController@s
 Route::get('contador-empresa-nfe', 'ContadorAdminNFeController@nfe')->name('contador-empresa.nfe');
 Route::get('contador-empresa-nfe-download/{id}', 'ContadorAdminNFeController@downloadNFe')->name('contador-empresa-nfe.download');
 Route::get('contador-empresa-nfe-danfe/{id}', 'ContadorAdminNFeController@danfe')->name('contador-empresa-nfe.danfe');
+Route::get('contador-empresa-nfe-imprimir-cancela/{id}', 'ContadorAdminNFeController@imprimirCancela')->name('contador-empresa-nfe.imprimir-cancela');
+Route::get('contador-empresa-nfe-imprimir-correcao/{id}', 'ContadorAdminNFeController@imprimirCorrecao')->name('contador-empresa-nfe.imprimir-correcao');
+Route::get('contador-empresa-nfe-edit/{id}', 'ContadorAdminNFeController@edit')->name('contador-empresa-nfe.edit');
+Route::get('contador-empresa-nfe-xml-temp/{id}', 'ContadorAdminNFeController@xmlTemp')->name('contador-empresa-nfe.xml-temp');
 Route::get('contador-empresa-nfe-zip', 'ContadorAdminNFeController@downloadZip')->name('contador-empresa-nfe-zip');
+Route::put('contador-empresa-nfe-update/{id}', 'ContadorAdminNFeController@nfeUpdate')->name('contador-empresa-nfe.update');
+
+Route::get('contador-empresa-nfe-create', 'ContadorAdminNFeController@create')->name('contador-empresa-nfe.create');
+Route::delete('contador-empresa-nfe-destroy/{id}', 'ContadorAdminNFeController@destroy')->name('contador-empresa-nfe.destroy');
+Route::post('contador-empresa-nfe-store', 'ContadorAdminNFeController@store')->name('contador-empresa-nfe.store');
 
     //nfce
 Route::get('contador-empresa-nfce', 'ContadorAdminNFCeController@nfce')->name('contador-empresa.nfce');
 Route::get('contador-empresa-nfce-download/{id}', 'ContadorAdminNFCeController@downloadNFCe')->name('contador-empresa-nfce.download');
 Route::get('contador-empresa-nfce-danfce/{id}', 'ContadorAdminNFCeController@danfce')->name('contador-empresa-nfce.danfce');
 Route::get('contador-empresa-nfce-zip', 'ContadorAdminNFCeController@downloadZip')->name('contador-empresa-nfce-zip');
+Route::get('contador-empresa-nfce-edit/{id}', 'ContadorAdminNFCeController@edit')->name('contador-empresa-nfce.edit');
+Route::get('contador-empresa-nfce-xml-temp/{id}', 'ContadorAdminNFCeController@xmlTemp')->name('contador-empresa-nfce.xml-temp');
+Route::put('contador-empresa-nfce-update/{id}', 'ContadorAdminNFCeController@nfceUpdate')->name('contador-empresa-nfce.update');
+
+Route::get('contador-empresa-nfce-create', 'ContadorAdminNFCeController@create')->name('contador-empresa-nfce.create');
+Route::delete('contador-empresa-nfce-destroy/{id}', 'ContadorAdminNFCeController@destroy')->name('contador-empresa-nfce.destroy');
+Route::post('contador-empresa-nfce-store', 'ContadorAdminNFCeController@store')->name('contador-empresa-nfce.store');
 
     //cte
 Route::get('contador-empresa-cte', 'ContadorAdminCTeController@cte')->name('contador-empresa.cte');
@@ -232,6 +303,8 @@ Route::get('contador-empresa-mdfe-zip', 'ContadorAdminMDFeController@downloadZip
     // rotas do contador fim
 
 Route::get('nfe/imprimir/{id}', 'NfeController@imprimir')->name('nfe.imprimir');
+Route::get('nfe-imprimir-carne/{id}', 'NfeController@imprimirCarne')->name('nfe.imprimir-carne');
+
 Route::get('nfe/set-codigo-unico/{id}', 'NfeController@setCodigoUnico')->name('nfe.set-codigo-unico');
 Route::post('nfe/setar-codigo-unico', 'NfeController@setarCodigoUnico')->name('nfe.setar-codigo-unico');
 Route::get('nfe-danfe-temporaria/{id}', 'NfeController@danfeTemporaria')->name('nfe.danfe-temporaria');
@@ -264,6 +337,7 @@ Route::get('nfe-download-xml/{id}', 'NfeController@downloadXml')->name('nfe.down
 Route::resource('nfce-contigencia', 'NfceContigenciaController');
 
 Route::get('nfce/xml-temp/{id}', 'NfceController@xmlTemp')->name('nfce.xml-temp');
+Route::get('nfce/xml-temp-contigencia/{id}', 'NfceController@xmlTempContigencia')->name('nfce.xml-temp-contigencia');
 Route::get('nfce-download-xml/{id}', 'NfceController@downloadXml')->name('nfce.download-xml');
 Route::get('cte/xml-temp/{id}', 'CteController@xmlTemp')->name('cte.xml-temp');
 Route::get('cte/imprimir/{id}', 'CteController@imprimir')->name('cte.imprimir');
@@ -287,6 +361,7 @@ Route::get('mdfe/imprimir-correcao/{id}', 'MdfeController@imprimirCorrecao')->na
 Route::get('mdfe/nao-encerrados', 'MdfeController@naoEncerrados')->name('mdfe.nao-encerrados');
 Route::get('mdfe/encerrar', 'MdfeController@encerrar')->name('mdfe.encerrar');
 Route::get('mdfe/create-by-vendas/{id}', 'MdfeController@createByVendas')->name('mdfe.create.vendas');
+Route::get('mdfe-duplicar/{id}', 'MdfeController@duplicar')->name('mdfe.duplicar');
 
 
     // Route::group(['prefix' => 'empresas'], function () {
@@ -317,6 +392,9 @@ Route::post('mercado-livre-chat-send/{id}', 'PedidoMercadoLivreController@chatSe
 Route::get('mercado-livre-chat-send-nfe/{id}', 'PedidoMercadoLivreController@chatSendNfe')->name('mercado-livre-chat.send-nfe');
 
 Route::resource('upgrade', 'UpgradePlanoController');
+Route::get('upgrade-assinatura', 'UpgradePlanoController@assinatura')->name('upgrade.assinatura');
+// Route::post('upgrade-assinatura-mercado-pago', 'UpgradePlanoController@assinaturaMercadoPago')->name('upgrade-assinatura.mercado-pago');
+
 Route::resource('plano-contas', 'PlanoContaController');
 Route::post('plano-contas-start', 'PlanoContaController@start')->name('plano-contas.start');
 
@@ -332,25 +410,52 @@ Route::get('nuvem-shop-produtos-galery-delete', 'NuvemShopProdutoController@gale
 Route::post('nuvem-shop-produtos-galery-store', 'NuvemShopProdutoController@galeryStore')
 ->name('nuvem-shop-produtos-galery-store');
 
-Route::resource('conecta-venda-config', 'ConectaVendaConfigController');
-Route::resource('conecta-venda-pedidos', 'ConectaVendaPedidoController');
-Route::resource('conecta-venda-produtos', 'ConectaVendaProdutoController');
-Route::get('conecta-venda-pedidos/{pedido}/finalizar', 'ConectaVendaPedidoController@finishOrder')->name('conecta-venda-pedidos.finishOrder');
-Route::get('conecta-venda-pedidos/{pedido}/createOrder', 'ConectaVendaPedidoController@createOrder')->name('conecta-venda-pedidos.createOrder');
-
-
-
 Route::resource('woocommerce-config', 'WoocommerceConfigController');
 Route::resource('woocommerce-categorias', 'WoocommerceCategoriaController');
 Route::resource('woocommerce-produtos', 'WoocommerceProdutoController');
 Route::get('woocommerce-produtos-galery/{id}', 'WoocommerceProdutoController@galery')->name('woocommerce-produtos.galery');
+Route::get('woocommerce-produtos-sem-cadastro', 'WoocommerceProdutoController@semCadastro')->name('woocommerce-produtos.sem-cadastro');
+Route::post('woocommerce-produtos-sincronizar', 'WoocommerceProdutoController@sincronizar')->name('woocommerce-produtos.sincronizar');
+
 Route::post('woocommerce-produtos-galery-store', 'WoocommerceProdutoController@galeryStore')->name('woocommerce-produtos-galery-store');
 Route::get('woocommerce-produtos-galery-delete', 'WoocommerceProdutoController@galeryDelete')->name('woocommerce-produtos.galery-delete');
 Route::resource('woocommerce-pedidos', 'WoocommercePedidoController');
 Route::put('woocommerce-pedido-set-cliente/{id}', 'WoocommercePedidoController@setCliente')->name('woocommerce-pedidos.set-cliente');
 Route::get('woocommerce-gerar-nfe/{id}', 'WoocommercePedidoController@gerarNfe')->name('woocommerce-pedidos.gerar-nfe');
 
+Route::resource('vendas', 'VendaController');
+Route::resource('vendizap-config', 'VendiZapConfigController');
+Route::resource('vendizap-categorias', 'VendiZapCategoriaController');
+Route::resource('vendizap-produtos', 'VendiZapProdutoController');
+Route::resource('vendizap-pedidos', 'VendiZapPedidoController');
+Route::get('vendizap-gerar-nfe/{id}', 'VendiZapPedidoController@gerarNfe')->name('vendizap-pedidos.gerar-nfe');
+Route::put('vendizap-set-cliente/{id}', 'VendiZapPedidoController@setCliente')->name('vendizap-pedidos.set-cliente');
+Route::post('vendizap-store-cliente/{id}', 'VendiZapPedidoController@storeCliente')->name('vendizap-pedidos.store-cliente');
+Route::post('vendizap-update-tributacao/{pedido_id}', 'VendiZapPedidoController@updateTributacao')->name('vendizap-pedidos.update-tributacao');
+
+Route::get('vendizap-teste', 'VendiZapProdutoController@teste');
+Route::get('teste', 'TesteController@index');
+
+Route::resource('projeto-custo', 'ProjetoCustoController');
+Route::get('projeto-custo-print/{id}', 'ProjetoCustoController@print')->name('projeto-custo.print');
+
+Route::resource('planejamento-custo', 'PlanejamentoCustoController');
+Route::resource('gestao-producao', 'GestaoProducaoController');
+Route::put('gestao-producao-finish/{id}', 'GestaoProducaoController@finish')->name('gestao-producao.finish');
+
+Route::post('planejamento-custo-alterar-estado/{id}', 'PlanejamentoCustoController@alerarEstado')->name('planejamento-custo.alterar-estado');
+Route::post('planejamento-custo-store-cotacao/{id}', 'PlanejamentoCustoController@storeCotacao')->name('planejamento-custo.store-cotacao');
+Route::get('planejamento-custo-cotacao{id}', 'PlanejamentoCustoController@cotacao')->name('planejamento-custo.cotacao');
+Route::get('planejamento-custo-imprimir-proposta/{id}', 'PlanejamentoCustoController@imprimirProposta')
+->name('planejamento-custo.imprimir-proposta');
+
+Route::get('planejamento-custo-proposta/{id}', 'PlanejamentoCustoController@criarProposta')->name('planejamento-custo.proposta');
+Route::post('planejamento-custo-proposta-store/{id}', 'PlanejamentoCustoController@propostaStore')->name('planejamento-custo.proposta-store');
+Route::get('planejamento-custo-preview/{id}', 'PlanejamentoCustoController@preview')->name('planejamento-custo.preview');
+
 Route::resource('contas-empresa', 'ContaEmpresaController');
+Route::get('contas-empresa-print/{id}', 'ContaEmpresaController@print')->name('contas-empresa.print');
+
 Route::resource('suporte', 'SuporteController')->middleware('validaSuporte');
 Route::resource('contas-boleto', 'ContaBoletoController');
 Route::resource('remessa-boleto', 'RemessaBoletoController');
@@ -374,11 +479,19 @@ Route::resource('cash-back-config', 'CashBackConfigController');
 Route::resource('tef-config', 'TefConfigController');
 Route::resource('tef-registros', 'TefRegistroController');
 Route::resource('usuario-super', 'UsuarioSuperController');
+
+Route::get('impersonate/{id}', 'ImpersonateController@start')->name('impersonate.start')->middleware('impersonate');
+Route::get('impersonate-stop', 'ImpersonateController@stop')->name('impersonate.stop');
+
+Route::get('impersonate-contador/{id}', 'ImpersonateContadorController@start')->name('impersonate-contador.start')->middleware('impersonateContador');
+Route::get('impersonate-contador-stop', 'ImpersonateContadorController@stop')->name('impersonate-contador.stop');
+
 Route::get('produto-tributacao-local/{id}', 'ProdutoTributacaoLocalController@index')->name('produto-tributacao-local.index');
 Route::put('produto-tributacao-local/{id}', 'ProdutoTributacaoLocalController@update')->name('produto-tributacao-local.update');
 
 Route::get('teste-dimensao', 'TefController@index');
 Route::get('teste-tef', 'TefController@teste');
+Route::get('tef-imprimir/{venda_id}', 'TefController@imprimir');
 Route::resource('email-config', 'EmailConfigController');
 Route::resource('escritorio-contabil', 'EscritorioContabilController');
 Route::resource('importador', 'ImportadorController');
@@ -390,6 +503,9 @@ Route::resource('crm', 'CrmController');
 Route::post('crm-store-nota/{id}', 'CrmController@storeNota')->name('crm-nota.store');
 Route::delete('crm-destroy-nota/{id}', 'CrmController@destroyNota')->name('crm.destroy-nota');
 Route::get('crm-print', 'CrmController@print')->name('crm.print');
+
+Route::resource('mensagem-padrao-crm', 'MensagemPadraoCrmController');
+Route::resource('mensagem-crm-logs', 'MensagemCrmLogController');
 
 Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(function () {
     Route::get('teste-email', 'EmailController@index')->name('teste-email');
@@ -432,10 +548,14 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('/compras/info-validade/{id}', 'CompraController@infoValidade')->name('compras.info-validade');
     Route::post('/compras/setar-info-validade', 'CompraController@setarInfoValidade')->name('compras.setar-info-validade');
 
+    Route::get('/compras-inteligencia', 'ComprasIAController@dashboard')->name('compras-inteligencia.dashboard');
+    Route::post('/compras/inteligencia/analisar', 'ComprasIAController@analisar')->name('compras.ia.analisar');
+
     Route::get('/compras/set-codigo-unico/{id}', 'CompraController@setCodigoUnico')->name('compras.set-codigo-unico');
     Route::post('/compras/setar-codigo-unico', 'CompraController@setarCodigoUnico')->name('compras.setar-codigo-unico');
 
     Route::get('/compras-etiqueta/{id}', 'CompraController@etiqueta')->name('compras.etiqueta');
+    Route::get('/compras-download-xml-importado/{id}', 'CompraController@downloadXmlImportado')->name('compras.download-xml-importado');
     Route::post('/compras-etiqueta-store/{id}', 'CompraController@etiquetaStore')->name('compras.etiqueta-store');
 
     Route::resource('compras', 'CompraController');
@@ -443,6 +563,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::resource('cotacoes', 'CotacaoController');
     Route::get('/compras-purchase/{id}', 'CotacaoController@purchase')->name('cotacoes.purchase');
 
+    Route::get('/compras-validade', 'CompraController@validade')->name('compras.validade');
     Route::get('/compras-xml', 'CompraController@xml')->name('compras.xml');
     Route::post('/store-xml', 'CompraController@storeXml')->name('compras.store-xml');
     Route::post('/compras-finish-xml', 'CompraController@finishXml')->name('compras.finish-xml');
@@ -450,7 +571,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::resource('devolucao', 'DevolucaoController');
     Route::resource('localizacao', 'LocalizacaoController');
     Route::get('localizacao-delete-logo/{id}', 'LocalizacaoController@removerLogo')->name('localizacao.delete-logo');
-
+    
     Route::get('/devolucao-xml', 'DevolucaoController@xml')->name('devolucao.xml');
     Route::post('/devolucao-store-xml', 'DevolucaoController@storeXml')->name('devolucao.store-xml');
     Route::post('/devolucao-finish-xml', 'DevolucaoController@finishXml')->name('devolucao.finish-xml');
@@ -462,6 +583,19 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
         Route::post('/manifestar', 'ManifestoController@manifestar')->name('manifesto.manifestar');
     });
     Route::resource('manifesto', 'ManifestoController');
+    Route::resource('impressoras-pedido', 'ImpressoraPedidoController');
+    Route::resource('impressao-pedido', 'ImpressaoPedidoController');
+    Route::get('impressao-pedido-comando', 'ImpressaoPedidoController@comando');
+
+    Route::resource('ifood-config', 'IfoodConfigController');
+    Route::resource('ifood-catalogos', 'IfoodCatalogoController');
+    Route::resource('ifood-categoria-produtos', 'IfoodCategoriaProdutoController');
+    Route::resource('ifood-produtos', 'IfoodProdutoController');
+    Route::get('/ifood-catalogos-definir/{id}', 'IfoodCatalogoController@definir')->name('ifood-catalogos.definir');
+
+    Route::resource('ifood-config-loja', 'IfoodConfigLojaController');
+    Route::get('/ifood-config-user-code', 'IfoodConfigController@userCode')->name('ifood-config.user-code');
+    Route::get('/ifood-config-get-token', 'IfoodConfigController@getToken')->name('ifood-config.get-token');
 
     Route::resource('nota-servico', 'NotaServicoController');
     Route::resource('nota-servico-config', 'NotaServicoConfigController');
@@ -470,6 +604,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
 
     Route::get('nota-servico-imprimir/{id}', 'NotaServicoController@imprimir')->name('nota-servico.imprimir');
     Route::get('nota-servico-preview/{id}', 'NotaServicoController@preview')->name('nota-servico.preview');
+    Route::get('nota-servico-preview-xml/{id}', 'NotaServicoController@previewXml')->name('nota-servico.preview-xml');
 
     Route::get('cte-inutilizar', 'CteController@inutilizar')->name('cte.inutilizar');
     Route::post('cte-inutilizar-store', 'CteController@inutilStore')->name('cte-inutilizar.store');
@@ -486,6 +621,10 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::delete('fretes-destroy-file/{id}', 'FreteController@destroyFile')->name('fretes.destroy-file');
     Route::get('despesa-frete-gerar-conta-pagar/{id}', 'FreteController@gerarContaPagar')->name('despesa-frete.gerar-conta-pagar');
 
+    Route::resource('garantias', 'GarantiaController');
+    Route::get('garantias-modal/{id}', 'GarantiaController@modal');
+    Route::get('garantias/imprimir/{id}', 'GarantiaController@imprimir');
+    
     Route::resource('manutencao-veiculos', 'ManutencaoVeiculoController');
     Route::put('manutencao-veiculos-alterar-estado/{id}', 'ManutencaoVeiculoController@alterarEstado')->name('manutencao-veiculos.alterar-estado');
     Route::get('manutencao-veiculos-gerar-conta-pagar/{id}', 'ManutencaoVeiculoController@gerarContaReceber')->name('manutencao-veiculos.gerar-conta-pagar');
@@ -518,6 +657,11 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('clientes-import-download', 'ClienteController@downloadModelo')->name('clientes.import-download');
     Route::post('clientes-import-store', 'ClienteController@storeModelo')->name('clientes.import-store');
 
+    Route::get('/clientes-remove-image/{id}', 'ClienteController@removeImagem')->name('clientes.remove-image');
+    Route::get('clientes-modal/{id}', 'ClienteController@modal');
+
+    Route::post('clientes-creditos/alterar-status', 'ClienteController@alterarStatusCredito')->name('clientes.alterar-status-credito');
+
     Route::resource('fornecedores', 'FornecedorController');
     Route::delete('fornecedores-destroy-select', 'FornecedorController@destroySelecet')->name('fornecedores.destroy-select');
 
@@ -534,6 +678,10 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::post('produtos-upload-multiple', 'ProdutoController@uploadMultiple')->name('produtos.upload-multiple');
     Route::post('produtos-vincular-imagens', 'ProdutoController@vincularImagens')->name('produtos.vincular-imagens');
     Route::get('produtos-vincula-imagens', 'ProdutoController@vinculaImagens')->name('produtos.vincula-imagens');
+    Route::get('produtos-ibpt', 'ProdutoController@ibpt')->name('produtos.ibpt');
+    Route::get('produtos-alterar-valor-estoque', 'ProdutoController@alterarValorEstoque')->name('produtos.alterar-valor-estoque');
+    Route::get('produtos-buscar-ajuste', 'ProdutoController@buscarAjuste')->name('produtos.buscar-ajuste');
+    Route::post('/produtos/alterar-campo', 'ProdutoController@alterarCampo')->name('produtos.alterar-campo');
 
     Route::resource('transportadoras', 'TransportadoraController');
     Route::delete('transportadoras-destroy-select', 'TransportadoraController@destroySelecet')->name('transportadoras.destroy-select');
@@ -548,8 +696,20 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('inventarios-comparar-estoque/{id}', 'InventarioController@compararEstoque')->name('inventarios.comparar-estoque');
     Route::delete('inventarios-destroy-item/{id}', 'InventarioController@destroyItem')->name('inventarios.destroy-item');
     Route::get('inventarios-definir-estoque/{id}', 'InventarioController@definirEstoque')->name('inventarios.definir-estoque');
+    Route::get('inventarios-imprimir/{id}', 'InventarioController@imprimir')->name('inventarios.imprimir');
+    Route::get('inventarios-apontar-impresso/{id}', 'InventarioController@apontarImpresso')->name('inventarios.apontar-impresso');
+    Route::post('/inventario/atualizar-item', 'InventarioController@atualizarItem')->name('inventario.atualizar-item');
+    Route::post('/inventario-acerto', 'InventarioController@acerto')->name('inventario.acerto');
+    Route::get('inventarios-duplicar/{id}', 'InventarioController@duplicar')->name('inventarios.duplicar');
+    Route::get('inventarios-renderizar/{id}', 'InventarioController@renderizar')->name('inventarios.renderizar');
+    Route::post('/inventarios-add-produto', 'InventarioController@addProduto')->name('inventarios.add-produto');
+
+    Route::post('/inventarios-delete-item', 'InventarioController@deleteItem')->name('inventarios.delete-item');
 
     Route::resource('estoque', 'EstoqueController');
+    Route::get('estoque-retirada', 'EstoqueController@retirada')->name('estoque.retirada');
+    Route::post('estoque-retirada-store', 'EstoqueController@retiradaStore')->name('estoque-retirada.store');
+    Route::delete('estoque-retirada-destroy/{id}', 'EstoqueController@retiradaDestroy')->name('estoque-retirada.destroy');
     Route::get('estoque-localizacao-define/{id}', 'EstoqueLocalizacaoController@define')->name('estoque-localizacao.define');
     Route::put('estoque-localizacao-store/{id}', 'EstoqueLocalizacaoController@store')->name('estoque-localizacao.store');
     Route::resource('categoria-produtos', 'CategoriaProdutoController');
@@ -558,9 +718,14 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
 
     Route::resource('produtos', 'ProdutoController');
     Route::delete('produtos-destroy-select', 'ProdutoController@destroySelecet')->name('produtos.destroy-select');
+    Route::post('produtos-desactive-select', 'ProdutoController@desactiveSelecet')->name('produtos.desactive-select');
 
     Route::resource('variacoes', 'VariacaoController');
     Route::delete('variacoes-destroy-select', 'VariacaoController@destroySelecet')->name('variacoes.destroy-select');
+
+    Route::resource('promocao-produtos', 'PromocaoProdutoController');
+    Route::get('/promocao-produtos-group', 'PromocaoProdutoController@group')->name('promocao-produtos.group');
+    Route::post('/promocao-produtos-set-group', 'PromocaoProdutoController@setGroup')->name('promocao-produtos.set-group');
 
     Route::get('/movimentacao/{id}', 'ProdutoController@movimentacao')->name('produtos.movimentacao');
     Route::get('/duplicar/{id}', 'ProdutoController@duplicar')->name('produtos.duplicar');
@@ -591,8 +756,8 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     // Route::resource('assinar-contrato', 'AssinarContratoController');
     Route::resource('assinar-contrato', 'AssinarContratoController')->withoutMiddleware('validaContrato');
 
-    Route::get('/imprimir/{id}', 'ApontamentoController@imprimir')->name('apontamento.imprimir');
-
+    Route::get('/imprimir-apontamento/{id}', 'ApontamentoController@imprimir')->name('apontamento.imprimir');
+    
     Route::resource('produto-consulta-codigo', 'ProdutoConsultaCodigoController');
 
     Route::get('produtos-import', 'ProdutoController@import')->name('produtos.import');
@@ -646,13 +811,23 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('conta-pagar-download-file/{id}', 'ContaPagarController@downloadFile')->name('conta-pagar.download-file');
     Route::get('conta-pagar-estornar/{id}', 'ContaPagarController@estornar')->name('conta-pagar.estornar');
     Route::put('conta-pagar-estornar-update/{id}', 'ContaPagarController@estornarUpdate')->name('conta-pagar.estornar-update');
-
+    Route::get('conta-pagar-export-excel', 'ContaPagarController@exportExcel')->name('conta-pagar.export-excel');
+    Route::put('conta-pagar-pay-select', 'ContaPagarController@paySelect')->name('conta-pagar.pay-select');
+    
     Route::resource('conta-receber', 'ContaReceberController');
+
+    Route::get('/financeiro-dashboard', 'FinanceiroDashboardController@index')->name('financeiro.dashboard');
+
     Route::delete('conta-receber-destroy-select', 'ContaReceberController@destroySelecet')->name('conta-receber.destroy-select');
     Route::get('conta-receber-download-file/{id}', 'ContaReceberController@downloadFile')->name('conta-receber.download-file');
+    Route::get('conta-receber-imprimir-comprovante/{id}', 'ContaReceberController@imprimirComprovante')->name('conta-receber.imprimir-comprovante');
     Route::get('conta-receber-estornar/{id}', 'ContaReceberController@estornar')->name('conta-receber.estornar');
+    Route::get('conta-receber-export-excel', 'ContaReceberController@exportExcel')->name('conta-receber.export-excel');
     Route::put('conta-receber-estornar-update/{id}', 'ContaReceberController@estornarUpdate')->name('conta-receber.estornar-update');
     Route::post('conta-receber-recebe-select', 'ContaReceberController@receberSelecionados')->name('conta-receber.recebe-select');
+    Route::put('conta-receber-receive-select', 'ContaReceberController@receiveSelect')->name('conta-receber.receive-select');
+
+    Route::resource('categoria-conta', 'CategoriaContaController');
 
     Route::resource('produtos-cardapio', 'ProdutoCardapioController');
     Route::resource('produtos-delivery', 'ProdutoDeliveryController');
@@ -672,6 +847,8 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('notificacao-clear-all', 'NotificacaoController@clearAll')->name('notificacao.clear-all');
 
     Route::resource('config-cardapio', 'ConfigCardapioController');
+    Route::get('config-cardapio-download', 'ConfigCardapioController@download')->name('config-cardapio.download');
+
     Route::resource('atendimento-garcom', 'AtendimentoGarcomController');
     Route::resource('config-marketplace', 'MarketPlaceConfigController');
     Route::get('/config-marketplace-loja', 'MarketPlaceConfigController@verLoja')
@@ -691,6 +868,14 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('/motoboys-comissao', 'MotoboyController@comissao')->name('motoboys-comissao.index');
     Route::post('/motoboys-comissao-pay-multiple', 'MotoboyController@payMultiple')->name('motoboys-comissao.pay-multiple');
     Route::resource('pedidos-cardapio', 'PedidoCardapioController');
+    Route::get('pedidos-cardapio-historico', 'PedidoCardapioController@historico')->name('pedidos-cardapio.historico');
+    Route::get('/pedidos-cardapio-liberar/{id}', 'PedidoCardapioController@liberarMesa')->name('pedidos-cardapio.liberar');
+    Route::delete('/pedidos-cardapio-delete', 'PedidoCardapioController@delete')->name('pedidos-cardapio.delete');
+    Route::put('/pedidos-cardapio-update-table/{id}', 'PedidoCardapioController@updateTable')->name('pedidos-cardapio.update-table');
+
+    Route::resource('mesas', 'MesaController');
+    Route::get('/mesas-qr-code/{id}', 'MesaController@qrCode')->name('mesas.qr-code');
+
     Route::resource('pedido-cozinha', 'PedidoCozinhaController');
 
     Route::resource('pedidos-delivery', 'PedidoDeliveryController');
@@ -708,6 +893,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('pedidos-delivery-enviar-mensagem-wpp/{id}', 'PedidoDeliveryController@enviarMensagemWpp')->name('pedidos-delivery.enviar-wpp');
 
     Route::prefix('balanca')->group(function () {
+        Route::get('/', 'ExportarBalancaController@index')->name('balanca.index');
         Route::get('toledo-mgv5', 'ExportarBalancaController@exp_bal_toledo_mgv5')->name('balanca.toledo_mgv5');
         Route::get('toledo-mgv6', 'ExportarBalancaController@exp_bal_toledo_mgv6')->name('balanca.toledo_mgv6');
         Route::get('filizola/{arquivo?}', 'ExportarBalancaController@exportarFilizola')->name('balanca.filizola');
@@ -716,6 +902,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('/pedido-cozinha-update-item/{id}', 'PedidoCozinhaController@updateItem')->name('pedido-cozinha.update-item');
     Route::get('/pedido-cozinha-update-all', 'PedidoCozinhaController@updateAll')->name('pedido-cozinha.update-all');
     Route::get('/pedidos-cardapio-finish/{id}', 'PedidoCardapioController@finish')->name('pedidos-cardapio.finish');
+    Route::get('/pedidos-cardapio-finish-client', 'PedidoCardapioController@finishClient')->name('pedidos-cardapio.finish-client');
     Route::get('/pedidos-cardapio-print/{id}', 'PedidoCardapioController@print')->name('pedidos-cardapio.print');
     Route::get('/pedidos-cardapio-print-html/{id}', 'PedidoCardapioController@printHtml')->name('pedidos-cardapio.print-html');
     Route::post('/pedidos-cardapio-store-item/{id}', 'PedidoCardapioController@storeItem')->name('pedidos-cardapio.store-item');
@@ -726,6 +913,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     ->name('pedidos-cardapio.destroy-item-servico');
 
     Route::resource('adicionais', 'AdicionalController');
+    Route::resource('categoria-adicional', 'CategoriaAdicionalController');
     Route::get('/produtos-cardapio-categorias', 'ProdutoCardapioController@categorias')
     ->name('produtos-cardapio.categorias');
     Route::get('/produtos-delivery-categorias', 'ProdutoDeliveryController@categorias')
@@ -798,11 +986,19 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
 
     Route::group(['prefix' => 'frontbox'], function () {
         Route::get('/imprimir-nao-fiscal/{id}', 'FrontBoxController@imprimirNaoFiscal')->name('frontbox.imprimir-nao-fiscal');
+        Route::get('/imprimir-a4/{id}', 'FrontBoxController@imprimirA4')->name('frontbox.imprimir-a4');
         Route::get('/imprimir-nao-fiscal-html/{id}', 'FrontBoxController@imprimirNaoFiscalHtml')->name('frontbox.imprimir-nao-fiscal-html');
         Route::get('/destroy-suspensa/{id}', 'FrontBoxController@destroySuspensa')->name('frontbox.destroy-suspensa');
+        Route::post('/definir-mesa', 'FrontBoxController@definirMesa')->name('frontbox.definir-mesa');
+        Route::get('/imprimir-carne/{id}', 'FrontBoxController@imprimirCarne')->name('frontbox.imprimir-carne');
+
+        Route::get('/logs', 'FrontBoxController@logs')->name('frontbox.logs');
     });
 
     Route::resource('frontbox', 'FrontBoxController');
+    Route::get('/frontbox-mesas', 'FrontBoxController@mesas')->name('frontbox.mesas');
+    Route::get('/frontbox-teste', 'FrontBoxController@teste')->name('frontbox.teste');
+
     Route::resource('trocas', 'TrocaController');
     Route::get('/trocas/imprimir/{codigo}', 'TrocaController@imprimir')->name('trocas.imprimir');
 
@@ -825,6 +1021,7 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
         Route::delete('/deletar-servico/{id}', 'OrdemServicoController@deletarServico')->name('ordem-servico.deletar-servico');
 
         Route::get('/alterar-estado/{id}', 'OrdemServicoController@alterarEstado')->name('ordem-servico.alterar-estado');
+        Route::get('/duplicar/{id}', 'OrdemServicoController@duplicar')->name('ordem-servico.duplicar');
         Route::post('/update-estado/{id}', 'OrdemServicoController@updateEstado')->name('ordem-servico.update-estado');
         Route::get('/imprimir/{id}', 'OrdemServicoController@imprimir')->name('ordem-servico.imprimir');
         Route::post('/store-funcionario', 'OrdemServicoController@storeFuncionario')->name('ordem-servico.store-funcionario');
@@ -840,8 +1037,11 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
         Route::get('/gerar-nfe/{id}', 'OrdemServicoController@gerarNfe')->name('ordem-servico.gerar-nfe');
         Route::get('/print-otica', 'OrdemServicoController@printOtica')->name('ordem-servico.print-otica');
         Route::put('/update-entrega/{id}', 'OrdemServicoController@updateEntrega')->name('ordem-servico.update-entrega');
+        Route::put('/update-descricao/{id}', 'OrdemServicoController@updateDescricao')->name('ordem-servico.update-descricao');
         Route::get('/ordem-servico-download-arquivo/{id}', 'OrdemServicoController@downloadArquivo')->name('ordem-servico.download-arquivo');
         Route::get('/metas', 'OrdemServicoController@metas')->name('ordem-servico.metas');
+
+        Route::put('/update-diagnostico/{id}', 'OrdemServicoController@updateDiagnostico')->name('ordem-servico.update-diagnostico');
 
     });
 
@@ -853,11 +1053,16 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::get('/ordem-producao-status-item/{id}', 'OrdemProducaoController@alterarStatusItem')->name('ordem-producao-status-item');
     Route::get('/ordem-producao-imprimir-etiquetas/{id}', 'OrdemProducaoController@imprimirEtiquetas')->name('ordem-producao.imprimir-etiquetas');
     Route::get('/ordem-producao-imprimir/{id}', 'OrdemProducaoController@imprimir')->name('ordem-producao.imprimir');
+    Route::post('/ordem-producao-config', 'OrdemProducaoController@config')->name('ordem-producao.config');
 
     Route::delete('ordem-servico-destroy-select', 'OrdemServicoController@destroySelecet')->name('ordem-servico.destroy-select');
 
     Route::resource('agendamentos', 'AgendamentoController');
     Route::resource('config-agendamento', 'ConfiguracaoAgendamentoController');
+    Route::get('/config-agendamento-logs-message', 'ConfiguracaoAgendamentoController@logs')->name('config-agendamento.logs-message');
+
+    Route::post('/config-agendamento-teste-wpp', 'ConfiguracaoAgendamentoController@testeWpp')->name('config.agendamento.teste-wpp');
+
     Route::put('agendamentos-update-status/{id}', 'AgendamentoController@updateStatus')->name('agendamentos.update-status');
     Route::get('/agendamentos-pdv/{id}', 'AgendamentoController@pdv')->name('agendamentos.pdv');
 
@@ -893,6 +1098,8 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
     Route::resource('comissao', 'ComissaoController');
     Route::post('/comissao-pay-multiple', 'ComissaoController@payMultiple')->name('comissao.pay-multiple');
 
+    Route::resource('pdv-mobo', 'PdvMoboController');
+
     Route::group(['prefix' => 'relatorios'], function () {
         Route::get('/', 'RelatorioController@index')->name('relatorios.index');
         Route::get('relatorio-produtos', 'RelatorioController@produtos')->name('relatorios.produtos');
@@ -914,15 +1121,16 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
         Route::get('relatorio-despesa-frete', 'RelatorioController@despesaFrete')->name('relatorios.despesa-frete');
         Route::get('totaliza-produtos', 'RelatorioController@totalizaProdutos')->name('relatorios.totaliza-produtos');
         Route::get('custo-medio', 'RelatorioController@custoMedio')->name('relatorios.inventario-custo-medio');
+        Route::get('inventario', 'RelatorioController@inventario')->name('relatorios.inventario');
         Route::get('curva-abc-clientes', 'RelatorioController@curvaAbcClientes')->name('relatorios.curva-abc-clientes');
         Route::get('entrega-produtos', 'RelatorioController@entregaDeProdutos')->name('relatorios.entrega-produtos');
-    });
-
-    Route::group(['prefix' => 'relatorios-sistema'], function () {
-        Route::get('comerciais', 'RelatoriosSistemaController@comerciais')->name('relatorios-comerciais.index');
-        Route::group(['prefix' => 'comerciais'], function () {
-            Route::get('vendas', 'RelatoriosSistemaController@comerciais_vendas')->name('relatorios-comerciais.vendas');
-        });
+        Route::get('venda-por-vendedor', 'RelatorioController@vendasPorVendedor')->name('relatorios.venda-por-vendedor');
+        Route::get('movimentacao', 'RelatorioController@movimentacao')->name('relatorios.movimentacao');
+        Route::get('ordem-servico', 'RelatorioController@ordemServico')->name('relatorios.ordem-servico');
+        Route::get('tipos-pagamento', 'RelatorioController@tiposDePagamento')->name('relatorios.tipos-pagamento');
+        Route::get('reservas', 'RelatorioController@reservas')->name('relatorios.reservas');
+        Route::get('lucro-produto', 'RelatorioController@lucroProduto')->name('relatorios.lucro-produto');
+        Route::get('registro-inventario', 'RelatorioController@registroInventario')->name('relatorios.registro-inventario');
     });
 
     Route::resource('config-geral', 'ConfigGeralController');
@@ -932,8 +1140,10 @@ Route::middleware(['verificaEmpresa', 'validaPlano', 'validaContrato'])->group(f
 });
 Route::resource('config', 'ConfigController');
 Route::get('config-delete-logo', 'ConfigController@removerLogo')->name('config.delete-logo');
+Route::resource('minhas-faturas', 'MinhaFaturaController');
 
 Route::resource('payment', 'PaymentController');
 Route::get('payment/pix/{transacao_id}', 'PaymentController@pix')->name('payment.pix');
 Route::get('payment-asaas/{plano_id}', 'PaymentController@asaas')->name('payment.asaas');
+Route::get('xml-download/{chave}', 'DownloadXmlController@download');
 });

@@ -1,0 +1,159 @@
+.vaga {
+  width: 100%;
+  height: 100px;
+  margin: 10px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.ribbon {
+  position: absolute;
+  top: 0px;                    /* ajuste vertical */
+  width: 80px;                 /* comprimento da faixa */
+  text-align: center;
+  background: #e63946;
+  color: #fff;
+  font-weight: 600;
+  padding: 2px 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  letter-spacing: 1px;
+  border-radius: 5px;
+  pointer-events: none;
+  text-transform: uppercase;
+  font-size: 8px;
+  height: 16px;
+}
+
+.categorias{
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.categorias button{
+  min-width: 120px;
+  margin-left: 3px;
+}
+
+.scroll-box {
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.scroll-box::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-itens {
+  height: calc(64vh);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.scroll-itens::-webkit-scrollbar {
+  display: none;
+}
+
+.cart-data{
+  line-height: 1;
+}
+
+.cart-data .title{
+  font-size: 12px;
+}
+.cart-data i:hover{
+  cursor: pointer;
+}
+.produto:hover{
+  cursor: pointer;
+}
+.autocomplete-list:hover{
+  cursor: pointer;
+  background: #49526B;
+}
+
+.cart-data i{
+  font-size: 15px;
+}
+.cart-data .price{
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.cart-qty{
+  border: none;
+  width: 70px;
+  text-align: center;
+}
+.increment-decrement{
+  margin-right: 3px;
+}
+.stock-item{
+  font-size: 12px;
+  display: block;
+  background: #49526B;
+  width: 70px;
+  color: #fff;
+  margin-top: 20px;
+  position: absolute;
+}
+.stock-item b{
+  margin-left: 7px;
+}
+
+.card-img-top{
+  height: 120px;
+  width: 100%;
+  border-radius: 8px;
+}
+.body-item{
+  line-height: 0.4;
+  height: 80px;
+}
+.body-item .card-title{
+  font-size: 11px;
+}
+.body-item .card-text{
+  font-size: 14px;
+  color: #49526B;
+}
+
+.results-list{
+  position: absolute;
+  z-index: 999;
+  width: 100%;
+}
+
+.autocomplete-list{
+  width: 100%;
+  background: #CED4DA;
+  padding: 10px;
+  color: #fff;
+}
+
+.body-item .card-title{
+  position: absolute;
+  bottom: 10;
+  left: 6px;
+}
+.body-item .card-text{
+  position: absolute;
+  bottom: 8px;
+  left: 6px;
+}
+.totais{
+  margin-top: 10px;
+}
+.totais strong{
+  font-size: 22px;
+}
+
+.bg-info{
+  background: #00897b !important;
+}
+.bg-info .text-center{
+  color: #fff !important;
+}

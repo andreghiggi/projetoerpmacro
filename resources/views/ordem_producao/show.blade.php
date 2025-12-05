@@ -77,6 +77,11 @@
                     Imprimir Etiquetas
                 </a>
 
+                <button class="btn btn-danger btn-sm d-print-none" data-bs-toggle="modal" data-bs-target="#modal_configuracao">
+                    <i class="ri-settings-line"></i>
+                    Configuração Etiquetas
+                </button>
+
                 <a class="btn btn-warning btn-sm d-print-none" href="{{ route('ordem-producao.edit', [$item->id]) }}">
                     <i class="ri-pencil-fill"></i>
                     Editar
@@ -102,10 +107,17 @@
                                 <tr>
                                     <td style="width: 60%" @if($i->status) class="text-success" @endif>
                                         {{ $i->produto->nome }}
+                                        @if($i->itemProducao)
                                         {{ $i->itemProducao->dimensao }} 
+                                        @endif
                                     </td>
+                                    @if($i->itemProducao)
                                     <td>{{ $i->itemProducao->itemNfe->nfe->numero_sequencial }}</td>
                                     <td>{{ $i->itemProducao->itemNfe->nfe->cliente->razao_social }}</td>
+                                    @else
+                                    <td>{{ $i->numero_pedido }}</td>
+                                    <td>{{ $i->cliente->razao_social }}</td>
+                                    @endif
                                     <td>
                                         @if(!$i->produto->unidadeDecimal())
                                         {{ number_format($i->quantidade, 0) }}
@@ -155,6 +167,66 @@
                             {!!Form::select('estado', 'Estado', App\Models\OrdemProducao::estados())
                             ->attrs(['class' => 'form-select'])
                             ->value($item->estado)
+                            !!}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_configuracao" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form method="post" action="{{ route('ordem-producao.config') }}">
+            @csrf
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Configuração de Etiquetas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            {!!Form::tel('margem_topo', 'Margem topo (px)')
+                            ->attrs(['class' => 'percentual'])
+                            ->value($config ? $config->margem_topo : '')
+                            !!}
+                        </div>
+                        <div class="col-md-3">
+                            {!!Form::tel('margem_lateral', 'Margem lateral (px)')
+                            ->attrs(['class' => 'percentual'])
+                            ->value($config ? $config->margem_lateral : '')
+                            !!}
+                        </div>
+                        <div class="col-md-3">
+                            {!!Form::tel('distancia_entre_etiquetas', 'Distância entre etiquetas (px)')
+                            ->attrs(['class' => 'percentual'])
+                            ->value($config ? $config->distancia_entre_etiquetas : '')
+                            !!}
+                        </div>
+                        <div class="col-md-3">
+                            {!!Form::tel('distancia_entre_linhas', 'Distância entre linhas (px)')
+                            ->attrs(['class' => 'percentual'])
+                            ->value($config ? $config->distancia_entre_linhas : '')
+                            !!}
+                        </div>
+
+                        <div class="col-md-3">
+                            {!!Form::tel('largura_imagem', 'Largura da imagem (px)')
+                            ->attrs(['class' => 'percentual'])
+                            ->value($config ? $config->largura_imagem : '')
+                            !!}
+                        </div>
+
+                        <div class="col-md-3">
+                            {!!Form::tel('altura_imagem', 'Altura da imagem (px)')
+                            ->attrs(['class' => 'percentual'])
+                            ->value($config ? $config->altura_imagem : '')
                             !!}
                         </div>
                     </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Boletos'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -46,11 +46,10 @@
                     {!!Form::close()!!}
                 </div>
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
-
                                     <th>Banco</th>
                                     <th>Cliente</th>
                                     <th>Vencimento</th>
@@ -63,11 +62,10 @@
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-
-                                    <td>{{ $item->contaBoleto->banco }}</td>
-                                    <td>{{ $item->contaReceber->cliente->info }}</td>
-                                    <td>{{ __data_pt($item->vencimento, 0) }}</td>
-                                    <td>
+                                    <td data-label="Banco">{{ $item->contaBoleto->banco }}</td>
+                                    <td data-label="Cliente">{{ $item->contaReceber->cliente->info }}</td>
+                                    <td data-label="Vencimento">{{ __data_pt($item->vencimento, 0) }}</td>
+                                    <td data-label="Status">
                                         @if($item->contaReceber->status)
                                         <span class="btn btn-success position-relative me-lg-5 btn-sm">
                                             <i class="ri-checkbox-line"></i> Recebido
@@ -78,23 +76,21 @@
                                         </span>
                                         @endif
                                     </td>
-                                    <td>{{ __moeda($item->valor) }}</td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
+                                    <td data-label="Valor">{{ __moeda($item->valor) }}</td>
+                                    <td data-label="Data de registro">{{ __data_pt($item->created_at) }}</td>
                                     <td>
-                                        <form action="{{ route('boleto.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                        <form style="width: 120px;" action="{{ route('boleto.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
                                             @csrf
                                             <a target="_blank" title="Imprimir boleto" class="btn btn-dark btn-sm" href="{{ route('boleto.print', [$item->id]) }}">
                                                 <i class="ri-printer-line"></i>
                                             </a>
                                             @if(!$item->contaReceber->status)
-
                                             @can('conta_receber_edit')
                                             <a title="Receber conta" href="{{ route('conta-receber.pay', $item->contaReceber->id) }}" class="btn btn-success btn-sm text-white">
                                                 <i class="ri-money-dollar-box-line"></i>
                                             </a>
                                             @endcan
-                                            
                                             @endif
                                             @can('boleto_delete')
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
@@ -111,8 +107,8 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                         <br>
-                        
                     </div>
                 </div>
                 {!! $data->appends(request()->all())->links() !!}

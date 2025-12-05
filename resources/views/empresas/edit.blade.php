@@ -35,6 +35,16 @@
             @include('empresas._forms', ['edit' => true])
         </div>
         {!!Form::close()!!}
+
+        <form style="width: 330px" action="{{ route('empresas.destroy-produtos', $item->id) }}" method="post" id="form-{{$item->id}}">
+            @csrf
+            @method('delete')
+
+            <button class="btn btn-danger btn-delete">
+                <i class="ri-delete-bin-line"></i>
+                Remover todas os produtos ({{ sizeof($item->produtos) }})
+            </button>
+        </form>
     </div>
 </div>
 @endsection

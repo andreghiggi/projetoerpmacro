@@ -15,7 +15,7 @@ class TamanhoPizza extends Model
 
     public function getInfoAttribute()
     {
-        return "$this->nome $this->quantidade_pedacos fatias - até $this->maximo_sabores sabor(es)";
+        return "$this->nome ($this->quantidade_pedacos) fatias - até $this->maximo_sabores sabor(es)";
     }
 
     public function produtos(){

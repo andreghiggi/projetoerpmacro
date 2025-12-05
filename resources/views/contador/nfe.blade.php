@@ -1,10 +1,19 @@
 @extends('layouts.app', ['title' => 'NFe'])
 @section('content')
+
+<input type="hidden" id="nao_imprimir" value="1">
 <div class="mt-3">
     <div class="row">
         <div class="card">
             <div class="card-body">
                 <h4>NFe</h4>
+
+                <div class="col-md-2">
+                    <a href="{{ route('contador-empresa-nfe.create') }}" class="btn btn-success">
+                        <i class="ri-add-circle-fill"></i>
+                        Nova Venda
+                    </a>
+                </div>
                 <hr class="mt-3">
                 <div class="col-lg-12">
                     {!!Form::open()->fill(request()->all())
@@ -23,11 +32,9 @@
 
                         <div class="col-md-2">
                             {!!Form::select('tpNF', 'Tipo',
-                            [
-                            '' => 'Todos',
+                            ['' => 'Todos',
                             '1' => 'Saída',
-                            '0' => 'Entrada',
-                            ])
+                            '0' => 'Entrada'])
                             ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
@@ -59,6 +66,7 @@
                                 <tr>
                                     <th>Cliente/Fornecedor</th>
                                     <th>CPF/CNPJ</th>
+                                    <th>#</th>
                                     <th>Número</th>
                                     <th>Valor</th>
                                     <th>Estado</th>
@@ -79,6 +87,8 @@
                                     <td>{{ $item->fornecedor ? $item->fornecedor->razao_social : "--" }}</td>
                                     <td>{{ $item->fornecedor ? $item->fornecedor->cpf_cnpj : "--" }}</td>
                                     @endif
+                                    <td>{{ $item->numero_sequencial }}</td>
+
                                     <td>{{ $item->numero ? $item->numero : '' }}</td>
                                     <td>{{ __moeda($item->total) }}</td>
                                     <td width="150">
@@ -109,21 +119,62 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a class="btn btn-primary btn-sm" title="Download XML" href="{{ route('contador-empresa-nfe.download', [$item->id]) }}">
-                                            <i class="ri-file-download-fill"></i>
-                                        </a>
+                                        <form action="{{ route('contador-empresa-nfe.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 220px">
+                                            @method('delete')
+                                            @csrf
+                                            @if($item->estado == 'aprovado')
+                                            <a class="btn btn-primary btn-sm" title="Download XML" href="{{ route('contador-empresa-nfe.download', [$item->id]) }}">
+                                                <i class="ri-file-download-fill"></i>
+                                            </a>
+                                            <a target="_blank" class="btn btn-dark btn-sm" title="Danfe" href="{{ route('contador-empresa-nfe.danfe', [$item->id]) }}">
+                                                <i class="ri-printer-fill"></i>
+                                            </a>
 
-                                        @if($item->estado == 'aprovado')
-                                        <a target="_blank" class="btn btn-dark btn-sm" title="Danfe" href="{{ route('contador-empresa-nfe.danfe', [$item->id]) }}">
-                                            <i class="ri-printer-fill"></i>
-                                        </a>
-                                        @endif
+                                            <button title="Cancelar NFe" type="button" class="btn btn-danger btn-sm" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
+                                                <i class="ri-close-circle-line"></i>
+                                            </button>
+                                            <button title="Corrigir NFe" type="button" class="btn btn-warning btn-sm" onclick="corrigir('{{$item->id}}', '{{$item->numero}}')">
+                                                <i class="ri-file-warning-line"></i>
+                                            </button>
+
+                                            @else
+
+                                            @if($item->estado != 'cancelado')
+
+                                            <a class="btn btn-warning btn-sm" href="{{ route('contador-empresa-nfe.edit', $item->id) }}">
+                                                <i class="ri-edit-line"></i>
+                                            </a>
+
+                                            <button title="Transmitir NFe" type="button" class="btn btn-success btn-sm" onclick="transmitir('{{$item->id}}')">
+                                                <i class="ri-send-plane-fill"></i>
+                                            </button>
+
+                                            <a target="_blank" title="XML temporário" class="btn btn-light btn-sm" href="{{ route('contador-empresa-nfe.xml-temp', $item->id) }}">
+                                                <i class="ri-file-line"></i>
+                                            </a>
+
+                                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="ri-delete-bin-line"></i></button>
+                                            @endif
+                                            @endif
+
+                                            @if($item->estado == 'cancelado')
+                                            <a class="btn btn-danger btn-sm" target="_blank" href="{{ route('contador-empresa-nfe.imprimir-cancela', [$item->id]) }}">
+                                                <i class="ri-printer-line"></i>
+                                            </a>
+                                            @endif
+
+                                            @if($item->sequencia_cce > 0)
+                                            <a class="btn btn-warning btn-sm" target="_blank" href="{{ route('contador-empresa-nfe.imprimir-correcao', [$item->id]) }}">
+                                                <i class="ri-printer-fill"></i>
+                                            </a>
+                                            @endif
+                                        </form>
 
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">Nada encontrado</td>
+                                    <td colspan="11" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -147,6 +198,60 @@
                     </div>
                     @endif
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-corrigir" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Corrigir NFe <strong class="ref-numero"></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+
+                    <div class="col-md-12">
+                        {!!Form::text('motivo-corrigir', 'Motivo')
+                        ->required()
+
+                        !!}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" id="btn-corrigir" class="btn btn-warning">Corrigir</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-cancelar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cancelar NFe <strong class="ref-numero"></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+
+                    <div class="col-md-12">
+                        {!!Form::text('motivo-cancela', 'Motivo')
+                        ->required()
+
+                        !!}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" id="btn-cancelar" class="btn btn-danger">Cancelar</button>
             </div>
         </div>
     </div>

@@ -51,17 +51,42 @@ class MdfeController extends Controller
         try {
             $start_date = $request->get('start_date');
             $end_date = $request->get('end_date');
-            $data = Nfe::orderBy('created_at', 'desc')
-            ->where('empresa_id', $request->empresa_id)
-            ->where('tpNF', 1)
-            ->when(!empty($start_date), function ($query) use ($start_date) {
-                return $query->whereDate('created_at', '>=', $start_date);
-            })
-            ->when(!empty($end_date), function ($query) use ($end_date) {
-                return $query->whereDate('created_at', '<=', $end_date);
-            })
-            ->get();
-            return view('mdfe/lista_vendas', compact('data'));
+            $tipo = $request->get('tipo');
+            $data = [];
+            if($tipo == 1){
+                $data = Nfe::orderBy('created_at', 'desc')
+                ->where('empresa_id', $request->empresa_id)
+                ->where('tpNF', 1)
+                ->where('estado', 'aprovado')
+                ->when(!empty($start_date), function ($query) use ($start_date) {
+                    return $query->whereDate('created_at', '>=', $start_date);
+                })
+                ->when(!empty($end_date), function ($query) use ($end_date) {
+                    return $query->whereDate('created_at', '<=', $end_date);
+                })
+                ->get();
+                return view('mdfe.lista_vendas', compact('data'));
+            }
+
+            if($tipo == 0){
+                $data = Nfe::orderBy('created_at', 'desc')
+                ->where('empresa_id', $request->empresa_id)
+                ->where('tpNF', 0)
+                ->when(!empty($start_date), function ($query) use ($start_date) {
+                    return $query->whereDate('created_at', '>=', $start_date);
+                })
+                ->where(function($q){
+                    $q->where('estado', 'aprovado')
+                    ->orWhere('chave_importada', '!=', '');
+                })
+
+                ->when(!empty($end_date), function ($query) use ($end_date) {
+                    return $query->whereDate('created_at', '<=', $end_date);
+                })
+                ->get();
+                return view('mdfe.lista_compras', compact('data'));
+
+            }
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 401);
         }

@@ -24,8 +24,15 @@
     </div>
 
     <div class="col-md-2">
-        {!!Form::text('percentual_alteracao', '% de alteração')
-        ->required()->attrs(['class' => 'percentual'])
+        {!!Form::text('percentual_alteracao', 'Percentual de alteração')
+        ->attrs(['class' => 'percentual'])
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::text('valor_alteracao', 'Valor de alteração')
+        ->attrs(['class' => 'moeda'])
+        ->value(isset($item) ? __moeda($item->valor_alteracao) : '')
         !!}
     </div>
 
@@ -40,7 +47,7 @@
         !!}
     </div>
 
-    <div class="col-lg-6 col-12">
+    <div class="col-lg-5 col-12">
         <label class="required">Usuários</label>
         <select required class="select2 form-control select2-multiple" name="usuarios[]" data-toggle="select2" multiple="multiple" id="usuarios">
             @foreach ($usuarios as $u)

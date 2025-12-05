@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Produtos para Reserva'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -29,7 +29,7 @@
                         <div class="col-md-3 text-left">
                             <br>
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('produtos-delivery.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
+                            <a id="clear-filter" class="btn btn-danger" href="{{ route('produtos-reserva.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
                         </div>
                     </div>
                     {!!Form::close()!!}
@@ -75,14 +75,14 @@
                                         @if($item->categoria && $item->categoria->tipo_pizza)
                                         {!! $item->valoresPizza() !!}
                                         @else
-                                        {{ __moeda($item->valor_delivery) }}
+                                        {{ __moeda($item->valor_unitario) }}
                                         @endif
                                     </td>
                                     <td>{{ $item->tempo_preparo ? $item->tempo_preparo : '--' }}</td>
                                     <td>
                                         <form action="{{ route('produtos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                             @method('delete')
-                                            <a class="btn btn-warning btn-sm" href="{{ route('produtos.edit', [$item->id, 'delivery=1']) }}" title="Editar">
+                                            <a class="btn btn-warning btn-sm" href="{{ route('produtos.edit', [$item->id, 'reserva=1']) }}" title="Editar">
                                                 <i class="ri-edit-line"></i>
                                             </a>
 

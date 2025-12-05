@@ -114,7 +114,7 @@
     @if(!isset($item))
 
     <hr class="mt-4">
-    <h5>Dados do Usuário</h5>
+    <h5>Dados de Acesso</h5>
     <div class="col-md-2">
         {!!Form::text('usuario', 'Nome')
         ->attrs(['class' => ''])
@@ -146,12 +146,11 @@
         </div>
     </div>
     @endif
-
     <hr class="mt-4">
-    <h5>Dados do Contador</h5>
     <div class="col-md-2">
         {!!Form::text('percentual_comissao', '% Comissão')
         ->attrs(['class' => 'comissao'])
+        ->value(isset($item) ? __moeda($item->percentual_comissao) : '')
         ->required()
         !!}
     </div>
@@ -159,6 +158,13 @@
     <div class="col-md-2">
         {!!Form::text('limite_cadastro_empresas', 'Limite cadastro de empresas')
         ->attrs(['data-mask' => '0000'])
+        ->required()
+        !!}
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::select('cadastrar_planos', 'Cadastrar planos', [1 => 'Sim', 0 => 'Não'])
+        ->attrs(['class' => 'form-select'])
         ->required()
         !!}
     </div>

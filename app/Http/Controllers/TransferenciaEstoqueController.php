@@ -57,7 +57,7 @@ class TransferenciaEstoqueController extends Controller
             ->join('produtos', 'produtos.id', '=', 'item_transferencia_estoques.produto_id')
             ->where('produtos.nome', 'like', "%$produto%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('transferencia_estoque.index', compact('data'));
     }

@@ -77,7 +77,7 @@
     @endif
 
     <div class="col-md-4">
-        {!!Form::select('categoria_id', 'Categoria')
+        {!!Form::select('categoria_id', 'Categoria Principal')
         ->attrs(['class' => 'form-select'])
         ->options(isset($item) && $item->categoria ? [$item->categoria->id => $item->categoria->nome] : [])
         !!}

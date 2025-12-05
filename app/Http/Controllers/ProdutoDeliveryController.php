@@ -20,7 +20,9 @@ class ProdutoDeliveryController extends Controller
         })
         ->orderBy('nome', 'asc')
         ->where('status', 1)
-        ->paginate(env("PAGINACAO"));
+        ->where('categoria_id', null)
+        ->paginate(__itensPagina());
+        
         return view('delivery.categorias.index', compact('data'));
     }
 
@@ -36,7 +38,7 @@ class ProdutoDeliveryController extends Controller
             return $q->where('status', $status);
         })
         ->where('delivery', 1)
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('delivery.produtos.index', compact('data'));
 

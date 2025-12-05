@@ -69,20 +69,28 @@
 
                 @if(sizeof($data) > 0)
                 <br>
-                <div class="row mt-2">
-                    <div class="col-md-2">
-                        {!!Form::tel('percentual_valor_venda', '% reajustar valor de venda')
-                        ->attrs(['class' => ''])
-                        !!}
-                    </div>
-                </div>
-                @endif
-
                 <form method="post" action="{{ route('produtos-reajuste.update') }}">
                     @csrf
+
+                    <div class="row mt-2">
+                        <div class="col-md-2">
+                            {!!Form::tel('percentual_valor_venda', '% reajustar valor de venda')
+                            ->attrs(['class' => ''])
+                            !!}
+                        </div>
+
+
+                        <div class="col-md-2">
+                            {!!Form::select('padrao_id', 'Padrão de tributação', ['' => 'Selecione'] + $padroes->pluck('descricao', 'id')->all())
+                            ->attrs(['class' => 'form-select'])
+                            !!}
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="col-md-12 mt-3 table-responsive">
                         <h6>Total de registros: <strong>{{ sizeof($data) }}</strong></h6>
-                        <div class="table-responsive-sm">
+                        <div class="table-responsive">
                             <table class="table table-striped table-centered mb-0">
                                 <thead class="table-dark">
                                     <tr>
@@ -105,7 +113,23 @@
                                         <th>CFOP Saída estadual</th> 
                                         <th>CFOP Saída outro estado</th>
                                         <th>CFOP Entrada estadual</th> 
-                                        <th>CFOP Entrada outro estado</th>  
+                                        <th>CFOP Entrada outro estado</th>
+
+                                        <th>CST IBS/CBS</th>
+                                        <th>Classificação Tributária</th>
+                                        <th>% IBS UF</th>
+                                        <th>% IBS Municipal</th>
+                                        <th>% CBS</th>
+                                        <th>% Diferido</th>
+
+                                        <th>Código benefício</th>
+                                        <th>Modalidade BC-ST</th>
+                                        <th>% ICMS ST</th>
+                                        <th>% MVA ST</th>
+                                        <th>% Red BC ST</th>
+                                        <th>% Efetivo do ICMS</th>
+                                        <th>% Redução Efetivo do ICMS</th>
+
                                         <th>Ativo</th>  
                                     </tr>
                                 </thead>
@@ -263,7 +287,103 @@
                                         </td>
 
                                         <td>
-                                            <select required class="form-select status" name="status[]">
+                                            <select class="select2 cst_ibscbs" name="cst_ibscbs[]">
+                                                @foreach(App\Models\Produto::listaCSTCbsIbs() as $key => $v)
+                                                <option @if($key == $item->cst_ibscbs) selected @endif value="{{ $key }}">{{ $v }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if($loop->first)
+                                            <a onclick="setCstIbsCbs()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                            <div style="width: 400px;"></div>
+                                        </td>
+
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control cclass_trib" name="cclass_trib[]" value="{{ $item->cclass_trib }}">
+                                            @if($loop->first)
+                                            <a onclick="setclassTrib()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual perc_ibs_uf" name="perc_ibs_uf[]" value="{{ $item->perc_ibs_uf }}">
+                                            @if($loop->first)
+                                            <a onclick="setPercIbsUf()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual perc_ibs_mun" name="perc_ibs_mun[]" value="{{ $item->perc_ibs_mun }}">
+                                            @if($loop->first)
+                                            <a onclick="setPercIbsMun()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual perc_cbs" name="perc_cbs[]" value="{{ $item->perc_cbs }}">
+                                            @if($loop->first)
+                                            <a onclick="setPercCbs()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual perc_dif" name="perc_dif[]" value="{{ $item->perc_dif }}">
+                                            @if($loop->first)
+                                            <a onclick="setPercDif()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control codigo_beneficio_fiscal" name="codigo_beneficio_fiscal[]" value="{{ $item->codigo_beneficio_fiscal }}">
+                                            @if($loop->first)
+                                            <a onclick="setCodigoBenf()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <select class="select2 modBCST" name="modBCST[]">
+                                                @foreach(App\Models\Produto::modalidadesBCST() as $key => $v)
+                                                <option @if($key == $item->modBCST) selected @endif value="{{ $key }}">{{ $v }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if($loop->first)
+                                            <a onclick="setModBCST()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+
+                                            <div style="width: 250px;"></div>
+
+                                        </td>
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual pICMSST" name="pICMSST[]" value="{{ $item->pICMSST }}">
+                                            @if($loop->first)
+                                            <a onclick="setPICMSST()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual pMVAST" name="pMVAST[]" value="{{ $item->pMVAST }}">
+                                            @if($loop->first)
+                                            <a onclick="setPMVAST()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual redBCST" name="redBCST[]" value="{{ $item->redBCST }}">
+                                            @if($loop->first)
+                                            <a onclick="setRedBCST()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual pICMSEfet" name="pICMSEfet[]" value="{{ $item->pICMSEfet }}">
+                                            @if($loop->first)
+                                            <a onclick="setPICMSEfet()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <input style="width: 150px" type="tel" class="form-control percentual pRedBCEfet" name="pRedBCEfet[]" value="{{ $item->pRedBCEfet }}">
+                                            @if($loop->first)
+                                            <a onclick="setPRedBCEfet()" style="font-size: 12px" href=#!>Definir para os demais itens</a>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <select class="form-select status" name="status[]">
                                                 <option @if($item->status == 1) selected @endif value="1">Sim</option>
                                                 <option @if($item->status == 0) selected @endif value="0">Não</option>
                                             </select>
@@ -288,11 +408,12 @@
                     <div class="col-md-12">
                         <button type="submit" class="btn btn-success float-end mt-3">Salvar</button>
                     </div>
+
+                    <br>
                 </form>
 
-                <br>
-
             </div>
+
         </div>
     </div>
 </div>
@@ -301,6 +422,48 @@
 
 @section('js')
 <script type="text/javascript">
+    $('body').on('change', '#inp-padrao_id', function () {
+        let padrao = $(this).val()
+        if (padrao) {
+            $.get(path_url + "api/produtos/padrao", {
+                padrao: padrao
+            })
+            .done((result) => {
+                console.log(result)
+
+                // var newOption = new Option(result._ncm.descricao, result._ncm.codigo, 1, false);
+                // $('.ncm').append(newOption);
+                if(result._ncm){
+                    $('.ncm').val(result._ncm.codigo)
+                }
+                $('.cest').val(result.cest)
+                $('.perc_icms').val(result.perc_icms)
+                $('.perc_pis').val(result.perc_pis)
+                $('.perc_cofins').val(result.perc_cofins)
+                $('.perc_ipi').val(result.perc_ipi)
+                $('.cst_csosn').val(result.cst_csosn).change()
+                $('.cst_pis').val(result.cst_pis).change()
+                $('.cst_cofins').val(result.cst_cofins).change()
+                $('.cst_ipi').val(result.cst_ipi).change()
+                $('.cEnq').val(result.cEnq).change()
+                $('.cfop_saida_estadual').val(result.cfop_estadual)
+                $('.cfop_saida_outro_estado').val(result.cfop_outro_estado)
+
+                $('.cfop_entrada_estadual').val(result.cfop_entrada_estadual)
+                $('.cfop_entrada_outro_estado').val(result.cfop_entrada_outro_estado)
+                $('.codigo_beneficio_fiscal').val(result.codigo_beneficio_fiscal)
+
+                $('.codigo_beneficio_fiscal').val(result.codigo_beneficio_fiscal)
+                $('.modBCST').val(result.modBCST).change()
+                $('.pICMSST').val(result.pICMSST)
+                $('.pMVAST').val(result.pMVAST)
+            })
+            .fail((err) => {
+                console.log(err)
+            })
+        }
+    });
+
     $('body').on('blur', '#inp-percentual_valor_venda', function () {
 
         let percentual = $(this).val()
@@ -316,7 +479,6 @@
     })
 
     $("#inp-percentual_valor_venda").mask("Z999.00", {
-
         translation: {
             '0': {pattern: /\d/},
             '9': {pattern: /\d/, optional: true},
@@ -366,9 +528,40 @@
         let v = $('.cfop_entrada_estadual').first().val()
         $('.cfop_entrada_estadual').val(v)
     }
+
     function setCfopEntradaOutroEstado(){
         let v = $('.cfop_entrada_outro_estado').first().val()
         $('.cfop_entrada_outro_estado').val(v)
+    }
+
+    function setCstIbsCbs(){
+        let v = $('.cst_ibscbs').first().val()
+        $('.cst_ibscbs').val(v)
+    }
+    function setclassTrib(){
+        let v = $('.cclass_trib').first().val()
+        $('.cclass_trib').val(v)
+    }
+    function setPercIbsUf(){
+        let v = $('.perc_ibs_uf').first().val()
+        $('.perc_ibs_uf').val(v)
+    }
+    function setPercIbsMun(){
+        let v = $('.perc_ibs_mun').first().val()
+        $('.perc_ibs_mun').val(v)
+    }
+    function setPercCbs(){
+        let v = $('.perc_cbs').first().val()
+        $('.perc_cbs').val(v)
+    }
+    function setPercDif(){
+        let v = $('.perc_dif').first().val()
+        $('.perc_dif').val(v)
+    }
+
+    function setCstCsosn(){
+        let v = $('.cst_csosn').first().val()
+        $('.cst_csosn').val(v).change()
     }
 
     function setCstCsosn(){
@@ -398,7 +591,36 @@
     function setLocal(){
         let v = $('.local').first().val()
         $('.local').val(v).change()
-        
+    }
+
+    function setCodigoBenf(){
+        let v = $('.codigo_beneficio_fiscal').first().val()
+        $('.codigo_beneficio_fiscal').val(v)
+    }
+    function setModBCST(){
+        let v = $('.modBCST').first().val()
+        $('.modBCST').val(v).change()
+    }
+    function setPICMSST(){
+        let v = $('.pICMSST').first().val()
+        $('.pICMSST').val(v)
+    }
+    function setPMVAST(){
+        let v = $('.pMVAST').first().val()
+        $('.pMVAST').val(v)
+    }
+
+    function setRedBCST(){
+        let v = $('.redBCST').first().val()
+        $('.redBCST').val(v)
+    }
+    function setPICMSEfet(){
+        let v = $('.pICMSEfet').first().val()
+        $('.pICMSEfet').val(v)
+    }
+    function setPRedBCEfet(){
+        let v = $('.pRedBCEfet').first().val()
+        $('.pRedBCEfet').val(v)
     }
 </script>
 @endsection

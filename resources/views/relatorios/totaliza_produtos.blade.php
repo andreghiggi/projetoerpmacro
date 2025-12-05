@@ -34,9 +34,9 @@
 			<td>{{ $item->estoqueTotal($local_id) }}</td>
 
 			@php
-			$somaEstoque += $item->estoqueTotal($local_id);
-			$somaVenda += $item->estoqueTotal($local_id) * $item->valor_unitario;
-			$somaCompra += $item->estoqueTotal($local_id) * $item->valor_compra;
+			$somaEstoque += (float)$item->estoqueTotal($local_id);
+			$somaVenda += (float)$item->estoqueTotal($local_id) * $item->valor_unitario;
+			$somaCompra += (float)$item->estoqueTotal($local_id) * $item->valor_compra;
 			@endphp
 		</tr>
 		@endforeach

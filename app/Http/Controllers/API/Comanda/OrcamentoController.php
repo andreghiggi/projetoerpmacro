@@ -55,8 +55,9 @@ class OrcamentoController extends Controller
         $data = Produto::where('empresa_id', $request->empresa_id)
         ->where('status', 1)
         ->orderBy('nome')
-        ->with(['categoria', 'variacoes'])
-        ->select('id', 'nome', 'valor_unitario', 'categoria_id', 'codigo_barras', 'unidade', 'referencia', 'valor_prazo')
+        ->with(['categoria', 'variacoes', 'estoque'])
+        ->select('id', 'nome', 'valor_unitario', 'categoria_id', 'codigo_barras', 'unidade', 'referencia',
+           'valor_prazo', 'gerenciar_estoque', 'imagem')
         ->get();
 
         return response()->json($data, 200);
@@ -102,7 +103,7 @@ class OrcamentoController extends Controller
     public function store(Request $request){
         try{
             $empresa = Empresa::findOrFail($request->empresa_id);
-            $cliente = Cliente::findOrFail($request->cliente_id);
+            $cliente = Cliente::find($request->cliente_id);
             $funcionario = Funcionario::where('codigo', $request->codigo_funcionario)
             ->where('empresa_id', $empresa->id)
             ->first();
@@ -129,7 +130,7 @@ class OrcamentoController extends Controller
             $numero++;
 
             $data = [
-                'cliente_id' => $request->cliente_id,
+                'cliente_id' => $cliente->id,
                 'total' => __convert_value_bd($request->total),
                 'desconto' => __convert_value_bd($request->desconto),
                 'acrescimo' => __convert_value_bd($request->acrescimo),

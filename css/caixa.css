@@ -1,0 +1,382 @@
+.info-card {
+
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.info-icon i {
+    font-size: 26px;
+    color: #4254BA; /* azul do seu tema */
+    margin-bottom: 5px;
+}
+
+.info-title {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.total-header {
+    background: #4f5cf8;
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 15px;
+    font-size: 15px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.tp-card {
+    border: 1px solid #e4e5e7;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    text-align: center;
+    overflow: hidden;
+}
+
+.tp-title {
+    background: #2db59d;
+    color: #fff;
+    padding: 10px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.tp-value {
+    color: #2db59d;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 12px 10px;
+}
+
+/* Card: só borda normal, sem mexer na tabela */
+.mov-card {
+    border-radius: 8px;
+}
+
+/* Título em roxo, colado no topo do card */
+.mov-header {
+    background: #4f5cf8;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.mov-compra-header {
+    background: #FFB454;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Aproxima a tabela do header e tira o espaço exagerado */
+.mov-body {
+    padding: 6px 10px 10px; /* ajusta o “respiro” da tabela dentro do card */
+}
+
+/* Tabela em si */
+.mov-table {
+    width: 100%;
+    padding: 10px;
+    border-collapse: separate;
+    border-spacing: 0;          /* tira “frestas” entre as células */
+    margin-bottom: 0;
+
+    border-radius: 8px;         /* arredondamento SÓ na tabela */
+}
+
+
+.mov-table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 9px 8px;
+    border-bottom: none;
+}
+
+/* Cantos arredondados do header da tabela */
+.mov-table thead th:first-child {
+    border-top-left-radius: 8px;
+}
+.mov-table thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* Corpo da tabela */
+
+
+/* Cantos arredondados na ÚLTIMA linha da tabela */
+.mov-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+.mov-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+/* Badge formas de pagamento */
+.pg-badge {
+    background: #23b198;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+/* Card geral */
+.rec-card {
+    border-radius: 8px;
+}
+
+/* Header verde */
+.rec-header {
+    background: #23b198;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Aproxima a tabela do header */
+.rec-body {
+    padding: 6px 10px 10px;
+}
+
+/* Tabela */
+.rec-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;        /* arredondamento só na tabela */
+    overflow: hidden;
+    background: #fff;
+}
+
+.rec-table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    padding: 8px 8px;
+    border-bottom: none;
+}
+
+/* cantos arredondados só no header da tabela */
+.rec-table thead th:first-child {
+    border-top-left-radius: 8px;
+}
+.rec-table thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* Corpo da tabela */
+
+/* cantos arredondados na última linha */
+.rec-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+.rec-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+/* Card */
+.devol-card {
+    border-radius: 8px;
+}
+
+/* Header vermelho */
+.devol-header {
+    background: #e04d3f;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Aproxima o conteúdo da tabela do topo */
+.devol-body {
+    padding: 6px 10px 10px;
+}
+
+/* Tabela */
+.devol-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+/* Header da tabela vermelho claro */
+.devol-table thead {
+    background: #f7d4cf;
+}
+
+.devol-table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    padding: 8px 8px;
+    border-bottom: none;
+}
+
+/* cantos arredondados do header */
+.devol-table thead th:first-child {
+    border-top-left-radius: 8px;
+}
+.devol-table thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* Corpo */
+
+
+/* cantos arredondados na última linha */
+.devol-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+.devol-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+.demo-card {
+    border-radius: 8px;
+}
+
+.icon-modal{
+    font-size: 18px;
+    color: #2C75D8;
+}
+.icon-modal:hover{
+    cursor: pointer;
+}
+
+.fechamento-modal {
+    border-radius: 10px;
+    padding-bottom: 15px;
+}
+
+.fechamento-header {
+
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+
+
+.fechamento-modal label {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.fechar-btn {
+    background: linear-gradient(90deg, #4c55d2, #6a78f3);
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.fechar-btn:hover {
+    opacity: .9;
+}
+
+
+/* Cabeçalho geral */
+.demo-header {
+    background: #4c55d2;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* Caixas internas */
+.demo-box {
+    border-radius: 8px;
+    padding: 0;
+    border: 1px solid #f1f1f1;
+    overflow: hidden;
+}
+
+[data-bs-theme="dark"] .demo-box {
+    border: 1px solid #2b2b2b;
+    background: #1e1e1e;
+    color: #fff;
+}
+
+/* Títulos coloridos */
+.demo-title {
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+}
+
+.demo-title.entrada { background: #1a9c76; }
+.demo-title.saida   { background: #d9534f; }
+.demo-title.saldo   { background: #2c75d8; }
+
+/* Linhas */
+.demo-row {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f3f3f3;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #444;
+}
+
+.demo-row:last-child {
+    border-bottom: none;
+}
+
+[data-bs-theme="dark"] .demo-row {
+    color: #fff;
+}
+
+/* Total */
+.demo-total {
+    padding: 10px 12px;
+    background: #f2f2f2;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+
+[data-bs-theme="dark"] .demo-total {
+    border: 1px solid #2b2b2b;
+    background: #555;
+    color: #fff;
+}
+
+/* Valores */
+.demo-value {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Cores */
+.demo-value.green  { background: #e6f6ef; color: #1a8f6a; }
+.demo-value.red    { background: #fbeaea; color: #d13a35; }
+.demo-value.purple { background: #eae6ff; color: #4c55d2; }
+.demo-value.yellow { background: #fff4d4; color: #c27c00; }
+

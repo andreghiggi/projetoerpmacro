@@ -27,9 +27,20 @@
     </div>
 </div>
 
+@if($item->tpNF == 0)
+@include('compras.partials._importacao_di')
+@endif
+
 @include('modals._dimensao_item_nfe')
+@include('modals._descricao_item')
 
 @section('js')
+
+@if($item->tpNF == 0)
+<script src="/js/compra_importacao.js"></script>
+@endif
+
 <script src="/js/nfe.js"></script>
+
 @endsection
 @endsection

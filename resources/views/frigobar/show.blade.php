@@ -37,7 +37,7 @@
                                 <td style="width: 700px">
 
                                     <select required class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
-                                        <option value="{{ $p->produto_id }}">{{ $p->produto->nome }} | R$: {{ __moeda($p->produto->valor_unitario) }}</option>
+                                        <option value="{{ $p->produto_id }}">{{ $p->produto->nome }} | R$ {{ __moeda($p->produto->valor_unitario) }}</option>
                                     </select>
                                 </td>
                                 <td style="width: 180px">

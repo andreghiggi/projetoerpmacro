@@ -42,15 +42,15 @@ class PadraoFiscalController extends Controller
         }
         try{
             if($request->padrao == 1){
-            NaturezaOperacao::where('empresa_id', $request->empresa_id)
-            ->update(['padrao' => 0]);
-        }
+                PadraoTributacaoProduto::where('empresa_id', $request->empresa_id)
+                ->update(['padrao' => 0]);
+            }
             // $request->merge([
             //     'descricao' => $request->descricao,
             //     'padrao' => $request->padrao ?? 0,
             //     'empresa_id' => $request->empresa_id,
             // ]);
-            $item = NaturezaOperacao::create($request->all());
+            $item = PadraoTributacaoProduto::create($request->all());
             __createApiLog($request->empresa_id, $request->token, 'sucesso', '', 'create', $this->prefix);
             return response()->json($item, 200);
 
@@ -66,13 +66,13 @@ class PadraoFiscalController extends Controller
         }
         try{
             if($request->padrao == 1){
-                NaturezaOperacao::where('empresa_id', $request->empresa_id)
+                PadraoTributacaoProduto::where('empresa_id', $request->empresa_id)
                 ->update(['padrao' => 0]);
             }
 
-            $item = NaturezaOperacao::where('empresa_id', $request->empresa_id)->findOrFail($request->id);
+            $item = PadraoTributacaoProduto::where('empresa_id', $request->empresa_id)->findOrFail($request->id);
             if($item == null){
-                return response()->json("Natureza de operação não encontrada!", 403);
+                return response()->json("Padrão fiscal não encontrado!", 403);
             }
             $item->fill($request->all())->save();
 
@@ -91,9 +91,9 @@ class PadraoFiscalController extends Controller
         }
         try{
 
-            $item = NaturezaOperacao::where('empresa_id', $request->empresa_id)->find($request->id);
+            $item = PadraoTributacaoProduto::where('empresa_id', $request->empresa_id)->find($request->id);
             if($item == null){
-                return response()->json("Natureza de operação não encontrada!", 403);
+                return response()->json("Padrão fiscal não encontrado!", 403);
             }
             $item->delete();
             __createApiLog($request->empresa_id, $request->token, 'sucesso', '', 'delete', $this->prefix);

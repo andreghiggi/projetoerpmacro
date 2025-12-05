@@ -28,6 +28,10 @@ class Inventario extends Model
         return $this->hasMany(ItemInventario::class, 'inventario_id');
     }
 
+    public function itensImpresso(){
+        return $this->hasMany(ItemInventarioImpressao::class, 'inventario_id');
+    }
+
     public function usuario(){
         return $this->belongsTo(User::class, 'usuario_id');
     }

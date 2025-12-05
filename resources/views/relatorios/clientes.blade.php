@@ -11,6 +11,7 @@
 			<th>Endereço</th>
 			<th>Cidade</th>
 			<th>Data de cadastro</th>
+			<th>Data de nascimento</th>
 			@if($tipo != '')
 			<th>Total vendido</th>
 			@endif
@@ -26,6 +27,7 @@
 			<td>{{ $item->endereco }}</td>
 			<td>{{ $item->cidade ? $item->cidade->info : '' }}</td>
 			<td>{{ __data_pt($item->created_at) }}</td>
+			<td>{{ $item->data_nascimento ? __data_pt($item->data_nascimento, 0) : '--' }}</td>
 			@if($tipo != '')
 			<td>{{ __moeda($item->total) }}</td>
 			@endif

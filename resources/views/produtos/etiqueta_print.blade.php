@@ -14,12 +14,12 @@
 			@endif
 
 			@if($data['nome_produto'])
-			<span style="display: block !important; font-size: {{$tamanho_fonte}}px">
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px">
 				{{$data['nome']}}
 			</span>
 			@endif
 			@if($data['cod_produto'])
-			<span style="display: block !important; margin-top: 3px; font-size: {{$tamanho_fonte}}px">
+			<span style="display: block !important; margin-top: {{$distancia_entre_linhas}}px; font-size: {{$tamanho_fonte}}px">
 				ID: <b>{{$data['codigo']}}</b>
 			</span>
 			@endif
@@ -29,8 +29,20 @@
 			@endif
 			
 			@if($data['valor_produto'])
-			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: 4px;">
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
 				<b>R$ {{number_format($data['valor'], 2, ',', '.')}}</b>
+			</span>
+			@endif
+
+			@if($valor_atacado)
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
+				<b>R$ {{number_format($data['valor_atacado'], 2, ',', '.')}}</b>
+			</span>
+			@endif
+
+			@if($referencia)
+			<span style="display: block !important; font-size: {{$tamanho_fonte}}px; margin-top: {{$distancia_entre_linhas}}px;">
+				<b>REF:{{ $data['referencia'] }}</b>
 			</span>
 			@endif
 		</div>

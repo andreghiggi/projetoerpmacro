@@ -41,6 +41,7 @@
                 $('#inp-etiquestas_por_linha').val(res.etiquestas_por_linha)
                 $('#inp-distancia_etiquetas_lateral').val(res.distancia_etiquetas_lateral)
                 $('#inp-distancia_etiquetas_topo').val(res.distancia_etiquetas_topo)
+                $('#inp-distancia_entre_linhas').val(res.distancia_entre_linhas)
                 $('#inp-quantidade_etiquetas').val(res.quantidade_etiquetas)
                 $('#inp-tamanho_fonte').val(res.tamanho_fonte)
                 $('#inp-tamanho_codigo_barras').val(res.tamanho_codigo_barras)
@@ -50,6 +51,8 @@
                 $('#inp-valor_produto').prop('checked', res.valor_produto)
                 $('#inp-codigo_produto').prop('checked', res.codigo_produto)
                 $('#inp-codigo_barras_numerico').prop('checked', res.codigo_barras_numerico)
+                $('#inp-valor_atacado').prop('checked', res.valor_atacado)
+                $('#inp-referencia').prop('checked', res.referencia)
 
             })
             .fail((err) => {

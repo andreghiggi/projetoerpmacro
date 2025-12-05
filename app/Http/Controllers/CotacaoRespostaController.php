@@ -24,6 +24,17 @@ class CotacaoRespostaController extends Controller
         }
         $empresa = Empresa::findOrFail($cotacao->empresa_id);
 
+        foreach($cotacao->itens as $key => $i){
+            $i->descricao_produto = $i->produto->nome;
+
+            if($cotacao->planejamento){
+                $itemPlanejamento = $cotacao->planejamento->produtos[$key];
+                if($itemPlanejamento){
+                    $i->descricao_produto = $itemPlanejamento->descricao();
+                }
+            }
+        }
+
         return view('cotacoes.resposta', compact('cotacao', 'empresa'));
     }
 

@@ -1,6 +1,6 @@
-@extends('layouts.app', ['title' => 'Produtos de Delivery'])
+@extends('layouts.app', ['title' => 'Produtos de Marketplace'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -45,6 +45,9 @@
                                     <th>Categoria</th>
                                     <th>Gerenciar estoque</th>
                                     <th>Status</th>
+                                    <th>Tipo combo</th>
+                                    <th>Destaque</th>
+                                    <th>Oferta</th>
                                     <th>Valor</th>
                                     <th>Tempo de preparo</th>
                                     <th>Ações</th>
@@ -66,6 +69,28 @@
                                     </td>
                                     <td>
                                         @if($item->status)
+                                        <i class="ri-checkbox-circle-fill text-success"></i>
+                                        @else
+                                        <i class="ri-close-circle-fill text-danger"></i>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->combo)
+                                        <i class="ri-checkbox-circle-fill text-success"></i>
+                                        @else
+                                        <i class="ri-close-circle-fill text-danger"></i>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        @if($item->destaque_delivery)
+                                        <i class="ri-checkbox-circle-fill text-success"></i>
+                                        @else
+                                        <i class="ri-close-circle-fill text-danger"></i>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->oferta)
                                         <i class="ri-checkbox-circle-fill text-success"></i>
                                         @else
                                         <i class="ri-close-circle-fill text-danger"></i>
@@ -114,7 +139,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">Nada encontrado</td>
+                                    <td colspan="14" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>

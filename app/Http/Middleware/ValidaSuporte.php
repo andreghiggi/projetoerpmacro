@@ -17,7 +17,6 @@ class ValidaSuporte
 			return $next($request);
 		}
 
-		
 		return redirect()->route('home');
 	}
 }

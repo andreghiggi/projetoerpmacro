@@ -18,6 +18,10 @@ class ItemPreVenda extends Model
         return $this->belongsTo(Produto::class, 'produto_id');
     }
 
+    public function produtoVariacao(){
+        return $this->belongsTo(ProdutoVariacao::class, 'variacao_id');
+    }
+
     public function descricao(){
         if($this->variacao_id == null){
             return $this->produto->nome;

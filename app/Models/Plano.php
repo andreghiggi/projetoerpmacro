@@ -13,7 +13,7 @@ class Plano extends Model
         'nome', 'descricao', 'maximo_nfes', 'maximo_nfces', 'imagem', 'visivel_clientes',
         'status', 'valor', 'intervalo_dias', 'maximo_ctes', 'maximo_cte_os', 'maximo_mdfes', 'modulos',
         'visivel_contadores', 'auto_cadastro', 'segmento_id', 'fiscal', 'valor_implantacao', 'maximo_usuarios', 
-        'maximo_locais'
+        'maximo_locais', 'contador_id', 'descricao_curta', 'dias_teste'
     ];
 
     public function getImgAttribute()
@@ -36,4 +36,9 @@ class Plano extends Model
     public function segmento(){
         return $this->belongsTo(Segmento::class, 'segmento_id');
     }
+
+    public function contador(){
+        return $this->belongsTo(Empresa::class, 'contador_id');
+    }
+    
 }

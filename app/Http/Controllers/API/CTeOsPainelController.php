@@ -49,10 +49,11 @@ class CTeOsPainelController extends Controller
                 } else {
                     $empresa->numero_ultima_cte_producao = $doc['nCte'];
                 }
+                $empresa->save();
+
                 $item->numero_emissao = $doc['nCte'];
                 $item->recibo = $resultado['success'];
                 $item->save();
-                $empresa->save();
                 $data = [
                     'recibo' => $resultado['success'],
                     'chave' => $item->chave

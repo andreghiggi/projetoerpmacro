@@ -1,8 +1,7 @@
 @extends('layouts.app', ['title' => 'Interrupção'])
-
 @section('content')
 
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -34,7 +33,7 @@
                     {!!Form::close()!!}
                 </div>
 
-                <div class="table-responsive-sm mt-3">
+                <div class="table-responsive mt-3">
                     <table class="table table-striped table-centered mb-0">
                         <thead class="table-dark">
                             <tr>
@@ -50,12 +49,12 @@
                         <tbody>
                             @forelse ($data as $item)
                             <tr>
-                                <td>{{ $item->funcionario->nome }}</td>
-                                <td>{{ \App\Models\DiaSemana::getDiaStr($item->dia_id) }}</td>
-                                <td>{{ isset($item) ? $item->inicioParse : '--' }}</td>
-                                <td>{{ isset($item) ? $item->finalParse : '--' }}</td>
-                                <td>{{ $item->motivo }}</td>
-                                <td>
+                                <td data-label="Funcionário">{{ $item->funcionario->nome }}</td>
+                                <td data-label="Dia">{{ \App\Models\DiaSemana::getDiaStr($item->dia_id) }}</td>
+                                <td data-label="Início">{{ isset($item) ? $item->inicioParse : '--' }}</td>
+                                <td data-label="Fim">{{ isset($item) ? $item->finalParse : '--' }}</td>
+                                <td data-label="Motivo">{{ $item->motivo }}</td>
+                                <td data-label="Status">
                                     @if($item->status)
                                     <i class="ri-checkbox-circle-fill text-success"></i>
                                     @else
@@ -63,7 +62,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <form action="{{ route('interrupcoes.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
+                                    <form style="width: 100px;" action="{{ route('interrupcoes.destroy', $item->id) }}" method="post" id="form-{{$item->id}}">
                                         @csrf
                                         @method('delete')
 
@@ -71,10 +70,13 @@
                                             <i class="ri-pencil-fill"></i>
                                         </a>
                                         
-                                        <button type="submit" title="Deletar" class="btn btn-danger btn-delete btn-sm"><i class="ri-delete-bin-2-line"></i></button>
+                                        <button type="submit" title="Deletar" class="btn btn-danger btn-delete btn-sm">
+                                            <i class="ri-delete-bin-2-line"></i>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
+
                             @empty
                             <tr>
                                 <td colspan="7" class="text-center">Nada encontrado</td>
@@ -82,6 +84,7 @@
                             @endforelse
                         </tbody>
                     </table>
+
                 </div>
                 <div class="mt-3">
                     {!! $data->appends(request()->all())->links() !!}

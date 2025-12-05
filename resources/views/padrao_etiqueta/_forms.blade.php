@@ -39,6 +39,10 @@
         !!}
     </div>
     <div class="col-md-2">
+        {!!Form::tel('distancia_entre_linhas', 'Distância entre linhas')->attrs(['data-mask' => '000.00', 'data-mask-reverse' => 'true'])->required()
+        !!}
+    </div>
+    <div class="col-md-2">
         {!!Form::tel('tamanho_fonte', 'Tamanho da fonte')->attrs(['data-mask' => '000.00', 'data-mask-reverse' => 'true'])->required()
         !!}
     </div>
@@ -75,6 +79,20 @@
         {!!Form::checkbox('codigo_barras_numerico', 'Código de barras numérico')->attrs(['class' => ''])
         ->value(1)
         ->checked(isset($item) ? $item->codigo_barras_numerico : 0)
+        !!}
+    </div>
+
+    <div class="col-md-3">
+        {!!Form::checkbox('referencia', 'Referência')->attrs(['class' => ''])
+        ->value(1)
+        ->checked(isset($item) ? $item->referencia : 0)
+        !!}
+    </div>
+
+    <div class="col-md-3">
+        {!!Form::checkbox('valor_atacado', 'Valor de atacado')->attrs(['class' => ''])
+        ->value(1)
+        ->checked(isset($item) ? $item->valor_atacado : 0)
         !!}
     </div>
 

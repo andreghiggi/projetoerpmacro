@@ -53,7 +53,7 @@
         {!!Form::text('descricao', 'Descrição')
         !!}
     </div>
-    <div class="col-md-4">
+    <div class="col-md-5">
         <label>Cliente</label>
         <div class="input-group flex-nowrap">
             <select id="inp-cliente_id" name="cliente_id" class="cliente_id">
@@ -82,12 +82,13 @@
         !!}
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-2">
         {!!Form::select('tipo_pagamento', 'Tipo Pagamento', App\Models\ContaReceber::tiposPagamento())->attrs(['class' => 'form-select'])->required()
         !!}
     </div>
-    <div class="col-md-6">
-        {!!Form::text('observacao', 'Observação')
+    <div class="col-md-2">
+        {!!Form::select('categoria_conta_id', 'Categoria', ['' => 'Selecione'] + $categorias->pluck('nome', 'id')->all())
+        ->attrs(['class' => 'form-select'])
         !!}
     </div>
 
@@ -95,6 +96,24 @@
         {!! Form::file('file', 'Procurar arquivo')
         ->attrs(['accept' => '.pdf, image/*']) !!}
         <span class="text-danger" id="filename"></span>
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::text('referencia', 'Nº documento')
+        !!}
+    </div>
+
+    <div class="col-md-4">
+        {!!Form::text('observacao', 'Observação')
+        !!}
+    </div>
+    <div class="col-md-4">
+        {!!Form::text('observacao2', 'Observação 2')
+        !!}
+    </div>
+    <div class="col-md-4">
+        {!!Form::text('observacao3', 'Observação 3')
+        !!}
     </div>
 
     @if(isset($item) && $item->arquivo != null)

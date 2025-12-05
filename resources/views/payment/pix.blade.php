@@ -35,28 +35,31 @@
     var myInterval;
     function copy(){
         const inputTest = document.querySelector("#qrcode_input");
-
         inputTest.select();
         document.execCommand('copy');
-
         swal("", "Código pix copiado!!", "success")
     }
 
     myInterval = setInterval(() => {
         let transacao_id = $('#transacao_id').val();
-        $.get(path_url+'api/paymentStatus/'+'{{$item->transacao_id}}')
-        .done((success) => {
-            console.log(success)
+
+        $.ajax({
+            url: path_url + 'api/paymentStatus/'+'{{$item->transacao_id}}',
+            method: "GET",
+            global: false,
+            data: {empresa_id: $('#empresa_id').val()}
+        }).done((success) => {
+            // console.log(success)
             if(success == "approved"){
                 clearInterval(myInterval)
                 swal("Sucesso", "Pagamento aprovado", "success").then(() => {
                     location.href = path_url
                 })
             }
-        })
-        .fail((err) => {
-            console.log(err)
-        })
+            
+        }).fail((err) => {
+        });
+
     }, 3000)
 
 </script>

@@ -4,6 +4,11 @@
         ->required()
         !!}
     </div>
+
+    <div class="col-md-5">
+        {!!Form::text('descricao_curta', 'Descrição curta (landing page)')
+        !!}
+    </div>
     <div class="col-md-2">
         {!!Form::tel('maximo_nfes', 'Max. NFe (mês)')
         ->required()
@@ -56,6 +61,14 @@
         ->required()
         ->attrs(['class' => 'form-select'])
         !!}
+    </div>
+    <div class="col-md-2">
+        {!!Form::tel('dias_teste', 'Dias de teste')
+        ->attrs(['class' => 'tooltipp'])
+        !!}
+        <div class="text-tooltip d-none">
+            Dias para testar, somente para auto cadastro
+        </div>
     </div>
     <div class="col-md-2">
         {!!Form::tel('intervalo_dias', 'Intervalo de dias')

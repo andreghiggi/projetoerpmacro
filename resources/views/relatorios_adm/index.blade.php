@@ -10,7 +10,7 @@
 </style>
 @endsection
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         
         <div class="col-12 col-md-6">
@@ -22,11 +22,11 @@
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-md-6 col-12">
-                                {!!Form::date('start_date', 'Dt. cadastro inicial')
+                                {!!Form::date('start_date', 'Data cadastro inicial')
                                 !!}
                             </div>
                             <div class="col-md-6 col-12">
-                                {!!Form::date('end_date', 'Dt. cadastro final')
+                                {!!Form::date('end_date', 'Data cadastro final')
                                 !!}
                             </div>
                             <div class="col-md-6 col-12">
@@ -34,7 +34,7 @@
                                 [
                                 '' => 'Selecione',
                                 '1' => 'Ativa',
-                                '-1' => 'Desativada',
+                                '0' => 'Desativada',
                                 ])
                                 ->attrs(['class' => 'form-select'])
                                 !!}
@@ -59,11 +59,11 @@
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-md-6 col-12">
-                                {!!Form::date('start_date', 'Dt. inicial')
+                                {!!Form::date('start_date', 'Data inicial')
                                 !!}
                             </div>
                             <div class="col-md-6 col-12">
-                                {!!Form::date('end_date', 'Dt. final')
+                                {!!Form::date('end_date', 'Data final')
                                 !!}
                             </div>
                             <div class="col-md-12">
@@ -91,11 +91,11 @@
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-md-6 col-12">
-                                {!!Form::date('start_date', 'Dt. inicial expiração')
+                                {!!Form::date('start_date', 'Data inicial expiração')
                                 !!}
                             </div>
                             <div class="col-md-6 col-12">
-                                {!!Form::date('end_date', 'Dt. final expiração')
+                                {!!Form::date('end_date', 'Data final expiração')
                                 !!}
                             </div>
                             
@@ -119,11 +119,49 @@
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-md-6 col-12">
-                                {!!Form::date('start_date', 'Dt. inicial')
+                                {!!Form::date('start_date', 'Data inicial')
                                 !!}
                             </div>
                             <div class="col-md-6 col-12">
-                                {!!Form::date('end_date', 'Dt. final')
+                                {!!Form::date('end_date', 'Data final')
+                                !!}
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-dark w-100">
+                            <i class="ri-printer-line"></i> Gerar relatório
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <form method="get" action="{{ route('relatorios-adm.resumo-operacional') }}" target="_blank">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Relatório de Resumo Operacional</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-4 col-12">
+                                {!!Form::date('start_date', 'Data inicial')
+                                !!}
+                            </div>
+                            <div class="col-md-4 col-12">
+                                {!!Form::date('end_date', 'Data final')
+                                !!}
+                            </div>
+                            <div class="col-md-4 col-12">
+                                {!!Form::select('status', 'Status da empresa',
+                                [
+                                '' => 'Selecione',
+                                '1' => 'Ativa',
+                                '0' => 'Desativada',
+                                ])
+                                ->attrs(['class' => 'form-select'])
                                 !!}
                             </div>
                             

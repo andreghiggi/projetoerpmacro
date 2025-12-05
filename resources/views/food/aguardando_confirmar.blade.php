@@ -22,18 +22,25 @@
 @section('js')
 <script type="text/javascript">
 	$(function(){
-		intervalVar =setInterval(() => {
+		intervalVar = setInterval(() => {
 			let pedido_id = '{{ $pedido->id }}';
 			$.get(path_url+'api/delivery-link/consulta-pedido/', {pedido_id: pedido_id})
 			.done((success) => {
-				console.log(success)
+				// console.log(success)
 				if(success == "aprovado"){
 					clearInterval(intervalVar)
 					$('.anime').css('display', 'none')
 					$('.anime-confirmado').css('display', 'inline-block')
 					setTimeout(() => {
-						location.reload()
+						swal("Sucesso", "Seu Pedido foi confirmado pelo estabelecimento!", "success")
+						.then(() => {
+							location.reload()
+						})
 					}, 6000)
+
+					// setTimeout(() => {
+					// 	location.reload()
+					// }, 6000)
 				}else if(success == "cancelado"){
 					clearInterval(intervalVar)
 					$('.anime').css('display', 'none')

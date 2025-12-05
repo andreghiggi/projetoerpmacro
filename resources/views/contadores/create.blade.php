@@ -1,9 +1,9 @@
-@extends('layouts.app', ['title' => 'Novo Contador'])
+@extends('layouts.app', ['title' => 'Novo Representante/Contador'])
 @section('content')
 
 <div class="card mt-1">
     <div class="card-header">
-        <h4>Novo Contador</h4>
+        <h4>Novo Representante/Contador</h4>
         <div style="text-align: right; margin-top: -35px;">
             <a href="{{ route('contadores.index') }}" class="btn btn-danger btn-sm px-3">
                 <i class="ri-arrow-left-double-fill"></i>Voltar

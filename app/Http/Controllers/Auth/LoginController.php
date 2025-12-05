@@ -12,6 +12,7 @@ use App\Models\Empresa;
 use App\Models\CrmAnotacao;
 use App\Imports\ProdutoImport;
 use App\Utils\EmpresaUtil;
+use NFePHP\Common\Certificate;
 
 class LoginController extends Controller
 {
@@ -46,7 +47,7 @@ class LoginController extends Controller
     public function __construct(EmpresaUtil $empresaUtil)
     {
         $this->empresaUtil = $empresaUtil;
-        $this->middleware('guest')->except('logout');
+        $this->middleware(['guest'])->except('logout');
     }
 
     public function login(Request $request){
@@ -83,9 +84,10 @@ class LoginController extends Controller
 
             $this->validaPermissoes($user);
             $this->alertaCrm($user);
-            $this->alertaFinanceiro();
+            $this->alertaCertificado($user);
             $this->requestLogin($request->input('email'), $request->input('password'));
             session()->flash("flash_success", "Bem vindo " . $user->name);
+
             return redirect($this->redirectTo);
         }else{
             return back()->with('error', 'Credenciais incorretas!');
@@ -95,6 +97,44 @@ class LoginController extends Controller
     private function alertaFinanceiro(){
         if(__faturaBoleto()){
             session()->flash("flash_financeiro", 1);
+        }
+    }
+
+    private function alertaCertificado($user){
+
+        if(!$user->empresa){
+            return;
+        }
+        $empresa_id = $user->empresa->empresa_id;
+
+        try{
+            $item = Empresa::where('id', $empresa_id)
+            ->first();
+
+            if($item && $item->arquivo && $item->senha){
+                $infoCertificado = Certificate::readPfx($item->arquivo, $item->senha);
+                $publicKey = $infoCertificado->publicKey;
+                $expiracao = $publicKey->validTo->format('Y-m-d');
+                $dataHoje = date('Y-m-d');
+
+                $dif = strtotime($expiracao) - strtotime($dataHoje);
+                $dias = $dif/60/60/24;
+
+                if($dias < 30){
+
+                    $msg = "Seu certificado vence em $dias dias!";
+                    if($dias == 0){
+                        $msg = "Seu certificado vence hoje!";
+                    }elseif($dias < 0){
+                        $msg = "Seu certificado venceu em ".($dias*-1)." dias!";
+                    }
+
+                    session()->flash("flash_alerta_certificado", $msg);
+                }
+            }
+            
+        }catch(\Exception $e){
+            // dd($e->getMessage());
         }
     }
 

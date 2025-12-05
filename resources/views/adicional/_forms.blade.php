@@ -4,6 +4,12 @@
         !!}
     </div>
 
+    <div class="col-md-2">
+        {!!Form::select('categoria_id', 'Categoria', ['' => 'Selecione'] + $categorias->pluck('nome', 'id')->all())
+        ->attrs(['class' => 'form-select'])->required()
+        !!}
+    </div>
+
     @if(__isInternacionalizar(Auth::user()->empresa))
     <div class="col-md-3">
         {!!Form::text('nome_en', 'Nome (em inglês)')

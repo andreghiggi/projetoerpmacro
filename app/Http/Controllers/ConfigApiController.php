@@ -102,7 +102,7 @@ class ConfigApiController extends Controller
             return $query->where('prefixo', $prefixo);
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         return view('api_config.logs', compact('data'));
     }

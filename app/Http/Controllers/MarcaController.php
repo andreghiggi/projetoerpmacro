@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Marca;
 use Illuminate\Http\Request;
 
-use function Ramsey\Uuid\v1;
-
 class MarcaController extends Controller
 {
 
@@ -25,7 +23,7 @@ class MarcaController extends Controller
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
         return view('marcas.index', compact('data'));
     }
 
@@ -42,7 +40,7 @@ class MarcaController extends Controller
             session()->flash('flash_success', 'Cadastrado com sucesso');
         } catch (\Exception $e) {
             __createLog($request->empresa_id, 'Marca', 'erro', $e->getMessage());
-            session()->flash('flash_error', 'Algo deu errado' . $e->getMessage());
+            session()->flash('flash_error', 'Algo deu errado: ' . $e->getMessage());
         }
         return redirect()->route('marcas.index');
     }
@@ -82,7 +80,7 @@ class MarcaController extends Controller
             __createLog(request()->empresa_id, 'Marca', 'erro', $e->getMessage());
             session()->flash('flash_warning', 'Marca esta sendo usada em algum produto');
         }
-        return redirect()->route('marcas.index');
+        return redirect()->back();
     }
 
     public function destroySelecet(Request $request)
@@ -103,6 +101,6 @@ class MarcaController extends Controller
         }
 
         session()->flash("flash_success", "Total de itens removidos: $removidos!");
-        return redirect()->route('marcas.index');
+        return redirect()->back();
     }
 }

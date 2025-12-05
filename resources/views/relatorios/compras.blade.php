@@ -20,7 +20,7 @@
                 {{ $item->id }}
             </td>
             <td>
-            {{ $item->fornecedor->razao_social }}
+            {{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}
             </td>
             <td>
                 {{ __data_pt($item->created_at) }}

@@ -67,15 +67,10 @@
 
 						<div class="card-body p-4">
 							<div class="text-center">
-								<h1 class="text-error">4<i class="ri-emotion-sad-line"></i>3</h1>
-								<h4 class="text-uppercase text-danger mt-3">Acesso Restrito!</h4>
-								<p class="text-muted mt-3">Parece que você pegou o caminho errado. Não se preocupe. Aqui está um
-								pequena dica que pode ajudá-lo a voltar aos trilhos.</p>
+								<!-- <h1 class="text-error"><i class="ri-emotion-sad-line"></i></h1> -->
+								<h4 class="text-uppercase text-danger mt-3">{{ $exception->getMessage() }}</h4>
+								<p class="text-muted mt-3">Entre em contato com o ADM para verificar o ocorrido</p>
 
-								<a class="btn btn-info mt-3" href="{{ route('home') }}">
-									<i class="ri-home-4-line"></i>
-									Voltar
-								</a>
 							</div>
 						</div>
 					</div>

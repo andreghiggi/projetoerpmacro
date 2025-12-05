@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\CashBackCliente;
 use App\Models\Empresa;
 use App\Models\CashBackConfig;
+use App\Models\ConfigGeral;
 use App\Utils\WhatsAppUtil;
 
 class CashBackCron extends Command
@@ -55,10 +56,15 @@ class CashBackCron extends Command
             ->get();
             $config = CashBackConfig::where('empresa_id', $e->id)->first();
 
+            $configGeral = ConfigGeral::where('empresa_id', $e->id)->first();
+            $token = '';
+            if($configGeral && strlen($configGeral->token_whatsapp) > 10){
+                $token = $configGeral->token_whatsapp;
+            }
             if($config){
                 foreach($data as $cashback){
                     if($cashback->status_mensagem_1_dia == 0 && $cashback->status == 1){
-                        $numero = preg_replace('/[^0-9]/', '', $cashback->cliente->celular);
+                        $numero = preg_replace('/[^0-9]/', '', $cashback->cliente->telefone);
                         $texto = $config->mensagem_automatica_1_dia;
 
                         $nomeCliente = $cashback->cliente->razao_social;
@@ -71,7 +77,11 @@ class CashBackCron extends Command
                         $texto = str_replace("{expiracao}", __date($cashback->data_expiracao, 0), $texto);
                         $texto = str_replace("{nome}", $nomeCliente, $texto);
                         if($numero != ''){
-                            $retorno = $this->util->sendMessage('55'.$numero, $texto, $e->id);
+                            if($token == ''){
+                                $retorno = $this->util->sendMessage('55'.$numero, $texto, $e->id);
+                            }else{
+                                $retorno = $this->util->sendMessageWithToken('55'.$numero, $texto, $e->id, $token);
+                            }
                             $retorno = json_decode($retorno);
                             if($retorno->success == true){
                                 if($retorno){
@@ -83,7 +93,6 @@ class CashBackCron extends Command
                     }
                 }
             }
-
         }
     }
 
@@ -98,10 +107,16 @@ class CashBackCron extends Command
             ->get();
             $config = CashBackConfig::where('empresa_id', $e->id)->first();
 
+            $configGeral = ConfigGeral::where('empresa_id', $e->id)->first();
+            $token = '';
+            if($configGeral && strlen($configGeral->token_whatsapp) > 10){
+                $token = $configGeral->token_whatsapp;
+            }
+
             if($config){
                 foreach($data as $cashback){
                     if($cashback->status_mensagem_5_dias == 0 && $cashback->status == 1){
-                        $numero = preg_replace('/[^0-9]/', '', $cashback->cliente->celular);
+                        $numero = preg_replace('/[^0-9]/', '', $cashback->cliente->telefone);
                         $texto = $config->mensagem_automatica_5_dias;
 
                         $nomeCliente = $cashback->cliente->razao_social;
@@ -114,7 +129,14 @@ class CashBackCron extends Command
                         $texto = str_replace("{expiracao}", __date($cashback->data_expiracao, 0), $texto);
                         $texto = str_replace("{nome}", $nomeCliente, $texto);
                         if($numero != ''){
-                            $retorno = $this->util->sendMessage('55'.$numero, $texto, $e->id);
+                            // $retorno = $this->util->sendMessage('55'.$numero, $texto, $e->id);
+
+                            if($token == ''){
+                                $retorno = $this->util->sendMessage('55'.$numero, $texto, $e->id);
+                            }else{
+                                $retorno = $this->util->sendMessageWithToken('55'.$numero, $texto, $e->id, $token);
+                            }
+
                             $retorno = json_decode($retorno);
                             if($retorno->success == true){
                                 if($retorno){
@@ -126,7 +148,6 @@ class CashBackCron extends Command
                     }
                 }
             }
-
         }
     }
 }

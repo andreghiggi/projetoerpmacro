@@ -60,7 +60,7 @@ class PreVendaController extends Controller
         try{
             $empresa = Empresa::findOrFail($request->empresa_id);
             if($request->cliente_id){
-                $cliente = Cliente::findOrFail($request->cliente_id);
+                $cliente = Cliente::find($request->cliente_id);
             }else{
                 $cliente = null;
             }
@@ -83,7 +83,7 @@ class PreVendaController extends Controller
             }
 
             $data = [
-                'cliente_id' => $request->cliente_id,
+                'cliente_id' => $cliente ? $cliente->id : null,
                 'valor_total' => __convert_value_bd($request->total),
                 'desconto' => __convert_value_bd($request->desconto),
                 'acrescimo' => __convert_value_bd($request->acrescimo),

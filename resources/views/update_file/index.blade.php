@@ -23,7 +23,7 @@
 	}
 </style>
 
-<div class="mt-3">
+<div class="mt-1">
 	<div class="card">
 		<div class="m-3">
 
@@ -39,7 +39,12 @@
 							<i class="ri-refresh-fill"></i> Limpar cache servidor
 						</a>
 					</div>
-					<h5>Versão atual: <strong>{{ $update ? $update->versao : '--' }}</strong></h5>
+					@if($update)
+					<h5>Versão atual: <strong>{{ $update->versao }} - {{ __data_pt($update->updated_at) }}</strong></h5>
+					@else
+					Versão atual: --
+					@endif
+
 					@if(!function_exists('shell_exec'))
 					<p class="text-warning">
 						<i class="ri-error-warning-line"></i> Ative a extensão shell_exec no seu servidor

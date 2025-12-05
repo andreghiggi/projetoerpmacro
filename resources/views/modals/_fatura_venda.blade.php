@@ -34,7 +34,7 @@
 
                     <div class="col-md-4">
                         <label>Tipo de pagamento</label>
-                        <select class="form-control tipo_pagamento" id="inp-tipo_pagamento_fatura">
+                        <select class="form-control form-select tipo_pagamento" id="inp-tipo_pagamento_fatura">
                             @foreach(App\Models\Nfe::tiposPagamento() as $key => $c)
                             <option value="{{$key}}">{{$c}}</option>
                             @endforeach

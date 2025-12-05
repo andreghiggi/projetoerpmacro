@@ -10,7 +10,7 @@
 	<div class="col-md-5">
 		<label>Cliente</label>
 		<div class="input-group flex-nowrap">
-			<select id="inp-cliente_id" name="cliente_id" class="cliente_id">
+			<select required id="inp-cliente_id" name="cliente_id" class="cliente_id">
 
 			</select>
 

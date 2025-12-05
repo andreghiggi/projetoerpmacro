@@ -1,6 +1,6 @@
 @extends('layouts.app', ['title' => 'Taxa de Cartão'])
 @section('content')
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -14,22 +14,22 @@
                 </div>
                 <hr class="mt-3">
                 <div class="col-md-12 mt-3">
-                    <div class="table-responsive-sm">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Tipo Pagamento</th>
                                     <th>Bandeira</th>
                                     <th>Taxa</th>
-                                    <th width="10%">Ações</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td>{{ $item->getTipo() }}</td>
-                                    <td>{{ $item->bandeira_cartao ? $item->getBandeira() : '--' }}</td>
-                                    <td>{{ __moeda($item->taxa) }}</td>
+                                    <td data-label="Tipo Pagamento">{{ $item->getTipo() }}</td>
+                                    <td data-label="Bandeira">{{ $item->bandeira_cartao ? $item->getBandeira() : '--' }}</td>
+                                    <td data-label="Taxa">{{ __moeda($item->taxa) }}</td>
                                     <td>
                                         <form action="{{ route('taxa-cartao.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 100px;">
                                             @method('delete')
@@ -39,7 +39,6 @@
                                             </a>
                                             @endcan
                                             @csrf
-
                                             @can('taxa_pagamento_delete')
                                             <button type="button" class="btn btn-delete btn-sm btn-danger">
                                                 <i class="ri-delete-bin-line"></i>
@@ -55,6 +54,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                 </div>
                 {!! $data->appends(request()->all())->links() !!}

@@ -60,4 +60,34 @@ class CaixaController extends Controller
             return response()->json("Algo deu errado: " . $e->getMessage(), 403);
         }
     }
+
+    public function close(Request $request){
+
+        if(!__validaPermissaoToken($request->token, $this->prefix.".create")){
+            return response()->json("Permissão negada!", 403);
+        }
+
+        try{
+            $localizacao = Localizacao::where('empresa_id', $request->empresa_id)->first();
+
+            $item = Caixa::where('empresa_id', $request->empresa_id)
+            ->where('usuario_id', $request->usuario_id)
+            ->where('status', 1)
+            ->first();
+
+            if($item == null){
+                return response()->json("Nenhum caixa encontrado!", 403);
+            }
+
+            $item->status = 0;
+            $item->data_fechamento = date('Y-m-d h:i:s');
+            $item->save();
+            
+            __createApiLog($request->empresa_id, $request->token, 'sucesso', 'Caixa fechado', 'create', $this->prefix);
+            return response()->json($item, 200);
+        }catch(\Exception $e){
+            __createApiLog($request->empresa_id, $request->token, 'erro', $e->getMessage(), 'create', $this->prefix);
+            return response()->json("Algo deu errado: " . $e->getMessage(), 403);
+        }
+    }
 }

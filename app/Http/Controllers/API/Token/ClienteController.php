@@ -165,7 +165,7 @@ class ClienteController extends Controller
                 return response()->json("Cliente não encontrado!", 403);
             }
 
-            if($item->empresa_id !=  $request->empresa_id){
+            if($item->empresa_id != $request->empresa_id){
                 return response()->json("Não permitido!", 403);
             }
 

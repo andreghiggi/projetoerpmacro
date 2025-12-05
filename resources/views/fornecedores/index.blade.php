@@ -1,7 +1,6 @@
 @extends('layouts.app', ['title' => 'Fornecedores'])
 @section('content')
-
-<div class="mt-3">
+<div class="mt-1">
     <div class="row">
         <div class="card">
             <div class="card-body">
@@ -22,31 +21,31 @@
                     {!!Form::open()->fill(request()->all())
                     ->get()
                     !!}
-                    <div class="row mt-3">
-                        <div class="col-md-3">
+                    <div class="row mt-3 g-1">
+                        <div class="col-md-4 col-xl-2">
                             {!!Form::text('razao_social', 'Pesquisar por nome')
                             !!}
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4 col-xl-2">
                             {!!Form::text('cpf_cnpj', 'Pesquisar por CPF/CNPJ')
                             ->attrs(['class' => 'cpf_cnpj'])
                             ->type('tel')
                             !!}
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4 col-xl-2">
                             {!!Form::date('start_date', 'Data inicial cadastro')
                             !!}
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4 col-xl-2">
                             {!!Form::date('end_date', 'Data final cadastro')
                             !!}
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4 col-xl-2">
                             {!!Form::select('ordem', 'Ordenar por', ['razao_social' => 'Razão social', 'numero_sequencial' => 'Código', 'created_at' => 'Data de cadastro'])
                             ->attrs(['class' => 'form-select'])
                             !!}
                         </div>
-                        <div class="col-md-3 text-left ">
+                        <div class="col-md-4 col-xl-2 col-12 text-left ">
                             <br>
                             <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
                             <a id="clear-filter" class="btn btn-danger" href="{{ route('fornecedores.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
@@ -54,8 +53,8 @@
                     </div>
                     {!!Form::close()!!}
                 </div>
-                <div class="col-md-12 mt-3 table-responsive">
-                    <div class="table-responsive-sm">
+                <div class="col-md-12 mt-3">
+                    <div class="table-responsive">
                         <table class="table table-striped table-centered mb-0">
                             <thead class="table-dark">
                                 <tr>
@@ -72,7 +71,7 @@
                                     <th>Cidade</th>
                                     <th>Endereço</th>
                                     <th>CEP</th>
-                                    <th width="10%">Ações</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -85,12 +84,12 @@
                                         </div>
                                     </td>
                                     @endcan
-                                    <td>{{ $item->numero_sequencial }}</td>
-                                    <td width="500">{{ $item->razao_social }}</td>
-                                    <td>{{ $item->cpf_cnpj }}</td>
-                                    <td>{{ $item->cidade ? $item->cidade->info : '' }}</td>
-                                    <td>{{ $item->endereco }}</td>
-                                    <td>{{ $item->cep }}</td>
+                                    <td data-label="Código">{{ $item->numero_sequencial }}</td>
+                                    <td data-label="Razão social">{{ $item->razao_social }}</td>
+                                    <td data-label="CPF/CNPJ">{{ $item->cpf_cnpj }}</td>
+                                    <td data-label="Cidade">{{ $item->cidade ? $item->cidade->info : '' }}</td>
+                                    <td data-label="Endereço">{{ $item->endereco }}</td>
+                                    <td data-label="CEP">{{ $item->cep }}</td>
                                     <td>
                                         <form action="{{ route('fornecedores.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" style="width: 200px;">
                                             @method('delete')
@@ -120,7 +119,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center">Nada encontrado</td>
+                                    <td colspan="8" class="text-center">Nada encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>

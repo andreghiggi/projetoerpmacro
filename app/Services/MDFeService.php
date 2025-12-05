@@ -48,7 +48,7 @@ class MDFeService{
 
 		$emitente = Empresa::where('id', request()->empresa_id)
 		->first();
-        $emitente = __objetoParaEmissao($emitente, $mdfe->local_id);
+		$emitente = __objetoParaEmissao($emitente, $mdfe->local_id);
 
 		$std = new \stdClass();
 		$std->cUF = Empresa::getCodUF($emitente->cidade->uf); 
@@ -334,9 +334,51 @@ class MDFeService{
 		 */
 		$cont = 0;
 		$contNFe = 0; 
-		$contCTe = 0; 
+		$contCTe = 0;
 
-		
+		if($mdfe->nome_pagador && $mdfe->documento_pagador){
+			$infPag = new \stdClass();
+
+			$infPag->xNome = $mdfe->nome_pagador;
+			$doc = preg_replace('/[^0-9]/', '', $mdfe->documento_pagador);
+			if(strlen($doc) == 11){
+				$infPag->CPF = $doc;
+			}else{
+				$infPag->CNPJ = $doc;
+			}
+			$infPag->vContrato = $this->format($mdfe->valor_transporte);
+			$infPag->indPag = $mdfe->ind_pag;
+
+			$componentes = [];
+			foreach($mdfe->componentes as $c){
+				$Comp = new \stdClass();
+				$Comp->tpComp = $c->tipo;
+				$Comp->vComp = $this->format($c->valor);
+			}
+			$componentes[] = $Comp;
+			$infPag->Comp = $componentes;
+
+			$parcelas = [];
+			foreach($mdfe->parcelamento as $key => $p){
+				$infPrazo = new \stdClass();
+				$infPrazo->nParcela = '00'.($key+1);
+				$infPrazo->dVenc = $p->vencimento;
+				$infPrazo->vParcela = $this->format($p->valor);
+				$parcelas[] = $infPrazo;
+			}
+			$infPag->infPrazo = $parcelas;
+
+			$infBanc = new \stdClass();
+			foreach($mdfe->infosBancaria as $p){
+				$infBanc->codBanco = $p->codigo_banco;
+				$infBanc->codAgencia = $p->codigo_agencia;
+				$infBanc->CNPJIPEF = $p->cnpj_ipef;
+			}
+			$infPag->infBanc = $infBanc;
+
+			$mdfex->taginfPag($infPag);
+		}
+
 		$infos = $this->unirDescarregamentoCidade($mdfe->infoDescarga);
 		foreach($infos as $key => $info) {
 			$infMunDescarga = new \stdClass();

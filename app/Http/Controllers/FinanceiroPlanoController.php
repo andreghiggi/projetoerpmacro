@@ -27,7 +27,7 @@ class FinanceiroPlanoController extends Controller
             return $q->where('status_pagamento', $status_pagamento);
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(__itensPagina());
 
         $somaPendente = FinanceiroPlano::where('status_pagamento', 'pendente')
         ->sum('valor');
