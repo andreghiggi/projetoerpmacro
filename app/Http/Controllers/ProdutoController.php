@@ -956,7 +956,7 @@ public function update(Request $request, $id)
                         $tipo_transacao = 'alteracao_estoque';
                         $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                     }else{
-                        session()->flash("flash_error", "Esta variação $v->descricao já possui vendas ou compras não é possivel remover");
+                        session()->flash("flash_error", "Esta variação $variacao->descricao já possui vendas ou compras não é possivel remover");
                         return redirect()->back();
                     }
                 }
