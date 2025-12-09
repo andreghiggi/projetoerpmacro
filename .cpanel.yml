@@ -13,6 +13,8 @@ deployment:
     - /bin/cp -auv artisan $DEPLOYPATH/artisan
     - /bin/cp -auv bd.sql $DEPLOYPATH/bd.sql
     - /bin/cp -auv composer.json $DEPLOYPATH/composer.json
+    - /bin/cp -auv comand_api.sql $DEPLOYPATH/comand_api.sql
+    - /bin/cp -auv new_tables_api.sql $DEPLOYPATH/new_tables_api.sql
     - cd $DEPLOYPATH && php artisan migrate
     # - cd $DEPLOYPATH && php artisan cache:clear
     # - cd $DEPLOYPATH && php artisan config:clear
