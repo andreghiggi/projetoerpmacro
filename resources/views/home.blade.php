@@ -28,7 +28,6 @@
             </div>
             <div class="card-body">
                 <h3>Painel</h3>
-
                 @if(in_array('Cards de receita', $homeComponentes) || $configGeral == null)
                 <div class="row g-3 align-items-stretch mt-2">
 

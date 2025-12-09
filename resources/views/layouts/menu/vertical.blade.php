@@ -90,7 +90,6 @@
                         <li>
                             <a href="{{ route('ncm.index') }}">NCM</a>
                         </li>
-
                         <li>
                             <a href="{{ route('logs.index') }}">Logs</a>
                         </li>
@@ -118,7 +117,7 @@
                         <li>
                             <a href="{{ route('relatorios-adm.index') }}">Relatórios</a>
                         </li>
-                        
+
                     </ul>
 
                 </div>
@@ -187,7 +186,7 @@
 
                         @if(env("CONTADOR") == 1)
                         <li>
-                            <a href="{{ route('contadores.index') }}">Representante/Contador</a>
+                            <a href="{{ route('contadores.index') }}">Contadores</a>
                         </li>
                         @endif
 
@@ -214,12 +213,6 @@
                         </li>
                         <li>
                             <a href="{{ route('ncm.index') }}">NCM</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('natureza-operacao-super.index') }}">Naturezas de operação</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('padrao-tributacao-produto-super.index') }}">Padrões de tributação</a>
                         </li>
                         <li>
                             <a href="{{ route('logs.index') }}">Logs</a>
@@ -378,13 +371,6 @@
                 </a>
             </li>
 
-            <li class="side-nav-item">
-                <a href="{{ route('sugestao.index') }}" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link">
-                    <i class="ri-code-s-slash-line"></i>
-                    <span>Susgestão e Desenvolvimento</span>
-                </a>
-            </li>
-
             @endif
 
             @if(!__isMaster())
@@ -394,7 +380,7 @@
 
             <li class="side-nav-item" id="step7">
                 <a data-bs-toggle="collapse" href="#sidebarExtendedProd" aria-expanded="false" aria-controls="sidebarExtendedUI" class="side-nav-link">
-                    <i class="ri-box-2-line"></i>
+                    <i class="ri-product-hunt-fill"></i>
                     <span> Produtos </span>
                     <span class="menu-arrow"></span>
                 </a>
@@ -409,7 +395,7 @@
 
                         @can('produtos_view')
                         <li>
-                            <a href="{{ route('produtos.index', ['status=1']) }}">Listar</a>
+                            <a href="{{ route('produtos.index') }}">Listar</a>
                         </li>
                         @endcan
                         @can('produtos_create')
@@ -442,12 +428,6 @@
                         </li>
                         @endcan
 
-                        @can('promocao_produtos_view')
-                        <li>
-                            <a href="{{ route('promocao-produtos.index') }}">Promoção</a>
-                        </li>
-                        @endcan
-
                         @if(__isPlanoFiscal())
                         @can('config_produto_fiscal_view')
                         <li>
@@ -459,12 +439,6 @@
                         @can('marcas_view')
                         <li>
                             <a href="{{ route('marcas.index') }}">Marcas</a>
-                        </li>
-                        @endcan
-
-                        @can('garantias_view')
-                        <li>
-                            <a href="{{ route('garantias.index') }}">Garantias</a>
                         </li>
                         @endcan
 
@@ -503,7 +477,7 @@
                     <span class="menu-arrow"></span>
                 </a>
                 <div class="collapse" id="sidebarAtendimento">
-                    <ul class="side-nav-second-level">
+                    <ul class="side-nav-third-level">
                         <li>
                             <a href="{{ route('atendimentos.index') }}">Dias de Atendimento</a>
                         </li>
@@ -545,12 +519,6 @@
                         @can('servico_create')
                         <li>
                             <a href="{{ route('servicos.create') }}">Novo serviço</a>
-                        </li>
-                        @endcan
-
-                        @can('garantias_view')
-                        <li>
-                            <a href="{{ route('garantias.index') }}">Garantias</a>
                         </li>
                         @endcan
 
@@ -660,35 +628,6 @@
             @endcanany
             @endif
 
-            @if(__isActivePlan(Auth::user()->empresa, 'Gestão de Produção'))
-            @canany(['gestao_producao_view'])
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarGestaoProducao" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
-                    <i class="ri-compasses-fill "></i>
-
-                    <span>Gestão de Produção</span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarGestaoProducao">
-                    <ul class="side-nav-second-level">
-
-                        @can('gestao_producao_view')
-                        <li>
-                            <a href="{{ route('gestao-producao.index') }}">Listar</a>
-                        </li>
-                        @endcan
-
-                        @can('gestao_producao_create')
-                        <li>
-                            <a href="{{ route('gestao-producao.create') }}">Nova Produção</a>
-                        </li>
-                        @endcan
-                    </ul>
-                </div>
-            </li>
-            @endcanany
-            @endif
-
             @if(__isActivePlan(Auth::user()->empresa, 'Agendamentos'))
             @canany(['agendamento_view'])
             <li class="side-nav-item">
@@ -728,12 +667,6 @@
                         @can('controle_acesso_view')
                         <li>
                             <a href="{{ route('controle-acesso.index') }}">Controle de acesso</a>
-                        </li>
-                        @endcan
-
-                        @can('config_fiscal_usuario_view')
-                        <li>
-                            <a href="{{ route('config-fiscal-usuario.index') }}">Configuração fiscal</a>
                         </li>
                         @endcan
                     </ul>
@@ -817,6 +750,26 @@
 
             @endif
 
+            @can('relatorios_sistema_view')
+                <li class="side-nav-item">
+                    <a data-bs-toggle="collapse" href="#relatorios_do_sistema" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
+                        <i class="ri-folder-user-line"></i>
+
+                        <span>Relatórios do Sistema</span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="relatorios_do_sistema">
+                        <ul class="side-nav-second-level">
+                            @can('relatorios_comerciais_view')
+                                <li>
+                                    <a href="{{ route('relatorios-comerciais.index') }}">Relatórios Comerciais</a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+            @endcan
+
             @if(__isActivePlan(Auth::user()->empresa, 'Compras'))
             @canany(['compras_view', 'manifesto_view', 'cotacao_view'])
             <li class="side-nav-item">
@@ -844,12 +797,6 @@
                         <li>
                             <a href="{{ route('compras.xml')}}" data-toggle="fullscreen" class="dropdown-item">
                                 Importar XML
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('compras.validade')}}" data-toggle="fullscreen" class="dropdown-item">
-                                Produtos com validade
                             </a>
                         </li>
 
@@ -898,7 +845,6 @@
             @endcanany
             @endif
 
-            @if(!__isContador())
             @if(__isPlanoFiscal())
             @canany(['devolucao_view'])
             <li class="side-nav-item">
@@ -914,7 +860,7 @@
                         @can('devolucao_view')
                         <li>
                             <a href="{{ route('devolucao.index')}}" data-toggle="fullscreen" class="dropdown-item">
-                                Lista devolução XML
+                                Lista
                             </a>
                         </li>
                         @endcan
@@ -922,14 +868,8 @@
                         @can('devolucao_create')
                         <li>
                             <a href="{{ route('devolucao.xml')}}" data-toggle="fullscreen" class="dropdown-item">
-                                Nova devolução XML
+                                Nova devolução
                             </a>
-                        </li>
-                        @endcan
-
-                        @can('troca_view')
-                        <li>
-                            <a href="{{ route('trocas.index')}}" data-toggle="fullscreen" class="dropdown-item">Trocas/Devolução</a>
                         </li>
                         @endcan
 
@@ -937,7 +877,6 @@
                 </div>
             </li>
             @endcanany
-            @endif
             @endif
 
             @if(__isActivePlan(Auth::user()->empresa, 'PDV'))
@@ -963,26 +902,17 @@
                         </li>
                         @endcan
 
-                        
-                        @if(env("PDVCOMANDA") == 1)
-                        @can('pdv_create')
+                        @can('troca_view')
                         <li>
-                            <a href="{{ route('frontbox.mesas')}}" data-toggle="fullscreen" class="dropdown-item">Mesas/Comandas</a>
+                            <a href="{{ route('trocas.index')}}" data-toggle="fullscreen" class="dropdown-item">Trocas</a>
                         </li>
                         @endcan
-                        @endif
 
                         @can('config_tef_view')
                         <li>
                             <a href="{{ route('tef-registros.index') }}">Registros de TEF</a>
                         </li>
                         @endcan
-
-                        @if(__isAdmin())
-                        <li>
-                            <a href="{{ route('frontbox.logs') }}">Logs de PDV</a>
-                        </li>
-                        @endif
                     </ul>
                 </div>
             </li>
@@ -1002,16 +932,9 @@
                     <ul class="side-nav-second-level">
                         @can('nfe_view')
                         <li>
-                            <a href="{{ route('vendas.index') }}">Todas as Vendas</a>
+                            <a href="{{ route('nfe.index') }}">Listar</a>
                         </li>
                         @endcan
-
-                        @can('nfe_view')
-                        <li>
-                            <a href="{{ route('nfe.index') }}">Vendas pedido</a>
-                        </li>
-                        @endcan
-
                         @can('nfe_create')
                         <li>
                             <a href="{{ route('nfe.create') }}">Nova</a>
@@ -1066,9 +989,6 @@
                 <div class="collapse" id="sidebarPagar">
                     <ul class="side-nav-second-level">
                         @can('caixa_view')
-                        <li>
-                            <a href="{{ route('financeiro.dashboard') }}">Dashboard</a>
-                        </li>
                         <li>
                             <a data-bs-toggle="collapse" href="#caixa" aria-expanded="false" aria-controls="caixa">
                                 <span> Caixa </span>
@@ -1139,12 +1059,6 @@
                             </div>
                         </li>
                         @endcanany
-
-                        @can('categoria_conta_view')
-                        <li>
-                            <a href="{{ route('categoria-conta.index') }}">Categorias de conta</a>
-                        </li>
-                        @endcan
 
                         @can('relatorio_view')
                         <li>
@@ -1229,7 +1143,7 @@
                         </li>
 
                         <li>
-                            <a href="{{ route('nfce-contigencia.index') }}">Envio Contingência</a>
+                            <a href="{{ route('nfce-contigencia.index') }}">Envio Contigência</a>
                         </li>
                     </ul>
                 </div>
@@ -1262,81 +1176,6 @@
                 </div>
             </li>
             @endcanany
-            @endif
-
-            @if(__isActivePlan(Auth::user()->empresa, 'Cardapio'))
-            @can('cardapio_view')
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarCardapio" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
-                    <i class="ri-restaurant-2-line"></i>
-                    <span>Cardápio</span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarCardapio">
-                    <ul class="side-nav-second-level">
-                        <li>
-                            <a href="{{ route('config-cardapio.index') }}">Configuração</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('produtos-cardapio.categorias') }}">Categorias</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('produtos-cardapio.index') }}">Produtos</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('categoria-adicional.index') }}">Categorias de adicional</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('adicionais.index') }}">Adicionais</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('pedidos-cardapio.index') }}">Comandas</a>
-                        </li>
-                        
-                        <li>
-                            <a href="{{ route('mesas.index') }}">Cadastrar mesas</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('pedido-cozinha.index') }}">Controle de pedidos</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('impressao-pedido.index') }}">Controle de impressão</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('carrossel.index') }}">Carrossel destaque</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('avaliacao-cardapio.index') }}">Avaliações</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('tamanhos-pizza.index') }}">Tamanhos de pizza</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('atendimento-garcom.index') }}">Atendimentos garçom</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('pedidos-cardapio.historico') }}">Histórico</a>
-                        </li>
-
-
-                        @if(file_exists(public_path('app.apk')))
-                        <li>
-                            <a href="{{ route('config-cardapio.download') }}">Download APP</a>
-                        </li>
-                        @endif
-                    </ul>
-                </div>
-            </li>
-            @endcan
             @endif
 
             @if(__isActivePlan(Auth::user()->empresa, 'NFSe'))
@@ -1398,35 +1237,6 @@
             @endcanany
             @endif
 
-            @if(__isActivePlan(Auth::user()->empresa, 'Planejamento de Custos'))
-            @canany(['planejamento_custo_view', 'projeto_custo_view'])
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarPlanejamentoCustos" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
-                    <i class="ri-dashboard-fill"></i>
-                    <span>Planejamento de Custos</span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarPlanejamentoCustos">
-                    <ul class="side-nav-second-level">
-
-                        @can('projeto_custo_view')
-                        <li>
-                            <a href="{{ route('projeto-custo.index') }}">Projetos</a>
-                        </li>
-                        @endcan
-
-                        @can('planejamento_custo_view')
-                        <li>
-                            <a href="{{ route('planejamento-custo.index') }}">Planejamentos</a>
-                        </li>
-                        @endcan
-                        
-                    </ul>
-                </div>
-            </li>
-            @endcan
-            @endif
-
             @if(__isActivePlan(Auth::user()->empresa, 'Controle de Fretes'))
             @canany(['tipo_despesa_frete_view', 'frete_view'])
             <li class="side-nav-item">
@@ -1449,7 +1259,7 @@
                         @endcan
                         @can('manutencao_veiculo_view')
                         <li>
-                            <a href="{{ route('manutencao-veiculos.index') }}">Manutenção de veículos</a>
+                            <a href="{{ route('manutencao-veiculos.index') }}">Manuetenção de veículos</a>
                         </li>
                         @endcan
                     </ul>
@@ -1548,6 +1358,60 @@
                 </div>
             </li>
             @endcanany
+            @endif
+
+            @if(__isActivePlan(Auth::user()->empresa, 'Cardapio'))
+            @can('cardapio_view')
+            <li class="side-nav-item">
+                <a data-bs-toggle="collapse" href="#sidebarCardapio" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
+                    <i class="ri-restaurant-2-line"></i>
+                    <span>Cardápio</span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="sidebarCardapio">
+                    <ul class="side-nav-second-level">
+                        <li>
+                            <a href="{{ route('config-cardapio.index') }}">Configuração</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('produtos-cardapio.categorias') }}">Categorias</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('produtos-cardapio.index') }}">Produtos</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('adicionais.index') }}">Adicionais</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('pedidos-cardapio.index') }}">Comandas</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('pedido-cozinha.index') }}">Controle de pedidos</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('carrossel.index') }}">Carrossel destaque</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('avaliacao-cardapio.index') }}">Avaliações</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('tamanhos-pizza.index') }}">Tamanhos de pizza</a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('atendimento-garcom.index') }}">Atendimentos garçom</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            @endcan
             @endif
 
             @if(env("ECOMMERCE") == 1)
@@ -1678,6 +1542,34 @@
             @endcan
             @endif
             @endif
+            
+            @if(env("CONECTAVENDA") == 1)
+                @if(__isActivePlan(Auth::user()->empresa, 'Conecta Venda'))
+                    @can('conecta_venda_view')
+                        <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#sidebarConectaVenda" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link">
+                                <i class="ri-shopping-cart-line"></i>
+                                <span> Conecta Venda </span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="sidebarConectaVenda">
+                                <ul class="side-nav-second-level">
+
+                                    <li>
+                                        <a href="{{ route('conecta-venda-config.index') }}">Configuração</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('conecta-venda-produtos.index') }}">Produtos</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('conecta-venda-pedidos.index') }}">Pedidos</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    @endcan
+                @endif
+            @endif
 
             @if(env("MARKETPLACE") == 1)
             @if(__isActivePlan(Auth::user()->empresa, 'Delivery'))
@@ -1718,9 +1610,6 @@
                             <a href="{{ route('bairros-empresa.index') }}">Bairros</a>
                         </li>
                         <li>
-                            <a href="{{ route('categoria-adicional.index') }}">Categorias de adicional</a>
-                        </li>
-                        <li>
                             <a href="{{ route('adicionais.index') }}">Adicionais</a>
                         </li>
                         <li>
@@ -1739,11 +1628,6 @@
                         <li>
                             <a href="{{ route('pedido-cozinha.index') }}">Controle de pedidos</a>
                         </li>
-
-                        <li>
-                            <a href="{{ route('impressao-pedido.index') }}">Controle de impressão</a>
-                        </li>
-
                         <li>
                             <a href="{{ route('clientes-delivery.index') }}">Clientes</a>
                         </li>
@@ -1826,41 +1710,6 @@
             @endif
             @endif
 
-            @if(env("IFOOD") == 1)
-            @if(__isActivePlan(Auth::user()->empresa, 'IFood'))
-            @canany(['ifood_view'])
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarIfood" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link">
-                    <img src="/icons/ifood.png" class="icon-menu">
-                    <span> IFood </span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarIfood">
-                    <ul class="side-nav-second-level">
-                        <li>
-                            <a href="{{ route('ifood-config.index') }}">Configuração</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('ifood-config-loja.index') }}">Configuração da loja</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('ifood-catalogos.index') }}">Catálogos</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('ifood-categoria-produtos.index') }}">Categorias de Produto</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('ifood-produtos.index') }}">Produtos</a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            @endcan
-            @endif
-            @endif
-
             @if(__isActivePlan(Auth::user()->empresa, 'CRM'))
             @canany(['crm_view'])
             <li class="side-nav-item">
@@ -1873,14 +1722,6 @@
                     <ul class="side-nav-second-level">
                         <li>
                             <a href="{{ route('crm.index') }}">Listar</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('mensagem-padrao-crm.index') }}">Mensagem padrão</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('mensagem-crm-logs.index') }}">Logs de Mensagem</a>
                         </li>
                     </ul>
                 </div>
@@ -1914,38 +1755,6 @@
             @endcan
             @endif
 
-            @if(__isActivePlan(Auth::user()->empresa, 'VendiZap'))
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarVendiZap" aria-expanded="false" aria-controls="sidebarPages" class="side-nav-link">
-                    <i class="ri-whatsapp-fill"></i>
-                    <span> VendiZap </span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarVendiZap">
-                    <ul class="side-nav-second-level">
-                        <li>
-                            <a href="{{ route('vendizap-config.index') }}">Configuração</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('vendizap-categorias.index') }}">Categorias</a>
-                        </li>
-                        @can('variacao_view')
-                        <li>
-                            <a href="{{ route('variacoes.index') }}">Variações</a>
-                        </li>
-                        @endcan
-                        <li>
-                            <a href="{{ route('vendizap-produtos.index') }}">Produtos</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('vendizap-pedidos.index') }}">Pedidos</a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            @endif
-
-            @if(!__isContador())
             @canany(['natureza_operacao_view', 'emitente_view'])
             <li class="side-nav-item" id="step5">
                 <a data-bs-toggle="collapse" href="#sidebarConfig" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
@@ -1963,25 +1772,19 @@
 
                         @can('natureza_operacao_view')
                         <li>
-                            <a href="{{ route('natureza-operacao.index') }}">Natureza de operação</a>
+                            <a href="{{ route('natureza-operacao.index') }}">Natureza de Operação</a>
                         </li>
                         @endcan
 
-                        @if(Auth::user()->empresa && Auth::user()->empresa->empresa->receber_com_boleto)
-                        <li>
-                            <a href="{{ route('minhas-faturas.index') }}">Minhas faturas</a>
-                        </li>
-                        @endif
-
                         @can('email_config_view')
                         <li>
-                            <a href="{{ route('email-config.index') }}">Configuração de email</a>
+                            <a href="{{ route('email-config.index') }}">Configuração de Email</a>
                         </li>
                         @endcan
 
                         @can('escritorio_contabil_view')
                         <li>
-                            <a href="{{ route('escritorio-contabil.index') }}">Escritório contábil</a>
+                            <a href="{{ route('escritorio-contabil.index') }}">Escritório Contábil</a>
                         </li>
                         @endcan
 
@@ -2005,7 +1808,7 @@
 
                         @can('contigencia_view')
                         <li>
-                            <a href="{{ route('contigencia.index') }}">Contingência</a>
+                            <a href="{{ route('contigencia.index') }}">Contigência</a>
                         </li>
                         @endcan
 
@@ -2027,29 +1830,21 @@
 
                         @can('metas_view')
                         <li>
-                            <a href="{{ route('metas.index') }}">Configuração de metas</a>
+                            <a href="{{ route('metas.index') }}">Configuração de Metas</a>
                         </li>
                         @endcan
-
-                        @can('impressora_pedido_view')
-                        <li>
-                            <a href="{{ route('impressoras-pedido.index') }}">Impressoras de pedido</a>
-                        </li>
-                        @endcan
-                        
                     </ul>
                 </div>
             </li>
             @endcanany
 
             @endif
-            @endif
 
             @if(Auth::user()->empresa && __isContador())
             <li class="side-nav-item">
                 <a data-bs-toggle="collapse" href="#sidebarCad" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
                     <i class="ri-draft-fill"></i>
-                    <span>Cadastros da empresa</span>
+                    <span>Cadastros</span>
                     <span class="menu-arrow"></span>
                 </a>
                 <div class="collapse" id="sidebarCad">
@@ -2062,18 +1857,6 @@
                         </li>
                         <li>
                             <a href="{{ route('contador-empresa.fornecedores') }}">Fornecedores</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('contador-natureza-operacao.index') }}">Natureza de Operação</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('contador-produto-tributacao.index') }}">Configuração Padrão Fiscal</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('contador.show') }}">Configuração</a>
                         </li>
                     </ul>
                 </div>
@@ -2098,31 +1881,6 @@
                         </li>
                         <li>
                             <a href="{{ route('contador-empresa.mdfe') }}">MDFe</a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-
-            <li class="side-nav-item">
-                <a data-bs-toggle="collapse" href="#sidebarGerenciamento" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
-                    <i class="ri-briefcase-line"></i>
-                    <span>Gerenciamento</span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <div class="collapse" id="sidebarGerenciamento">
-                    <ul class="side-nav-second-level">
-                        <li>
-                            <a href="{{ route('contador-empresas.index') }}">Empresas</a>
-                        </li>
-
-                        @if(__isContadorPlano())
-                        <li>
-                            <a href="{{ route('contador-planos.index') }}">Planos</a>
-                        </li>
-                        @endif
-
-                        <li>
-                            <a href="{{ route('contador-gerencia.index') }}">Gerenciar planos</a>
                         </li>
                     </ul>
                 </div>

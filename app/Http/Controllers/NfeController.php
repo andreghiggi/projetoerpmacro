@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ConectaVendaPedido;
 use App\Models\Cidade;
 use App\Models\Fornecedor;
 use App\Models\Cliente;
@@ -867,6 +868,13 @@ class NfeController extends Controller
                 if ($request->pedido_woocommerce_id) {
                     $pedido = WoocommercePedido::findOrFail($request->pedido_woocommerce_id);
                     $pedido->nfe_id = $nfe->id;
+                    $pedido->save();
+                }
+
+                if ($request->pedido_conecta_venda_id) {
+                    $pedido = ConectaVendaPedido::findOrFail($request->pedido_conecta_venda_id);
+                    $pedido->nfe_id = $nfe->id;
+                    $pedido->situacao = 'Finalizado';
                     $pedido->save();
                 }
 

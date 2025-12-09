@@ -198,6 +198,7 @@ class Permission extends \Spatie\Permission\Models\Permission
             array('name' => 'delivery_view', 'description' => 'Visualiza delivery'),
             array('name' => 'mercado_livre_view', 'description' => 'Visualiza mercado livre'),
             array('name' => 'nuvem_shop_view', 'description' => 'Visualiza nuvem shop'),
+            array('name' => 'conecta_venda_view', 'description' => 'Visualiza conecta venda'),
 
             array('name' => 'relatorio_view', 'description' => 'Visualiza relatório'),
             array('name' => 'caixa_view', 'description' => 'Visualiza caixa'),
@@ -405,6 +406,9 @@ class Permission extends \Spatie\Permission\Models\Permission
             array('name' => 'garantias_create', 'description' => 'Cria garantias'),
             array('name' => 'garantias_edit', 'description' => 'Edita garantias'),
             array('name' => 'garantias_delete', 'description' => 'Deleta garantias'),
+
+            array('name' => 'relatorios_sistema_view', 'description' => 'Visualiza Relatórios do sistema'),
+            array('name' => 'relatorios_comerciais_view', 'description' => 'Visualiza Relatórios do comerciais do sistema'),
         ];
     }
 }

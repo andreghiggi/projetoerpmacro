@@ -22,6 +22,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('fila-envio:cron')->dailyAt('08:00');
         $schedule->command('reativar:cron')->dailyAt('09:00');
 
+        $schedule->command('app:sync-orders-conecta-venda')->everyFiveMinutes();
+        $schedule->command('app:sync-estoque')->everyTenMinutes();
+
     }
 
     /**

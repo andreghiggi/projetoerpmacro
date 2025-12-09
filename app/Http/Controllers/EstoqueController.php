@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProdutoVariacao;
+use App\Models\VariacaoModelo;
+
 use Illuminate\Http\Request;
 use App\Models\Estoque;
 use App\Models\CategoriaProduto;
@@ -143,8 +146,37 @@ class EstoqueController extends Controller
                 ]);
             }
 
-            $this->util->incrementaEstoque($request->produto_id, $request->quantidade, $request->produto_variacao_id, $request->local_id);
+            $locais = isset($request->locais) ? $request->locais : [];
+            if($request->variavel){
+                for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
+                    $file_name = '';
+                    if(isset($request->imagem_variacao[$i])){
+                        // requisição com imagem
+                        $imagem = $request->imagem_variacao[$i];
+                        $file_name = $this->util->uploadImageArray($imagem, '/produtos');
+                    }
 
+                    $dataVariacao = [
+                        'produto_id' => $request->produto_id,
+                        'descricao' => $request->descricao_variacao[$i],
+                        'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
+                        'codigo_barras' => $request->codigo_barras_variacao[$i],
+                        'referencia' => $request->referencia_variacao[$i],
+                        'imagem' => $file_name
+                    ];
+                    $variacao = ProdutoVariacao::create($dataVariacao);
+
+                    if($request->estoque_variacao[$i] && sizeof($locais) <= 1){
+                        $qtd = __convert_value_bd($request->estoque_variacao[$i]);
+                        $this->util->incrementaEstoque($request->produto_id, $qtd, $variacao->id);
+                        $transacao = Estoque::where('produto_id', $request->produto_id)->first();
+                        $tipo = 'incremento';
+                        $codigo_transacao = $transacao->id;
+                        $tipo_transacao = 'alteracao_estoque';
+                        $this->util->movimentacaoProduto($request->produto_id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao->id);
+                    }
+                }
+            }
             $transacao = Estoque::where('produto_id', $request->produto_id)->orderBy('id', 'desc')->first();
             $tipo = 'incremento';
             $codigo_transacao = $transacao->id;
@@ -164,61 +196,77 @@ class EstoqueController extends Controller
     }
 
     public function update(Request $request, $id){
+        try {
+        // dd($request->all());
+        
+            if (isset($request->local_id)) {
+                for ($i = 0; $i < sizeof($request->local_id); $i++) {
+                    $produto_variacao_id = $request->produto_variacao_id[$i] ?? null;
+
+                    $quantidade = str_replace('.','', $request->quantidade[$i] );
+
+                    $item = Estoque::where('id', $id)
+                        ->where('local_id', $request->local_id[$i])
+                        ->when($produto_variacao_id, function ($q) use ($produto_variacao_id) {
+                            return $q->where('produto_variacao_id', $produto_variacao_id);
+                        })
+                        ->first();
 
 
-        try{
-                // dd($request->all());
-
-            if(isset($request->local_id)){
-                for($i=0; $i<sizeof($request->local_id); $i++){
-
-                    $item = Estoque::where('id', $id)->where('local_id', $request->local_id[$i])->first();
-
-                    if($item){
+                    if ($item) {
                         $diferenca = 0;
                         $tipo = 'incremento';
 
-                        if($item->quantidade > $request->quantidade[$i]){
-                            $diferenca = $item->quantidade - $request->quantidade[$i];
+                        if ($item->quantidade > $quantidade) {
+                            $diferenca = $item->quantidade - $quantidade;
                             $tipo = 'reducao';
-                        }else{
-                            $diferenca = $request->quantidade[$i] - $item->quantidade;
+                        } else {
+                            $diferenca = $quantidade - $item->quantidade;
                         }
-                        $item->quantidade = $request->quantidade[$i];
+                        $item->quantidade = $quantidade;
                         $item->save();
 
                         $codigo_transacao = $item->id;
                         $tipo_transacao = 'alteracao_estoque';
 
-                        $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                        $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $produto_variacao_id);
 
-
-                        if(isset($request->novo_estoque)){
+                        if (isset($request->novo_estoque)) {
 
                             $firstLocation = Localizacao::where('empresa_id', $item->produto->empresa_id)->first();
                             ProdutoLocalizacao::updateOrCreate([
-                                'produto_id' => $item->produto_id, 
+                                'produto_id' => $item->produto_id,
                                 'localizacao_id' => $firstLocation->id
                             ]);
                         }
                         __createLog($request->empresa_id, 'Estoque', 'editar', $item->produto->nome . " estoque alterado!");
 
-                    }else{
+                    } else {
                         // die;
                         //criar localizacão
-                        if($request->local_id[$i] != $request->local_anteior_id[$i]){
-                            $anterior = Estoque::where('id', $id)->where('local_id', $request->local_anteior_id[$i])->first();
+                        if ($request->local_id[$i] != $request->local_anteior_id[$i]) {
+                            $produto_variacao_id = $request->produto_variacao_id[$i] ?? null;
+                            $anterior = Estoque::where('id', $id)
+                                ->where('local_id', $request->local_anteior_id[$i])
+                                ->when($produto_variacao_id, function ($q) use ($produto_variacao_id) {
+                                    return $q->where('produto_variacao_id', $produto_variacao_id);
+                                })
+                                ->first();
+
+
                             $anterior->quantidade = 0;
                             $anterior->save();
 
                             ProdutoLocalizacao::updateOrCreate([
-                                'produto_id' => $anterior->produto_id, 
+                                'produto_id' => $anterior->produto_id,
                                 'localizacao_id' => $request->local_id[$i]
                             ]);
 
-                            $this->util->incrementaEstoque($anterior->produto_id, $request->quantidade[$i], null, $request->local_id[$i]);
+                            $this->util->incrementaEstoque($anterior->produto_id, $quantidade, null, $request->local_id[$i]);
 
-                            $transacao = Estoque::where('produto_id', $anterior->produto_id)->orderBy('id', 'desc')->first();
+                            $transacao = Estoque::where('produto_id', $anterior->produto_id)
+                                ->where('produto_variacao_id', $produto_variacao_id)
+                                ->first();
 
                             $tipo = 'incremento';
                             $codigo_transacao = $transacao->id;
@@ -226,36 +274,101 @@ class EstoqueController extends Controller
 
                             $anterior->delete();
 
-                            $this->util->movimentacaoProduto($anterior->produto_id, $request->quantidade[$i], $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, null);
+                            $this->util->movimentacaoProduto($anterior->produto_id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $produto_variacao_id);
 
                         }
                     }
 
                 }
 
-            }else{
-                $item = Estoque::findOrFail($id);
+            } else if(!$request->variacao_id){
 
-                $request->quantidade = __convert_value_bd($request->quantidade);
+                $quantidade = str_replace('.','', $request->quantidade );
+
+                $item = Estoque::where('id', $id)->first();
+
                 $diferenca = 0;
                 $tipo = 'incremento';
 
-                if($item->quantidade > $request->quantidade){
-                    $diferenca = $item->quantidade - $request->quantidade;
+                if ($item->quantidade > $quantidade) {
+                    $diferenca = $item->quantidade - $quantidade;
                     $tipo = 'reducao';
-                }else{
-                    $diferenca = $request->quantidade - $item->quantidade;
+                } else {
+                    $diferenca = $quantidade - $item->quantidade;
                 }
-                $item->quantidade = $request->quantidade;
+
+                $item->quantidade = $quantidade;
                 $item->save();
 
                 $codigo_transacao = $item->id;
                 $tipo_transacao = 'alteracao_estoque';
 
-                $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                $this->util->movimentacaoProduto(
+                    $item->produto_id,
+                    $diferenca,
+                    $tipo,
+                    $codigo_transacao,
+                    $tipo_transacao,
+                    \Auth::user()->id,
+                    null
+                );
+
                 __createLog($request->empresa_id, 'Estoque', 'editar', $item->produto->nome . " - quantidade " . $request->quantidade);
+                session()->flash("flash_success", "Estoque alterado com sucesso!");
+                return redirect()->route('estoque.index');
+            }else
+                $estoqueAnterior = Estoque::findOrFail($id);
+                $produto_id = $estoqueAnterior->produto_id;
+
+            $ids = $request->variacao_id;
+                $quantidades = $request->quantidade_variacao;
+
+            for ($i = 0; $i < count($ids); $i++) {
+                $produto_variacao_id = $ids[$i];
+                $quantidade = $quantidades[$i];
+
+                $item = Estoque::where('produto_variacao_id', $produto_variacao_id)->first();
+
+                if(!$item){
+                    $item = new Estoque();
+                    $item->produto_id = $produto_id;
+                    $item->produto_variacao_id = $produto_variacao_id;
+                    $item->local_id = $request->local_id[0] ?? 2;
+                    $item->quantidade = 0;
+                    $item->save();
+                    $item->loadMissing('produto');
+                }
+
+                $diferenca = 0;
+                $tipo = 'incremento';
+
+                if ($item->quantidade > $quantidade) {
+                    $diferenca = $item->quantidade - $quantidade;
+                    $tipo = 'reducao';
+                } else {
+                    $diferenca = $quantidade - $item->quantidade;
+                }
+
+                $item->quantidade = $quantidade;
+                $item->save();
+                $codigo_transacao = $item->id;
+                $tipo_transacao = 'alteracao_estoque';
+
+                $this->util->movimentacaoProduto(
+                    $item->produto_id,
+                    $diferenca,
+                    $tipo,
+                    $codigo_transacao,
+                    $tipo_transacao,
+                    \Auth::user()->id,
+                    $produto_variacao_id
+                );
+
+                __createLog($request->empresa_id, 'Estoque', 'editar', $item->produto->nome . " - quantidade " . $quantidade);
             }
+
             session()->flash("flash_success", "Estoque alterado com sucesso!");
+
         }catch (\Exception $e) {
             // echo $e->getLine();
             // die;

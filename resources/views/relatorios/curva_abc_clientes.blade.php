@@ -8,6 +8,7 @@
 			<th class="text-left">Qtd. vendas</th>
 			<th class="text-left">Total vendas</th>
 			<th class="text-left">Percentual</th>
+			<th class="text-left">Categoria</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -17,6 +18,7 @@
 			<td class="text-left">{{ $item['count'] }}</td>
 			<td class="text-left">{{ __moeda($item['total']) }}</td>
 			<td class="text-left">{{ $item['percentual'] }}</td>
+			<td class="text-left">{{ $item['categoria'] }}</td>
 		</tr>
 		@endforeach
 	</tbody>

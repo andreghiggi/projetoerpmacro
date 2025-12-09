@@ -156,6 +156,7 @@ class HomeController extends Controller
 
         $homeComponentes = [];
         $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+        
         if($configGeral != null){
             $homeComponentes = $configGeral != null && $configGeral->home_componentes ? json_decode($configGeral->home_componentes) : [];
 

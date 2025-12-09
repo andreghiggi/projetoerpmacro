@@ -114,6 +114,10 @@ class Nfe extends Model
         return $this->hasOne(PedidoMercadoLivre::class, 'nfe_id');
     }
 
+    public function pedidoConectaVenda()
+    {
+        return $this->hasOne(ConectaVendaPedido::class, 'nfe_id');
+    }
     public function pedidoNuvemShop()
     {
         return $this->hasOne(NuvemShopPedido::class, 'nfe_id');

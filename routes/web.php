@@ -410,6 +410,14 @@ Route::get('nuvem-shop-produtos-galery-delete', 'NuvemShopProdutoController@gale
 Route::post('nuvem-shop-produtos-galery-store', 'NuvemShopProdutoController@galeryStore')
 ->name('nuvem-shop-produtos-galery-store');
 
+Route::resource('conecta-venda-config', 'ConectaVendaConfigController');
+Route::resource('conecta-venda-pedidos', 'ConectaVendaPedidoController');
+Route::resource('conecta-venda-produtos', 'ConectaVendaProdutoController');
+Route::get('conecta-venda-pedidos/{pedido}/finalizar', 'ConectaVendaPedidoController@finishOrder')->name('conecta-venda-pedidos.finishOrder');
+Route::get('conecta-venda-pedidos/{pedido}/createOrder', 'ConectaVendaPedidoController@createOrder')->name('conecta-venda-pedidos.createOrder');
+
+
+
 Route::resource('woocommerce-config', 'WoocommerceConfigController');
 Route::resource('woocommerce-categorias', 'WoocommerceCategoriaController');
 Route::resource('woocommerce-produtos', 'WoocommerceProdutoController');
@@ -1146,4 +1154,12 @@ Route::resource('payment', 'PaymentController');
 Route::get('payment/pix/{transacao_id}', 'PaymentController@pix')->name('payment.pix');
 Route::get('payment-asaas/{plano_id}', 'PaymentController@asaas')->name('payment.asaas');
 Route::get('xml-download/{chave}', 'DownloadXmlController@download');
+});
+
+// Como eu estava fazendo relatórios:
+Route::group(['prefix' => 'relatorios-sistema'], function () {
+    Route::get('comerciais', 'RelatoriosSistemaController@comerciais')->name('relatorios-comerciais.index');
+    Route::group(['prefix' => 'comerciais'], function () {
+        Route::get('vendas', 'RelatoriosSistemaController@comerciais_vendas')->name('relatorios-comerciais.vendas');
+    });
 });

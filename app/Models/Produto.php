@@ -32,7 +32,9 @@ class Produto extends Model
 		'espessura', '_id_import', 'observacao', 'observacao2', 'observacao3', 'observacao4', 'tipo_producao',
 		'numero_sequencial', 'valor_prazo', 'ifood_id', 'vendizap_id', 'vendizap_valor', 'destaque_cardapio', 'oferta_cardapio',
 		'sub_variacao_modelo_id', 'peso_bruto', 'local_armazenamento', 'pICMSEfet', 'pRedBCEfet',
-		'cst_ibscbs', 'cclass_trib', 'perc_ibs_uf', 'perc_ibs_mun', 'perc_cbs', 'perc_dif', 'tipo_item_sped', 'prazo_garantia'
+		'cst_ibscbs', 'cclass_trib', 'perc_ibs_uf', 'perc_ibs_mun', 'perc_cbs', 'perc_dif', 'tipo_item_sped', 'prazo_garantia',
+		'conecta_venda_id', 'conecta_venda_descricao', 'conecta_venda_valor', 'conecta_venda_status','conecta_venda_qtd_minima',
+        'conecta_venda_multiplicador'
 	];
 
 	protected $appends = [ 'imgApp' ];
@@ -43,18 +45,47 @@ class Produto extends Model
 
 	public function getImgAppAttribute()
 	{
-		if($this->imagem == ""){
-			return env("APP_URL") . "/imgs/no-image.png";
-		}
-		return env("APP_URL") . "/uploads/produtos/$this->imagem";
+		// @NOTE:
+		// Removendo o que existia, e buscando pela função nova imagens()
+		return $this->imagens()[0];
+
+		// $imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
+		// if(!$imagem == ""){
+		// 	return env("APP_URL") . "/imgs/no-image.png";
+		// }
+		// return env("APP_URL") . "/uploads/produtos/$imagem->imagem";
 	}
 
 	public function getImgAttribute()
 	{
-		if($this->imagem == ""){
-			return "/imgs/no-image.png";
+		// @NOTE:
+		// Removendo o que existia, e buscando pela função nova imagens()
+		return $this->imagens()[0];
+
+		// $imagem = ProdutoImagens::where("produto_id", $this->id)->orderBy('ordem')->first();
+		// if(!$imagem){
+		// 	return "/imgs/no-image.png";
+		// }
+		// return "/uploads/produtos/$imagem->imagem";
+	}
+
+	public function imagens( $url_completa = false )
+	{
+		$url = $url_completa ? env("APP_URL") : '';
+		$imagem = ProdutoImagens::where([
+			["produto_id", $this->id],
+			["produto_variacao_id", 0],
+		])
+		->orderBy('ordem')->get();
+		
+		$imagens = array_map( function($img) use($url) {
+			return "$url/uploads/produtos/$img[imagem]";	
+		} ,$imagem->toArray()  );
+
+		if($imagem->isEmpty()){
+			return ["$url/imgs/no-image.png"];
 		}
-		return "/uploads/produtos/$this->imagem";
+		return $imagens;
 	}
 
 	public function estoqueAtual(){
