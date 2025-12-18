@@ -103,7 +103,8 @@
 
                                         @endif -->
                                     </td>
-                                    <td>{{ __moeda($item->produto->valor_unitario) }}</td>
+                                    
+                                    <td>{{ __moeda($item->produtoVariacao->valor ?? '0.00') }}</td>
                                     <td>{{ $item->produto->unidade }}</td>
                                     @if(__countLocalAtivo() > 1)
                                     <th>{{ $item->local->descricao }}</th>

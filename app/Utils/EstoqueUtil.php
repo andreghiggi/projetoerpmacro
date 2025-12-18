@@ -8,6 +8,7 @@ use App\Models\Produto;
 use App\Models\Localizacao;
 use App\Models\ConectaVendaConfig;
 use App\Models\MovimentacaoProduto;
+use App\Models\EstoqueAtualProduto;
 use Illuminate\Support\Facades\Auth;
 
 class EstoqueUtil

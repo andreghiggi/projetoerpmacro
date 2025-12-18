@@ -78,4 +78,8 @@ class ProdutoVariacao extends Model
         });
     }
 
+    public function descricao(){
+        return $this->produto->nome . " - " . $this->descricao;
+    }
+
 }

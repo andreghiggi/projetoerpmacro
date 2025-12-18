@@ -371,6 +371,7 @@ class ProdutoController extends Controller
 
     public function store(Request $request)
     {
+        
         $this->__validate($request);
         $produto = null;
         try {
@@ -488,7 +489,7 @@ class ProdutoController extends Controller
                         ]);
                     }
                 }
-                // dd($request->all());
+                $variacoes_imagens = [];
                 if($request->variavel){
                     for($i=0; $i<sizeof($request->valor_venda_variacao); $i++){
                         $produto_variacao_imagens = [];
@@ -497,15 +498,17 @@ class ProdutoController extends Controller
                             $produto_variacao_imagens = $this->util->uploadFile($imagem, '/produtos' );
                         }
 
+                        
                         $dataVariacao = [
-                            'produto_id' => $produto->id,
-                            'descricao' => $request->descricao_variacao[$i],
-                            'valor' => __convert_value_bd($request->valor_venda_variacao[$i]),
+                            'produto_id'    => $produto->id,
+                            'descricao'     => $request->descricao_variacao[$i],
+                            'valor'         => __convert_value_bd($request->valor_venda_variacao[$i]),
                             'codigo_barras' => $request->codigo_barras_variacao[$i],
-                            'referencia' => $request->referencia_variacao[$i],
+                            'referencia'    => $request->referencia_variacao[$i],
                             // 'imagem' => $file_name,
-                            'variacao_modelo_item_id' => $request->variacao_modelo_item_id[$i]
+                            'variacao_modelo_item_id' => $request->variacao_modelo_id
                         ];
+                        
                         $variacao = ProdutoVariacao::create($dataVariacao);
 
                         $variacoes_imagens_this_var = [];
@@ -615,6 +618,7 @@ class ProdutoController extends Controller
                         }
                         
                     } catch (\Exception $e) {
+                        die($e);
                         \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
                         session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
                     }
@@ -696,6 +700,7 @@ if ($request->composto == true) {
     return redirect()->route('produto-composto.create', [$produto->id]);
 }
 } catch (\Exception $e) {
+    die($e);
     // echo $e->getMessage() . "<br>";
     // echo $e->getLine() . "<br>";
     // die;
@@ -956,7 +961,7 @@ public function update(Request $request, $id)
                         $tipo_transacao = 'alteracao_estoque';
                         $this->utilEstoque->movimentacaoProduto($produto->id, $request->estoque_inicial ?? 0, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
                     }else{
-                        session()->flash("flash_error", "Esta variação $variacao->descricao já possui vendas ou compras não é possivel remover");
+                        session()->flash("flash_error", "Esta variação $produto->descricao já possui vendas ou compras não é possivel remover");
                         return redirect()->back();
                     }
                 }
@@ -2808,10 +2813,15 @@ public function alterarValorEstoque(){
 public function buscarAjuste(Request $request){
 
     $local_id = $request->local_id;
-    $query = Produto::query();
+    // $query = Produto::query();
+    $query = ProdutoVariacao::query();
+    $query->join('produtos', 'produto_variacaos.produto_id', '=', 'produtos.id' );
+    $query->groupBy('produto_variacaos.id');
+    
 
     if ($request->nome) {
-        $query->where('nome', 'like', "%{$request->nome}%");
+        $query->Where('produtos.nome', 'like', "%{$request->nome}%")
+        ->orWhere('produto_variacaos.referencia', 'like', "%{$request->nome}%");
     }
 
     if ($request->codigo_barras) {
@@ -2831,16 +2841,17 @@ public function buscarAjuste(Request $request){
         ->where('local_id', $request->local_id);
     }
 
-    $produtos = $query->select('produtos.*')->where('empresa_id', $request->empresa_id)->take(50)->get();
+    $produtos = $query->select('produto_variacaos.*')
+    ->where('empresa_id', $request->empresa_id)->take(50)->get();
 
     return view('produtos.partials.tabela_ajuste', compact('produtos', 'local_id'));
 }
 
 public function alterarCampo(Request $request)
 {
-    $produto = Produto::find($request->id);
+    $produto_variacao = ProdutoVariacao::find($request->id);
 
-    if (!$produto) {
+    if (!$produto_variacao) {
         return response()->json(['erro' => 'Produto não encontrado'], 404);
     }
 
@@ -2850,38 +2861,37 @@ public function alterarCampo(Request $request)
 
     // atualizar
     if($campo == 'valor_venda'){
-        $produto->valor_unitario = __convert_value_bd($valor);
+        $produto_variacao->valor = __convert_value_bd($valor);
     }
 
     if($campo == 'valor_compra'){
-        $produto->valor_compra = __convert_value_bd($valor);
+        $produto_variacao->produto->valor_compra = __convert_value_bd($valor);
     }
 
-    if($produto->valor_compra > 0 && $produto->valor_unitario > 0){
-        $produto->percentual_lucro = ($produto->valor_unitario / $produto->valor_compra)*100;
+    if($produto_variacao->valor_compra > 0 && $produto_variacao->valor_unitario > 0){
+        $produto_variacao->produto->percentual_lucro = ($produto_variacao->valor_unitario / $produto_variacao->valor_compra)*100;
     }else{
-        $produto->percentual_lucro = 100;
+        $produto_variacao->produto->percentual_lucro = 100;
     }
-    $produto->save();
+    $produto_variacao->save();
 
     if($campo == 'quantidade_estoque'){
-        $estoque = $produto->estoque;
+        $estoque = $produto_variacao->estoque;
         if($estoque == null){
 
-            $this->utilEstoque->incrementaEstoque($produto->id, $valor, null, $local_id);
-            $transacao = Estoque::where('produto_id', $produto->id)->orderBy('id', 'desc')->first();
+            $this->utilEstoque->incrementaEstoque($produto_variacao->produto_id, $valor, $produto_variacao->id, $local_id);
+            $transacao = Estoque::where('produto_id', $produto_variacao->id)->orderBy('id', 'desc')->first();
             $tipo = 'incremento';
             $codigo_transacao = $transacao->id;
             $tipo_transacao = 'alteracao_estoque';
-            $this->utilEstoque->movimentacaoProduto($produto->id, $valor, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $local_id);  
+            $this->utilEstoque->movimentacaoProduto($produto_variacao->produto_id, $valor, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $local_id);  
         }else{
             if($local_id){
-                $estoque = Estoque::where('produto_id', $produto->id)->where('local_id', $local_id)->first();
+                $estoque = Estoque::where('produto_variacao_id', $produto_variacao->id)->where('local_id', $local_id)->first();
             }
 
             if($estoque){
                 // return response()->json($estoque, 401);
-
                 $estoque->quantidade = $valor;
                 $estoque->save();
             }
