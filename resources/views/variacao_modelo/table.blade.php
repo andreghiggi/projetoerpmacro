@@ -1,7 +1,11 @@
 @if(isset($sub) && $sub != null)
 
+@php($counter = -1)
+
 @foreach($item->itens as $index => $i)
 @foreach($sub->itens as $s)
+@php($counter++)
+
 <tr class="dynamic-form">
 	<td>
 		<input type="text" class="form-control" name="descricao_variacao[]" value="{{ $i->nome }} {{ $s->nome }}" required readonly>
@@ -23,21 +27,17 @@
 	</td>
 	<td>
 
-	@if( $item->imagens() )
-	@foreach($item->imagens() as $index => $imagem) 
 
-	<div id="image_variacao_frame_{{ $index }}_0" class="card form-input" style="max-width: 100%; width: 150px; margin: 0;">
+	 <div id="image_variacao_frame_{{ $counter }}_0" class="card form-input" style="max-width: 100%; width: 150px; margin: 0;">
         <div class="preview" style="width: 100%; text-align: center;">
-            <button type="button" id="image_variacao_remove_{{ $index }}_0" class="btn btn-link-danger btn-sm btn-danger">x</button>
-            <button type="button" id="image_variacao_add_{{ $index }}_0" class="btn btn-link-primary btn-sm btn-primary">+</button>
-            <img id="image_variacao_preview_{{ $index }}_0" src="/imgs/no-image.png" style="max-width: 100%; width: 100%; height: auto; display: block;">
+            <button type="button" id="image_variacao_remove_{{ $counter }}_0" class="btn btn-link-danger btn-sm btn-danger">x</button>
+            <button type="button" id="image_variacao_add_{{ $counter }}_0" class="btn btn-link-primary btn-sm btn-primary">+</button>
+            <img id="image_variacao_preview_{{ $counter }}_0" src="/imgs/no-image.png" style="max-width: 100%; width: 100%; height: auto; display: block;">
         </div>
-        <label id="image_variacao_input_label_{{ $index }}_0" for="image_variacao_input_{{ $index }}_0" style="text-align: center; display: block; margin: 5px 0;">Imagem</label>
-        <input type="file" id="image_variacao_input{{ $index }}_0" name="image_variacao_list[{{ $index }}][]" accept="image/*">
+        <label id="image_variacao_input_label_{{ $counter }}_0" for="image_variacao_input_{{ $counter }}_0" style="text-align: center; display: block; margin: 5px 0;">Imagem</label>
+        <input type="file" id="image_variacao_input{{ $counter }}_0" name="image_variacao_list[{{ $counter }}][]" accept="image/*">
     </div>
 
-	@endforeach
-	@endif
 
 		<!-- <input type="file" name="imagem_variacao[{{ $index }}][]" accept="image/*" onchange="showPreview(event);"> -->
 		<!-- <input class="ignore" accept="image/*" type="file" class="form-control" name="imagem_variacao[]" value=""> -->
