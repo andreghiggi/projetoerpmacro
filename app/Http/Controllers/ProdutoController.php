@@ -305,10 +305,17 @@ class ProdutoController extends Controller
         $item = Produto::with('variacoes')->findOrFail($id);
         
         $variacoesIds = $item->variacoes->pluck('id')->toArray();
-        $estoques = Estoque::whereIn('produto_variacao_id', $variacoesIds)->groupBy('produto_variacao_id')->get();
+        $estoques = Estoque::whereIn('produto_variacao_id', $variacoesIds)->groupBy('produto_variacao_id')
+        ->get();
+        
+        $estoques_table = [];
+        foreach ($estoques as $estoque) {
+            $estoques_table[ $estoque->produto_variacao_id ] = $estoque;
+        }
+        
         foreach ($item->variacoes as $variacao) {
-            $estoqueVariacao = $estoques[$variacao->id] ?? collect();
-            $variacao->estoque_total = $estoqueVariacao->sum('quantidade');
+            $estoque_qtde            = intval($estoques_table[$variacao->id]->quantidade);
+            $variacao->estoque_total = $estoque_qtde;
         }
         
         __validaObjetoEmpresa($item);
@@ -595,35 +602,7 @@ class ProdutoController extends Controller
                 if($request->nuvemshop){
                     $resp = $this->utilNuvemShop->create($request, $produto);
                 }
-                
-                if($request->conectavenda){
-                    $produto->conecta_venda_qtd_minima    = $request->conecta_venda_qtd_minima;
-                    $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
-                    $produto->solicita_observacao         = $request->solicita_observacao;
-                    $emp                                  = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
-                    if(!$emp){
-                        session()->flash('flash_error', 'Conecta Venda não configurado!');
-                        return $produto;
-                    }
-                    try {
-                        $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
-                        if (isset($retornoConecta['produtos_ids'])) {
-                            $produto->conecta_venda_id              = $produto->id;
-                            $produto->conecta_venda_status          = 1;
-                            $produto->conecta_venda_data_publicacao = $request->created_at;
-                            $produto->save();
-                        } else {
-                            \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
-                            session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
-                        }
-                        
-                    } catch (\Exception $e) {
-                        die($e);
-                        \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                        session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
-                    }
-                }
-                
+
                 // Produto Imagens
                 
                 if( $produto_imagens ) {
@@ -657,6 +636,36 @@ class ProdutoController extends Controller
                     }
                     ProdutoImagens::create_all( $produto_imagens_create );
                 }
+                
+                if($request->conectavenda){
+                    $produto->conecta_venda_qtd_minima    = $request->conecta_venda_qtd_minima;
+                    $produto->conecta_venda_multiplicador = $request->conecta_venda_multiplicador;
+                    $produto->solicita_observacao         = $request->solicita_observacao;
+                    $emp                                  = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+                    if(!$emp){
+                        session()->flash('flash_error', 'Conecta Venda não configurado!');
+                        return $produto;
+                    }
+                    try {
+                        $retornoConecta = $this->utilConectaVenda->create($emp, $produto);
+                        if (isset($retornoConecta['produtos_ids'])) {
+                            $produto->conecta_venda_id              = $produto->id;
+                            $produto->conecta_venda_status          = 1;
+                            $produto->conecta_venda_data_publicacao = $request->created_at;
+                            $produto->save();
+                        } else {
+                            \Log::warning('Produto integrado, mas sem ID retornado pelo Conecta Venda.', $retornoConecta);
+                            session()->flash('flash_warning', 'Produto integrado ao Conecta Venda, mas não retornou ID.');
+                        }
+                        
+                    } catch (\Exception $e) {
+                        die($e);
+                        \Log::error('Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+                        session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
+                    }
+                }
+                
+                
 
 
                 return $produto;
@@ -2898,6 +2907,12 @@ public function alterarCampo(Request $request)
         }
     }
 
+    $produto = $produto_variacao->produto;
+
+    if(plano_ativo("Conecta Venda") && $produto->conecta_venda_id){
+        $conecta_config = ConectaVendaConfig::where('empresa_id', $request->empresa_id)->first();
+        $this->utilConectaVenda->create( $conecta_config, $produto);
+    }    
 
     return response()->json(['sucesso' => true]);
 }

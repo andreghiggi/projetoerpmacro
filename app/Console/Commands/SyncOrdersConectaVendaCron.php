@@ -7,6 +7,7 @@ use App\Models\ConectaVendaPedido;
 use App\Models\Empresa;
 use App\Utils\ConectaVendaSincronizador;
 use App\Utils\HttpUtil;
+use App\Utils\EstoqueUtil;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -71,11 +72,15 @@ class SyncOrdersConectaVendaCron extends Command
             if($response->status() == 200){
                 $conecta_pedidos = json_decode($response);
                 foreach($conecta_pedidos->dados as $conecta_pedido){
-                    $pedido = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
+                    /** @var ConectaVendaPedido|null $pedido */ 
+                    $pedido               = ConectaVendaPedido::where('conecta_pedido_id', $conecta_pedido->id)->first();
+                    
 
                     if(!$pedido){
                         $pedido = $this->util->createOrder($conecta_pedido, $config);
                     }
+
+                    $pedido_situacao_atual = $pedido->situacao;
 
                     $situacoes_skip_update = [
                         "Finalizado"
@@ -88,8 +93,22 @@ class SyncOrdersConectaVendaCron extends Command
                     $pedido->situacao = $conecta_pedido->situacao;
                     $pedido->save();
 
-                    // if($conecta_pedido->situacao == 'Cancelado' || $conecta_pedido->situacao == 'cancelado'){
-                    //     $this->util->returnStock($conecta_pedido, $config);
+                    $situacoes_devolver_estoque = [
+                        'em aberto',
+                        'pago',
+                    ];
+
+                    $pedido_situacao_nova = strtolower($conecta_pedido->situacao);
+                    $devolver_estoque     = $pedido_situacao_nova == 'cancelado' && in_array( $pedido_situacao_atual, $situacoes_devolver_estoque );
+
+                    if( $devolver_estoque ){
+
+                        $estoque_util = new EstoqueUtil();
+
+                        foreach($pedido->produtos() as $produto) {
+                            $estoque_util->reduzEstoque( $produto->produto_id, $produto->qtde, $produto->variacao_id );
+                        }
+                    }
                     // }else {
                         
                     // }

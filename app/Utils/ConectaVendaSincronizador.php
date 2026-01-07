@@ -34,7 +34,6 @@ class ConectaVendaSincronizador
         $url_completa = true;
         $produto_fotos = $produto->imagens( $url_completa );
 
-
         $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
 
         $ativo = $desativar ? 0 : 1;
@@ -415,6 +414,8 @@ class ConectaVendaSincronizador
             $usuarioId = \Auth::check() ? \Auth::id() : null;
 
             if ($transacao) {
+                $estoque_util = new EstoqueUtil();
+                $estoque_util->reduzEstoque( $produto->produto_id, $produto->qtde, $produto->variacao_id );
                 // $this->utilEstoque->movimentacaoProduto(
                 //     $produto->produto_id,
                 //     $qtd,
@@ -456,6 +457,21 @@ class ConectaVendaSincronizador
         if (!$response->successful()) {
             throw new \Exception("Erro ao atualizar status do pedido no Conecta Venda: " . $response->body());
         }
+
+        $conecta_venda = ConectaVendaPedido::where('conecta_pedido_id', $conecta_venda_id)->first();
+
+        if(!$conecta_venda) {
+            throw new \Exception("Erro ao capturar pedido");
+        }
+
+        $pedido_itens = $conecta_venda->produtos;
+
+        $produtos_ids = $pedido_itens->pluck('produto_id');
+        // capturar todos Produtos na lista de ids
+        $produtos = Produto::where('id', $produtos_ids)->get();
+
+        $this->atualizar_estoques($empresa, $produtos);
+
         return $response->json();
     }
 
@@ -470,6 +486,84 @@ class ConectaVendaSincronizador
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         return 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
+
+    /**
+     * Summary of atualizar_estoques
+     * @param ConectaVendaConfig $empresa
+     * @param array<Produto> $produtos
+     * @throws \Exception
+     */
+    public function atualizar_estoques(ConectaVendaConfig $empresa, $produtos) {
+
+        $config = ConectaVendaConfig::where('empresa_id', $empresa->empresa_id)->first();
+
+        if (!$config || !$config->client_secret) {
+            throw new \Exception("Chave de API do Conecta Venda não encontrada para a empresa.");
+        }
+
+        $estoques_request = [];
+
+        foreach($produtos as $produto) {
+
+            if (!$produto->conecta_venda_id) {
+                throw new \Exception("Produto {$produto->id} não possui conecta_venda_id vinculado.");
+            }
+
+            if( isset($produto->variacoes) && !$produto->variacoes->isEmpty() ) {
+                foreach ($produto->variacoes as $i => $variacao) {
+                    $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
+
+                    if($estoque_sob_encomenda) {
+                        continue;
+                    }
+
+                    $produto_id  = (string)$produto->id;
+                    $variacao_id = "{$produto->id}.{$variacao->id}";
+                    $estoque     = (int) ($variacao->estoque()->sum('quantidade'));
+
+                    $estoques_request[] = [
+                        'produto_id'          => $produto_id,
+                        'produto_variacao_id' => $variacao_id,
+                        'estoque'             => $estoque,
+                    ];
+                }
+            } else {
+                $estoque_sob_encomenda = $produto->gerenciar_estoque == 0;
+
+                if($estoque_sob_encomenda) {
+                    return;
+                }
+
+                $produto_id  = (string)$produto->id;
+                $variacao_id = "{$produto->id}.0";
+                $estoque     = (int) ($produto->estoque()->sum('quantidade'));
+
+                $estoques_request[] = [
+                    'produto_id'          => $produto_id,
+                    'produto_variacao_id' => $variacao_id,
+                    'estoque'             => $estoque,
+                ];
+
+            }
+
+        }
+
+        $payload = [
+            'chave' => $config->client_secret,
+            'dados' => $estoques_request,
+        ];
+
+        $response = Http::asJson()->post('https://api.conectavenda.com.br/estoques/editar', $payload);
+
+        // HttpUtil::dd($response, $payload);
+
+        if (!$response->successful()) {
+            throw new \Exception("Erro ao atualizar estoque no Conecta Venda: " . $response->body());
+        }
+
+        return $response->json();
+
     }
 
     public function atualizarEstoque(ConectaVendaConfig $empresa, Produto $produto)

@@ -113,7 +113,7 @@ class ConectaVendaPedidoController extends Controller
                 DB::commit();
                 return redirect()->back()->with(session()->flash('flash_success', 'Pedido Cancelado!'));
             }
-
+            
             $response = $this->util->updateOrderStatus($config, $item->conecta_pedido_id, "cancelado");
             $item->situacao = "Cancelado";
             $item->save();
