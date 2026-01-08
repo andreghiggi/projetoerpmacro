@@ -34,8 +34,9 @@
             <button type="button" id="image_variacao_add_{{ $counter }}_0" class="btn btn-link-primary btn-sm btn-primary">+</button>
             <img id="image_variacao_preview_{{ $counter }}_0" src="/imgs/no-image.png" style="max-width: 100%; width: 100%; height: auto; display: block;">
         </div>
+		
         <label id="image_variacao_input_label_{{ $counter }}_0" for="image_variacao_input_{{ $counter }}_0" style="text-align: center; display: block; margin: 5px 0;">Imagem</label>
-        <input type="file" id="image_variacao_input{{ $counter }}_0" name="image_variacao_list[{{ $counter }}][]" accept="image/*">
+		<input type="file" id="image_variacao_input_{{ $counter }}_0" name="image_variacao[{{ $counter }}][]" accept="image/*">
     </div>
 
 
@@ -82,7 +83,7 @@
             <img id="image_variacao_preview_{{ $index }}_0" src="/imgs/no-image.png" style="max-width: 100%; width: 100%; height: auto; display: block;">
         </div>
         <label id="image_variacao_input_label_{{ $index }}_0" for="image_variacao_input_{{ $index }}_0" style="text-align: center; display: block; margin: 5px 0;">Imagem</label>
-        <input type="file" id="image_variacao_input_{{ $index }}_0" name="image_variacao[{{ $index }}][]" accept="image/*">
+        <input type="file" id="image_variacao_input_{{ $index }}_0" name="image_variacao_list_[{{ $index }}][]" accept="image/*">
     </div>
 
 		<!-- <div id="imagem-frame" class="card mt-3 form-input" style="max-width: 100%;">

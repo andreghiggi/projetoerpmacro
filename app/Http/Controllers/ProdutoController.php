@@ -382,6 +382,7 @@ class ProdutoController extends Controller
         $this->__validate($request);
         $produto = null;
         try {
+            
             $produto_imagens = [];
             if ($request->hasFile('image')) {
                 $produto_imagens = $this->util->uploadFile($request->image, '/produtos');
@@ -392,6 +393,7 @@ class ProdutoController extends Controller
                     array_push($categorias_woocommerce, $request->categorias_woocommerce[$i]);
                 }
             }
+
 
             // $last = Produto::where('empresa_id', $request->empresa_id)
             // ->orderBy('numero_sequencial', 'desc')
@@ -504,7 +506,6 @@ class ProdutoController extends Controller
                             $imagem                   = $request->image_variacao[$i];
                             $produto_variacao_imagens = $this->util->uploadFile($imagem, '/produtos' );
                         }
-
                         
                         $dataVariacao = [
                             'produto_id'    => $produto->id,
@@ -664,9 +665,6 @@ class ProdutoController extends Controller
                         session()->flash('flash_error', 'Erro ao integrar com Conecta Venda: ' . $e->getMessage());
                     }
                 }
-                
-                
-
 
                 return $produto;
             });
@@ -929,6 +927,7 @@ public function update(Request $request, $id)
                 ];
 
                 $produto_variacao_imagens = [];
+                
                 if(isset($request->image_variacao[$i])){
                     $imagem                   = $request->image_variacao[$i];
                     $produto_variacao_imagens = $this->util->uploadFile($imagem, '/produtos' );
@@ -975,7 +974,6 @@ public function update(Request $request, $id)
                     }
                 }
             }
-        
                 
             // Remove variações que não foram enviadas pelo request 
             // (portanto que foram deletadas no front)
@@ -986,6 +984,8 @@ public function update(Request $request, $id)
 
             $image_list = $request->image_list;
             $image_variacao_list = $request->image_variacao_list;
+
+            
 
             if( $image_list ) {
                 $produto_imagens_index = 0;
