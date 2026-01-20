@@ -92,13 +92,13 @@
 
                                         <td><img class="img-60" src="{{ $item['img'] ?? '/img/sem-imagem.png' }}"></td>
                                         <td  width="280">{{ $item['nome'] }}</td>
-                                        @if(!$item['variacoes'])
+                                        @if( empty($item['variacoes']->first()) )
                                             <td>{{'--'}}</tdwidth>
                                         @else
                                             <td>{{ __moeda($item['variacoes'][0]['valor']) }}</tdwidth>
                                         @endif
                                         <td>{{ $item['ean'] ?? '--' }}</td>
-                                        @if (($item['variacoes']))
+                                        @if (($item['variacoes']->first()))
                                             <td>{{ __qtd($item['variacoes'][0]['estoque']['quantidade']) }}</td>
                                         @else
                                             <td> -- </td>
